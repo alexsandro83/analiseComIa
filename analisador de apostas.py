@@ -21,15 +21,52 @@ class AnalisadorApostasEvolutivo:
         self.features_para_treino = ['Odds', 'Tamanho_Streak', 'Tipo_Estatistica', 'Local_Jogo', 'Liga_Categoria']
         
     def carregar_dados(self, csv_path):
-        """Carregar dados com tratamento de encoding"""
+    
         try:
+            # Primeira tentativa: encoding utf-8
             return pd.read_csv(csv_path, delimiter=';', encoding='utf-8-sig')
-        except:
+        except pd.errors.ParserError as e:
+            print(f"❌ Erro de parsing detectado: {e}")
+            print("🔧 Tentando corrigir automaticamente...")
+            
+            # Lê o arquivo linha por linha para identificar o problema
+            with open(csv_path, 'r', encoding='utf-8-sig') as f:
+                linhas = f.readlines()
+            
+            # Identifica a linha problemática
+            linha_problema = 135  # baseado no erro
+            if len(linhas) >= linha_problema:
+                print(f"📝 Linha {linha_problema} problemática: {linhas[linha_problema-1]}")
+            
+            # Tenta carregar com tratamento de erro mais flexível
+            try:
+                df = pd.read_csv(csv_path, delimiter=';', encoding='utf-8-sig', 
+                            on_bad_lines='skip',  # Pula linhas problemáticas
+                            engine='python')
+                print(f"✅ Carregado com {len(df)} linhas após correção automática")
+                return df
+            except:
+                # Última tentativa: carrega manualmente
+                print("🔄 Carregando manualmente...")
+                dados_corrigidos = []
+                cabecalho = linhas[0].strip().split(';')
+                
+                for i, linha in enumerate(linhas[1:], 2):  # Começa da linha 2 (pula cabeçalho)
+                    campos = linha.strip().split(';')
+                    if len(campos) == len(cabecalho):
+                        dados_corrigidos.append(campos)
+                    else:
+                        print(f"⚠️  Linha {i} ignorada: número de campos incorreto")
+                
+                df = pd.DataFrame(dados_corrigidos, columns=cabecalho)
+                print(f"✅ Carregamento manual: {len(df)} linhas processadas")
+                return df
+                
+        except UnicodeDecodeError:
             try:
                 return pd.read_csv(csv_path, delimiter=';', encoding='latin-1')
             except:
                 return pd.read_csv(csv_path, delimiter=';', encoding='iso-8859-1')
-    
     def treinar_modelo_evolutivo(self, forcar_retreino=False):
         """Treinar ou atualizar modelo com dados mais recentes"""
         print("🔄 INICIANDO TREINAMENTO EVOLUTIVO...")
@@ -359,32 +396,142 @@ class AnalisadorApostasEvolutivo:
             'Analise_Detalhada': analise,
             'Bonus_Total': bonus_total
         }
-    
-    def _gerar_multiplas_recomendadas(self, df_futuros, num_multiplas=5):
-        """Gerar múltiplas recomendadas automaticamente"""
+    def _gerar_multiplas_recomendadas(self, df_futuros, num_multiplas=20):  # Aumentei para 20
+        """Gerar múltiplas recomendadas automaticamente SEM duplicatas"""
         print("\n🎲 GERANDO MÚLTIPLAS RECOMENDADAS:")
         print("="*50)
         
         jogos_excelentes = df_futuros[df_futuros['Recomendacao'] == 'EXCELENTE']
         jogos_bons = df_futuros[df_futuros['Recomendacao'] == 'BOA']
         
-        for i in range(min(num_multiplas, 5)):
-            print(f"\n🔮 MÚLTIPLA {i+1}:")
+        # Combinar todos os jogos recomendados e ordenar por confiança
+        todos_jogos = pd.concat([jogos_excelentes, jogos_bons])
+        todos_jogos = todos_jogos.sort_values('Probabilidade_Sucesso', ascending=False)
+        
+        if len(todos_jogos) < 2:
+            print("❌ Número insuficiente de jogos para gerar múltiplas")
+            return
+        
+        # Criar lista de jogos com identificadores únicos
+        jogos_lista = []
+        for idx, row in todos_jogos.iterrows():
+            # Usar Time_Casa e Mercado para criar ID único (ajuste conforme suas colunas)
+            time_casa = row.get('Time_Casa', row.get('Time', ''))
+            mercado = row.get('Mercado', row.get('Tipo_Estatistica', ''))
             
-            # Tentar combinação com 2-3 jogos excelentes
-            if len(jogos_excelentes) >= 2:
-                selecao = jogos_excelentes.sample(2 if len(jogos_excelentes) >= 3 else len(jogos_excelentes))
-                odd_total = selecao['Odds'].prod()
-                confianca_media = selecao['Probabilidade_Sucesso'].mean()
-                
-                print(f"   Odd Total: {odd_total:.2f}")
-                print(f"   Confiança Média: {confianca_media:.1%}")
-                for _, jogo in selecao.iterrows():
-                    print(f"   ✅ {jogo['Time']} - {jogo['Tipo_Estatistica']} @{jogo['Odds']:.2f}")
+            jogos_lista.append({
+                'id': f"{time_casa}_{mercado}",
+                'time': time_casa,
+                'mercado': mercado,
+                'odds': row.get('Odds', 1.0),
+                'confianca': row.get('Probabilidade_Sucesso', 0),
+                'analise': row.get('Analise_Detalhada', '')
+            })
+        
+        # Remover duplicatas exatas
+        jogos_unicos = []
+        ids_vistos = set()
+        for jogo in jogos_lista:
+            if jogo['id'] not in ids_vistos:
+                ids_vistos.add(jogo['id'])
+                jogos_unicos.append(jogo)
+        
+        if len(jogos_unicos) < 2:
+            print("❌ Número insuficiente de jogos únicos para múltiplas")
+            return
+        
+        # Gerar TODAS as combinações possíveis (sem limite artificial)
+        from itertools import combinations
+        
+        todas_combinacoes = list(combinations(jogos_unicos, 2))
+        
+        print(f"📊 Gerando {len(todas_combinacoes)} combinações possíveis...")
+        
+        # Calcular métricas para cada combinação
+        multiplas_com_metricas = []
+        
+        for combo in todas_combinacoes:
+            jogo1, jogo2 = combo
             
+            # Ordenar para evitar permutações (A+B vs B+A)
+            jogos_ordenados = sorted([jogo1, jogo2], key=lambda x: x['id'])
+            
+            # Calcular odd total (tratar NaN)
+            odd1 = jogo1['odds'] if pd.notna(jogo1['odds']) and jogo1['odds'] > 0 else 1.0
+            odd2 = jogo2['odds'] if pd.notna(jogo2['odds']) and jogo2['odds'] > 0 else 1.0
+            odd_total = odd1 * odd2
+            
+            # Calcular confiança média
+            confianca_media = (jogo1['confianca'] + jogo2['confianca']) / 2
+            
+            # Score para ordenação (prioriza confiança e odd balanceada)
+            score = confianca_media * (1 + min(odd_total - 1, 2.0) * 0.3)
+            
+            multiplas_com_metricas.append({
+                'jogos': jogos_ordenados,
+                'odd_total': odd_total,
+                'confianca_media': confianca_media,
+                'score': score
+            })
+        
+        # Ordenar por score (melhores primeiro)
+        multiplas_com_metricas.sort(key=lambda x: x['score'], reverse=True)
+        
+        # Remover duplicatas finais
+        multiplas_unicas = []
+        combinacoes_vistas = set()
+        
+        for multipla in multiplas_com_metricas:
+            # Criar chave única baseada na combinação ordenada
+            chave = tuple(jogo['id'] for jogo in multipla['jogos'])
+            
+            if chave not in combinacoes_vistas:
+                combinacoes_vistas.add(chave)
+                multiplas_unicas.append(multipla)
+        
+        # LIMITAR APENAS PARA EXIBIÇÃO, mas manter todas para uso futuro
+        multiplas_para_exibir = multiplas_unicas[:num_multiplas]  # Mostra até 20 na tela
+        
+        print(f"🎯 {len(multiplas_unicas)} múltiplas únicas geradas")
+        print(f"📈 Exibindo as {len(multiplas_para_exibir)} melhores:")
+        
+        # Exibir múltiplas
+        for i, multipla in enumerate(multiplas_para_exibir, 1):
+            print(f"\n🔮 MÚLTIPLA {i}:")
+            print(f"   Odd Total: {multipla['odd_total']:.2f}")
+            print(f"   Confiança Média: {multipla['confianca_media']:.1%}")
+            
+            for jogo in multipla['jogos']:
+                odd_str = f"@{jogo['odds']:.2f}" if pd.notna(jogo['odds']) and jogo['odds'] > 0 else "@nan"
+                print(f"   ✅ {jogo['time']} - {jogo['mercado']} {odd_str}")
             print("-" * 30)
+        
+        # Salvar TODAS as múltiplas em arquivo
+        self._salvar_multiplas_completas(multiplas_unicas)
+        
+        return multiplas_unicas
 
-# EXECUÇÃO PRINCIPAL INTELIGENTE
+    def _salvar_multiplas_completas(self, multiplas):
+        """Salvar todas as múltiplas em um arquivo CSV"""
+        import csv
+        
+        with open('multiplas_completas.csv', 'w', newline='', encoding='utf-8-sig') as f:
+            writer = csv.writer(f, delimiter=';')
+            writer.writerow(['Multipla', 'Time_1', 'Mercado_1', 'Odd_1', 'Time_2', 'Mercado_2', 'Odd_2', 'Odd_Total', 'Confianca_Media'])
+            
+            for i, multipla in enumerate(multiplas, 1):
+                jogo1, jogo2 = multipla['jogos']
+                writer.writerow([
+                    f"Multipla {i}",
+                    jogo1['time'], jogo1['mercado'], jogo1['odds'],
+                    jogo2['time'], jogo2['mercado'], jogo2['odds'],
+                    multipla['odd_total'],
+                    multipla['confianca_media']
+                ])
+        
+        print(f"💾 Todas as {len(multiplas)} múltiplas salvas em: multiplas_completas.csv")
+        
+    # EXECUÇÃO PRINCIPAL INTELIGENTE
 if __name__ == "__main__":
     print("🤖 SISTEMA DE ANÁLISE EVOLUTIVA DE APOSTAS")
     print("="*50)
