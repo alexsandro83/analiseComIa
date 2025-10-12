@@ -396,8 +396,8 @@ class AnalisadorApostasEvolutivo:
             'Analise_Detalhada': analise,
             'Bonus_Total': bonus_total
         }
-    def _gerar_multiplas_recomendadas(self, df_futuros, num_multiplas=20):  # Aumentei para 20
-        """Gerar múltiplas recomendadas automaticamente SEM duplicatas"""
+    def _gerar_multiplas_recomendadas(self, df_futuros, num_multiplas=20):
+        """Gerar múltiplas recomendadas priorizando confiança alta e proximidade temporal"""
         print("\n🎲 GERANDO MÚLTIPLAS RECOMENDADAS:")
         print("="*50)
         
@@ -415,9 +415,11 @@ class AnalisadorApostasEvolutivo:
         # Criar lista de jogos com identificadores únicos
         jogos_lista = []
         for idx, row in todos_jogos.iterrows():
-            # Usar Time_Casa e Mercado para criar ID único (ajuste conforme suas colunas)
             time_casa = row.get('Time_Casa', row.get('Time', ''))
             mercado = row.get('Mercado', row.get('Tipo_Estatistica', ''))
+            
+            # ADICIONAR INFORMAÇÃO DE DATA/HORA SE DISPONÍVEL
+            data_hora = row.get('Data', row.get('Horario', ''))  # Ajuste para suas colunas
             
             jogos_lista.append({
                 'id': f"{time_casa}_{mercado}",
@@ -425,6 +427,7 @@ class AnalisadorApostasEvolutivo:
                 'mercado': mercado,
                 'odds': row.get('Odds', 1.0),
                 'confianca': row.get('Probabilidade_Sucesso', 0),
+                'data_hora': data_hora,  # ← ADICIONAR PARA PROXIMIDADE TEMPORAL
                 'analise': row.get('Analise_Detalhada', '')
             })
         
@@ -440,23 +443,23 @@ class AnalisadorApostasEvolutivo:
             print("❌ Número insuficiente de jogos únicos para múltiplas")
             return
         
-        # Gerar TODAS as combinações possíveis (sem limite artificial)
+        # Gerar combinações possíveis
         from itertools import combinations
         
         todas_combinacoes = list(combinations(jogos_unicos, 2))
         
         print(f"📊 Gerando {len(todas_combinacoes)} combinações possíveis...")
         
-        # Calcular métricas para cada combinação
+        # Calcular métricas para cada combinação - AQUI ESTÁ O CORAÇÃO DA ALTERAÇÃO!
         multiplas_com_metricas = []
         
         for combo in todas_combinacoes:
             jogo1, jogo2 = combo
             
-            # Ordenar para evitar permutações (A+B vs B+A)
+            # Ordenar para evitar permutações
             jogos_ordenados = sorted([jogo1, jogo2], key=lambda x: x['id'])
             
-            # Calcular odd total (tratar NaN)
+            # Calcular odd total
             odd1 = jogo1['odds'] if pd.notna(jogo1['odds']) and jogo1['odds'] > 0 else 1.0
             odd2 = jogo2['odds'] if pd.notna(jogo2['odds']) and jogo2['odds'] > 0 else 1.0
             odd_total = odd1 * odd2
@@ -464,53 +467,81 @@ class AnalisadorApostasEvolutivo:
             # Calcular confiança média
             confianca_media = (jogo1['confianca'] + jogo2['confianca']) / 2
             
-            # Score para ordenação (prioriza confiança e odd balanceada)
-            score = confianca_media * (1 + min(odd_total - 1, 2.0) * 0.3)
+            # *** NOVO SISTEMA DE SCORE - PRIORIZANDO CONFIANÇA ALTA ***
+            # Peso maior para confiança (70%) e menor para odds (30%)
+            peso_confianca = 0.7
+            peso_odds = 0.3
+            
+            # Score baseado principalmente na confiança
+            score_confianca = confianca_media * 100  # Converte para escala 0-100
+            
+            # Bonus por odds (limitado para não dominar)
+            bonus_odds = min((odd_total - 1) * 10, 20)  # Máximo 20 pontos bonus
+            
+            # Penalidade por odds muito altas (pouco prováveis)
+            if odd_total > 5.0:
+                bonus_odds *= 0.5  # Reduz bonus pela metade
+            
+            # *** BONUS POR PROXIMIDADE TEMPORAL ***
+            bonus_proximidade = 0
+            if jogo1['data_hora'] and jogo2['data_hora']:
+                # Se as datas/horas forem iguais ou muito próximas
+                if jogo1['data_hora'] == jogo2['data_hora']:
+                    bonus_proximidade = 15  # Bônus por jogos no mesmo horário
+                # Aqui você pode adicionar mais lógica de proximidade temporal
+            
+            # Score final - CONFIANÇA TEM PESO MAIOR
+            score_final = (score_confianca * peso_confianca) + (bonus_odds * peso_odds) + bonus_proximidade
             
             multiplas_com_metricas.append({
                 'jogos': jogos_ordenados,
                 'odd_total': odd_total,
                 'confianca_media': confianca_media,
-                'score': score
+                'score': score_final,
+                'bonus_proximidade': bonus_proximidade
             })
         
-        # Ordenar por score (melhores primeiro)
-        multiplas_com_metricas.sort(key=lambda x: x['score'], reverse=True)
+        # *** ORDENAR PRINCIPALMENTE POR CONFIANÇA ***
+        multiplas_com_metricas.sort(key=lambda x: (x['confianca_media'], x['score']), reverse=True)
         
         # Remover duplicatas finais
         multiplas_unicas = []
         combinacoes_vistas = set()
         
         for multipla in multiplas_com_metricas:
-            # Criar chave única baseada na combinação ordenada
             chave = tuple(jogo['id'] for jogo in multipla['jogos'])
             
             if chave not in combinacoes_vistas:
                 combinacoes_vistas.add(chave)
                 multiplas_unicas.append(multipla)
         
-        # LIMITAR APENAS PARA EXIBIÇÃO, mas manter todas para uso futuro
-        multiplas_para_exibir = multiplas_unicas[:num_multiplas]  # Mostra até 20 na tela
+        # Exibir estatísticas
+        confianca_minima = min(m['confianca_media'] for m in multiplas_unicas[:10])
+        confianca_maxima = max(m['confianca_media'] for m in multiplas_unicas[:10])
         
         print(f"🎯 {len(multiplas_unicas)} múltiplas únicas geradas")
-        print(f"📈 Exibindo as {len(multiplas_para_exibir)} melhores:")
+        print(f"📊 Confiança das top 10: {confianca_minima:.1%} - {confianca_maxima:.1%}")
         
-        # Exibir múltiplas
+        # Exibir apenas as melhores por confiança
+        multiplas_para_exibir = multiplas_unicas[:num_multiplas]
+        
         for i, multipla in enumerate(multiplas_para_exibir, 1):
             print(f"\n🔮 MÚLTIPLA {i}:")
             print(f"   Odd Total: {multipla['odd_total']:.2f}")
-            print(f"   Confiança Média: {multipla['confianca_media']:.1%}")
+            print(f"   Confiança Média: {multipla['confianca_media']:.1%} ⭐")  # Destaque na confiança
+            if multipla['bonus_proximidade'] > 0:
+                print(f"   🕒 Bônus Proximidade: +{multipla['bonus_proximidade']} pontos")
             
             for jogo in multipla['jogos']:
                 odd_str = f"@{jogo['odds']:.2f}" if pd.notna(jogo['odds']) and jogo['odds'] > 0 else "@nan"
-                print(f"   ✅ {jogo['time']} - {jogo['mercado']} {odd_str}")
-            print("-" * 30)
+                confianca_individual = f"({jogo['confianca']:.1%})"
+                print(f"   ✅ {jogo['time']} - {jogo['mercado']} {odd_str} {confianca_individual}")
+            print("-" * 40)
         
-        # Salvar TODAS as múltiplas em arquivo
+        # Salvar todas as múltiplas
         self._salvar_multiplas_completas(multiplas_unicas)
         
         return multiplas_unicas
-
     def _salvar_multiplas_completas(self, multiplas):
         """Salvar todas as múltiplas em um arquivo CSV"""
         import csv
