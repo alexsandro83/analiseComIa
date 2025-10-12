@@ -22,16 +22,14 @@ class AnalisadorApostas:
         self.jogos_complementares = {}
         
     def limpar_dados(self):
-        """Limpar e preparar os dados para análise"""
+        """Limpar e preparar os dados para análise - OTIMIZADO"""
         # Converter datas - CORRIGINDO O ANO
         def corrigir_data(date_str):
             try:
-                # Converter para datetime
-                dt = pd.to_datetime(date_str, format='%A, %d %B %H:%M', errors='coerce')
-                if pd.isna(dt):
-                    return dt
-                # Corrigir o ano para 2025 (assumindo que os dados são de 2025)
-                return dt.replace(year=2025)
+                # Adicionar ano 2025 explicitamente para evitar warning
+                date_with_year = f"{date_str} 2025"
+                dt = pd.to_datetime(date_with_year, format='%A, %d %B %H:%M %Y', errors='coerce')
+                return dt
             except:
                 return pd.NaT
         
@@ -40,7 +38,7 @@ class AnalisadorApostas:
         # Converter odds para numérico
         self.df['Odds'] = pd.to_numeric(self.df['Odds'], errors='coerce')
         
-        # Criar target binário para jogos com histórico
+        # Criar target binário
         situacao_map = {
             'VERDADEIRO': 1, 'Verdadeiro': 1, 'VERDADEIR': 1,
             'FALSO': 0, 'Falso': 0, 'FALS': 0
@@ -49,20 +47,52 @@ class AnalisadorApostas:
         if 'Situacao' in self.df.columns:
             self.df['Target'] = self.df['Situacao'].map(situacao_map).fillna(-1)
         else:
-            self.df['Target'] = -1  # Todos são futuros
+            self.df['Target'] = -1
         
-        # Extrair características das estatísticas
+        # Extrair características das estatísticas - MELHORADO
         self.df['Tipo_Estatistica'] = self.df['Stat'].apply(self._classificar_estatistica)
         self.df['Tamanho_Streak'] = self.df['Stat'].apply(self._extrair_streak)
         self.df['Local_Jogo'] = self.df['Next Match'].apply(self._extrair_local)
         self.df['Time'] = self.df['Stat'].apply(self._extrair_time)
+        self.df['Liga_Categoria'] = self.df['League'].apply(self._classificar_liga)
+        
+        # NOVO: Calcular confiabilidade por liga
+        self._calcular_confiabilidade_ligas()
         
         # Identificar jogos complementares
         self._identificar_jogos_complementares()
         
-        # Dados para treino (apenas com target válido)
+        # Dados para treino
         self.df_limpo = self.df[self.df['Target'] != -1].copy()
         
+    def _classificar_liga(self, league):
+        """Classificar liga por confiabilidade baseado na análise"""
+        league_str = str(league).lower()
+        
+        # Baseado na análise dos registros
+        if any(x in league_str for x in ['nwsl', 'women', 'feminino', 'feminina']):
+            return 'ALTA_CONFIABILIDADE'
+        elif any(x in league_str for x in ['norway', 'noruega', 'denmark', 'dinamarca', 'sweden', 'suecia']):
+            return 'ALTA_CONFIABILIDADE'
+        elif any(x in league_str for x in ['brasil', 'brazil', 'serie a', 'serie b']):
+            return 'MEDIA_CONFIABILIDADE'
+        elif any(x in league_str for x in ['mexico', 'argentina', 'chile']):
+            return 'MEDIA_CONFIABILIDADE'
+        else:
+            return 'BAIXA_CONFIABILIDADE'
+    
+    def _calcular_confiabilidade_ligas(self):
+        """Calcular confiabilidade real por liga baseada nos dados históricos"""
+        if 'Target' in self.df.columns:
+            ligas_confiabilidade = self.df[self.df['Target'] != -1].groupby('League').agg({
+                'Target': 'mean',
+                'Tipo_Estatistica': 'count'
+            }).round(3)
+            
+            self.ligas_confiabilidade = ligas_confiabilidade
+            print("\nCONFIABILIDADE POR LIGA (base real):")
+            print(ligas_confiabilidade.sort_values('Target', ascending=False).head(10))
+    
     def _extrair_time(self, stat):
         """Extrair nome do time da estatística"""
         try:
@@ -71,7 +101,7 @@ class AnalisadorApostas:
             return 'TIME_DESCONHECIDO'
     
     def _identificar_jogos_complementares(self):
-        """Identificar jogos que têm estatísticas de ambos os times"""
+        """Identificar jogos com estatísticas complementares - MELHORADO"""
         jogos_unicos = {}
         
         for idx, row in self.df.iterrows():
@@ -97,20 +127,19 @@ class AnalisadorApostas:
                 'situacao': row['Situacao'] if 'Situacao' in row else None
             })
         
-        # Filtrar apenas jogos com múltiplas estatísticas de times diferentes
+        # Filtrar jogos com múltiplas estatísticas
         self.jogos_complementares = {}
         
         for chave, jogo in jogos_unicos.items():
             if len(jogo['stats']) >= 2:
                 times = [s['time'] for s in jogo['stats']]
-                # Verificar se são times diferentes
                 if len(set(times)) >= 2:
                     self.jogos_complementares[chave] = jogo
         
-        print(f"Jogos com estatisticas complementares identificados: {len(self.jogos_complementares)}")
+        print(f"Jogos com estatisticas complementares: {len(self.jogos_complementares)}")
     
     def _classificar_estatistica(self, stat):
-        """Classificar o tipo de estatística"""
+        """Classificar tipo de estatística"""
         stat_str = str(stat).lower()
         if 'won' in stat_str:
             return 'VITORIA'
@@ -126,12 +155,12 @@ class AnalisadorApostas:
             return 'OUTRO'
     
     def _extrair_streak(self, stat):
-        """Extrair tamanho do streak da estatística"""
+        """Extrair tamanho do streak"""
         matches = re.findall(r'last (\d+)', str(stat))
         return int(matches[0]) if matches else 1
     
     def _extrair_local(self, next_match):
-        """Extrair se é jogo em casa ou fora"""
+        """Extrair local do jogo"""
         match_str = str(next_match).lower()
         if 'home' in match_str:
             return 'CASA'
@@ -141,51 +170,61 @@ class AnalisadorApostas:
             return 'NEUTRO'
     
     def _classificar_padrao(self, probabilidade, bonus_complementar=0):
-        """Classificar o padrão baseado na probabilidade"""
+        """Classificar padrão baseado na probabilidade - AJUSTADO"""
         prob_ajustada = probabilidade + bonus_complementar
         
-        if prob_ajustada > 0.8:
+        # Novos thresholds baseados na análise
+        if prob_ajustada > 0.78:
             return 'PADRAO_FORTISSIMO'
-        elif prob_ajustada > 0.7:
+        elif prob_ajustada > 0.68:
             return 'PADRAO_FORTE'
-        elif prob_ajustada > 0.6:
+        elif prob_ajustada > 0.58:
             return 'PADRAO_SOLIDO'
         else:
             return 'PADRAO_REGULAR'
     
     def _classificar_recomendacao(self, probabilidade, bonus_complementar=0):
-        """Classificar a recomendação"""
+        """Classificar recomendação - AJUSTADO"""
         prob_ajustada = probabilidade + bonus_complementar
         
         if prob_ajustada > 0.75:
             return 'EXCELENTE'
-        elif prob_ajustada > 0.6:
+        elif prob_ajustada > 0.62:
             return 'BOA'
         else:
             return 'REGULAR'
     
     def _calcular_bonus_complementar(self, league, next_match, date):
-        """Calcular bonus para jogos com estatísticas complementares"""
+        """Calcular bônus para jogos complementares - MELHORADO"""
         chave_jogo = f"{date}_{league}"
         
         if chave_jogo in self.jogos_complementares:
             jogo = self.jogos_complementares[chave_jogo]
-            
-            # Verificar tipos de estatísticas presentes
             tipos_stats = [s['tipo'] for s in jogo['stats']]
             
-            # Bônus baseado na combinação de estatísticas
+            # Bônus aumentados baseados na análise
             if 'VITORIA' in tipos_stats and 'DERROTA' in tipos_stats:
-                return 0.15  # Bônus alto para vitória × derrota
+                return 0.18
             elif 'OVER_2.5' in tipos_stats and 'BTTS' in tipos_stats:
-                return 0.12  # Bônus para Over 2.5 × BTTS
+                return 0.15
             elif len(set(tipos_stats)) >= 2:
-                return 0.08  # Bônus para outras combinações
+                return 0.10
             
         return 0.0
     
+    def _calcular_bonus_confiabilidade_liga(self, league):
+        """Calcular bônus baseado na confiabilidade da liga"""
+        liga_str = str(league).lower()
+        
+        if any(x in liga_str for x in ['nwsl', 'women', 'norway', 'denmark']):
+            return 0.08
+        elif any(x in liga_str for x in ['brasil', 'sweden', 'iceland']):
+            return 0.05
+        else:
+            return 0.0
+    
     def analisar_jogos_complementares(self):
-        """Analisar especificamente os jogos com estatísticas complementares"""
+        """Analisar jogos complementares - MELHORADO"""
         if not self.jogos_complementares:
             print("Nenhum jogo complementar identificado")
             return
@@ -193,7 +232,6 @@ class AnalisadorApostas:
         resultados = []
         
         for chave, jogo in self.jogos_complementares.items():
-            # Calcular taxa de acerto para este jogo
             situacoes = [s['situacao'] for s in jogo['stats'] if s['situacao'] in ['VERDADEIRO', 'Verdadeiro', 'FALSO', 'Falso']]
             
             if situacoes:
@@ -202,7 +240,6 @@ class AnalisadorApostas:
             else:
                 taxa_acerto = None
             
-            # Analisar combinação de estatísticas
             tipos_stats = [s['tipo'] for s in jogo['stats']]
             combinacao = " + ".join(sorted(set(tipos_stats)))
             
@@ -216,17 +253,13 @@ class AnalisadorApostas:
                 'Stats_Detalhadas': [f"{s['time']}: {s['tipo']} (Odds: {s['odds']})" for s in jogo['stats']]
             })
         
-        # Criar DataFrame com resultados
         df_resultados = pd.DataFrame(resultados)
         
-        # Ordenar por taxa de acerto (quando disponível)
         if not df_resultados.empty:
             print("\n" + "="*80)
             print("ANALISE DE JOGOS COM ESTATISTICAS COMPLEMENTARES")
             print("="*80)
             
-            # Mostrar estatísticas gerais
-            total_jogos = len(df_resultados)
             jogos_com_resultado = df_resultados[df_resultados['Taxa_Acerto'].notna()]
             
             if not jogos_com_resultado.empty:
@@ -234,98 +267,96 @@ class AnalisadorApostas:
                 print(f"Taxa media de acerto em jogos complementares: {taxa_media:.1%}")
                 print(f"Total de jogos analisados: {len(jogos_com_resultado)}")
             
-            # Mostrar combinações mais comuns
             combinacoes = df_resultados['Combinacao_Stats'].value_counts()
             print(f"\nCOMBINACOES MAIS FREQUENTES:")
             for combinacao, count in combinacoes.head(5).items():
                 print(f"  {combinacao}: {count} jogos")
             
-            # Salvar análise detalhada
             df_resultados.to_csv('analise_jogos_complementares.csv', index=False, encoding='utf-8-sig')
             print(f"\nAnalise detalhada salva em: analise_jogos_complementares.csv")
             
             return df_resultados
     
     def treinar_modelo(self):
-        """Treinar modelo de machine learning"""
-        if len(self.df_limpo) < 10:
+        """Treinar modelo de machine learning - OTIMIZADO"""
+        if len(self.df_limpo) < 15:
             print("Dados insuficientes para treinar modelo. Usando analise qualitativa.")
             self.model = None
             return
         
-        # Preparar features
-        features = ['Odds', 'Tamanho_Streak', 'Tipo_Estatistica', 'Local_Jogo']
+        # NOVAS FEATURES
+        features = ['Odds', 'Tamanho_Streak', 'Tipo_Estatistica', 'Local_Jogo', 'Liga_Categoria']
         
-        # Codificar variáveis categóricas
+        # Codificar variáveis
         X = self.df_limpo[features].copy()
         X['Tipo_Estatistica'] = self.encoder.fit_transform(X['Tipo_Estatistica'])
         X['Local_Jogo'] = LabelEncoder().fit_transform(X['Local_Jogo'])
+        X['Liga_Categoria'] = LabelEncoder().fit_transform(X['Liga_Categoria'])
         
-        # Target
         y = self.df_limpo['Target']
         
-        # Treinar modelo
+        # Treinar com mais árvores
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         
-        self.model = RandomForestClassifier(n_estimators=100, random_state=42)
+        self.model = RandomForestClassifier(n_estimators=150, random_state=42, max_depth=10)
         self.model.fit(X_train, y_train)
         
-        # Avaliar
         accuracy = self.model.score(X_test, y_test)
-        print(f"Acuracia do modelo: {accuracy:.2%}")
+        print(f"Acuracia do modelo OTIMIZADO: {accuracy:.2%}")
         
-        # Mostrar importância das features
         feature_importance = pd.DataFrame({
             'feature': features,
             'importance': self.model.feature_importances_
         }).sort_values('importance', ascending=False)
         
-        print("\nImportancia das variaveis:")
+        print("\nImportancia das variaveis OTIMIZADO:")
         print(feature_importance)
     
     def analisar_jogo(self, league, stat, next_match, odds, date):
-        """Analisar um jogo específico"""
+        """Analisar jogo específico - MELHORADO"""
         if self.model is None:
             return self._analise_basica_futuro({
                 'League': league, 'Stat': stat, 'Next Match': next_match,
                 'Odds': odds, 'Date': date
             }, has_odds=not pd.isna(odds))
         
-        # Preparar dados do jogo
         tipo_estatistica = self._classificar_estatistica(stat)
         tamanho_streak = self._extrair_streak(stat)
         local_jogo = self._extrair_local(next_match)
+        liga_categoria = self._classificar_liga(league)
         
-        # Calcular bônus para jogos complementares
+        # CALCULAR TODOS OS BÔNUS
         bonus_complementar = self._calcular_bonus_complementar(league, next_match, date)
+        bonus_confiabilidade = self._calcular_bonus_confiabilidade_liga(league)
+        bonus_total = bonus_complementar + bonus_confiabilidade
         
         # Criar feature vector
         features = pd.DataFrame([{
             'Odds': odds,
             'Tamanho_Streak': tamanho_streak,
             'Tipo_Estatistica': tipo_estatistica,
-            'Local_Jogo': local_jogo
+            'Local_Jogo': local_jogo,
+            'Liga_Categoria': liga_categoria
         }])
         
         # Codificar
         features['Tipo_Estatistica'] = self.encoder.transform(features['Tipo_Estatistica'])
         features['Local_Jogo'] = LabelEncoder().fit_transform(features['Local_Jogo'])
+        features['Liga_Categoria'] = LabelEncoder().fit_transform(features['Liga_Categoria'])
         
         # Prever
         probabilidade = self.model.predict_proba(features)[0][1]
         previsao = self.model.predict(features)[0]
         
-        # Aplicar bônus para jogos complementares
-        probabilidade_ajustada = min(probabilidade + bonus_complementar, 0.95)
+        # Aplicar todos os bônus
+        probabilidade_ajustada = min(probabilidade + bonus_total, 0.95)
         
-        # Classificar padrão e recomendação
-        padrao = self._classificar_padrao(probabilidade, bonus_complementar)
-        recomendacao = self._classificar_recomendacao(probabilidade, bonus_complementar)
+        padrao = self._classificar_padrao(probabilidade, bonus_total)
+        recomendacao = self._classificar_recomendacao(probabilidade, bonus_total)
         
-        # Gerar análise textual
         analise = self._gerar_analise_texto(probabilidade_ajustada, previsao, tipo_estatistica, 
-                                          tamanho_streak, odds, padrao, bonus_complementar, 
-                                          is_previsao=True)
+                                          tamanho_streak, odds, padrao, bonus_total, 
+                                          is_previsao=True, liga=league)
         
         return {
             'Probabilidade_Sucesso': probabilidade_ajustada,
@@ -333,69 +364,57 @@ class AnalisadorApostas:
             'Padrao': padrao,
             'Recomendacao': recomendacao,
             'Analise_Texto': analise,
-            'Bonus_Complementar': bonus_complementar
+            'Bonus_Complementar': bonus_complementar,
+            'Bonus_Confiabilidade': bonus_confiabilidade,
+            'Bonus_Total': bonus_total
         }
     
     def _analise_basica_futuro(self, row, has_odds=True):
-        """Análise especializada para jogos futuros"""
+        """Análise básica para futuros - MELHORADA"""
         tipo_estatistica = self._classificar_estatistica(row['Stat'])
         tamanho_streak = self._extrair_streak(row['Stat'])
         local_jogo = self._extrair_local(row['Next Match'])
         
-        # Calcular bônus complementar mesmo sem odds
         bonus_complementar = self._calcular_bonus_complementar(
             row['League'], row['Next Match'], row['Date']
         )
+        bonus_confiabilidade = self._calcular_bonus_confiabilidade_liga(row['League'])
+        bonus_total = bonus_complementar + bonus_confiabilidade
         
-        # Lógica de previsão baseada em padrões históricos
-        if tipo_estatistica == 'VITORIA':
-            if tamanho_streak >= 6:
-                padrao = 'PADRAO_FORTE'
-                recomendacao = 'EXCELENTE' if bonus_complementar > 0 else 'BOA'
-                previsao = 'VERDADEIRO'
-                prob = 0.75 + bonus_complementar
-            else:
-                padrao = 'PADRAO_SOLIDO'
-                recomendacao = 'BOA'
-                previsao = 'VERDADEIRO'
-                prob = 0.65 + bonus_complementar
-                
-        elif tipo_estatistica == 'DERROTA':
-            if tamanho_streak >= 6:
-                padrao = 'PADRAO_FORTE'
-                recomendacao = 'EXCELENTE' if bonus_complementar > 0 else 'BOA'
-                previsao = 'VERDADEIRO'
-                prob = 0.72 + bonus_complementar
-            else:
-                padrao = 'PADRAO_SOLIDO'
-                recomendacao = 'BOA'
-                previsao = 'VERDADEIRO'
-                prob = 0.62 + bonus_complementar
-                
-        elif tipo_estatistica == 'OVER_2.5':
-            padrao = 'PADRAO_SOLIDO'
-            recomendacao = 'BOA'
-            previsao = 'VERDADEIRO'
-            prob = 0.60 + bonus_complementar
-            
-        else:  # BTTS, EMPATE, etc.
-            padrao = 'PADRAO_REGULAR'
-            recomendacao = 'REGULAR'
-            previsao = 'VERDADEIRO'  # Assume que streak continua por padrão
-            prob = 0.55 + bonus_complementar
+        # PROBABILIDADES BASE AJUSTADAS
+        prob_base = {
+            'VITORIA': 0.72 if tamanho_streak >= 6 else 0.62,
+            'DERROTA': 0.70 if tamanho_streak >= 6 else 0.60,
+            'OVER_2.5': 0.65,
+            'BTTS': 0.63,
+            'EMPATE': 0.48,
+            'OUTRO': 0.55
+        }
         
-        # Ajustar probabilidade máxima
+        prob = prob_base.get(tipo_estatistica, 0.55) + bonus_total
         prob = min(prob, 0.90)
         
-        # Gerar análise textual
+        # CLASSIFICAÇÃO MELHORADA
+        if prob > 0.75:
+            padrao = 'PADRAO_FORTE'
+            recomendacao = 'EXCELENTE'
+        elif prob > 0.65:
+            padrao = 'PADRAO_SOLIDO'
+            recomendacao = 'BOA'
+        else:
+            padrao = 'PADRAO_REGULAR'
+            recomendacao = 'REGULAR'
+        
+        previsao = 'VERDADEIRO'
+        
         odds_text = f"(Odds: {row['Odds']})" if has_odds and not pd.isna(row['Odds']) else "(Odds: N/D)"
         
-        analise = f"{padrao.replace('_', ' ')}: {tipo_estatistica} em {tamanho_streak} jogos {odds_text}"
+        analise = f"{padrao}: {tipo_estatistica} em {tamanho_streak} jogos {odds_text}"
         
-        if bonus_complementar > 0:
-            analise += f" [BONUS +{bonus_complementar:.0%} complementar]"
+        if bonus_total > 0:
+            analise += f" [BONUS +{bonus_total:.0%} complementar+confiabilidade]"
         
-        analise += f" Previsao: {previsao.replace('VERDADEIRO', 'MANTERA STREAK').replace('FALSO', 'INTERROMPERA STREAK')}"
+        analise += f" Previsao: {previsao.replace('VERDADEIRO', 'MANTERA STREAK')}"
         
         if not has_odds or pd.isna(row['Odds']):
             analise += " [SEM ODDS - ANALISE QUALITATIVA]"
@@ -406,11 +425,11 @@ class AnalisadorApostas:
             'padrao': padrao,
             'recomendacao': recomendacao,
             'analise': analise,
-            'bonus': bonus_complementar
+            'bonus': bonus_total
         }
     
-    def _gerar_analise_texto(self, prob, previsao, tipo_estatistica, streak, odds, padrao, bonus, is_previsao=False):
-        """Gerar análise textual"""
+    def _gerar_analise_texto(self, prob, previsao, tipo_estatistica, streak, odds, padrao, bonus, is_previsao=False, liga=None):
+        """Gerar análise textual - MELHORADA"""
         
         base = f"{padrao.replace('_', ' ')}: "
         
@@ -429,7 +448,10 @@ class AnalisadorApostas:
         base += f"(Odds: {odds}). "
         
         if bonus > 0:
-            base += f"[BONUS +{bonus:.0%} por estatisticas complementares] "
+            base += f"[BONUS +{bonus:.0%} complementar+confiabilidade] "
+        
+        if liga and any(x in str(liga).lower() for x in ['nwsl', 'women', 'norway']):
+            base += "[LIGA ALTA CONFIABILIDADE] "
         
         if previsao == 1:
             base += "Previsao: MANTERA O STREAK."
@@ -440,9 +462,9 @@ class AnalisadorApostas:
             base += " [JOGO FUTURO]"
             
         return base
-    
+
     def adicionar_analise_csv(self, output_path):
-        """Adicionar colunas com análise ao CSV original - OTIMIZADO PARA FUTUROS"""
+        """Adicionar colunas com análise ao CSV original - COMPLETO"""
         probabilidades = []
         previsoes = []
         padroes = []
@@ -472,7 +494,7 @@ class AnalisadorApostas:
                         padroes.append(resultado['Padrao'])
                         recomendacoes.append(resultado['Recomendacao'])
                         analises_texto.append("PREVISAO - " + resultado['Analise_Texto'])
-                        bonuses.append(resultado['Bonus_Complementar'])
+                        bonuses.append(resultado['Bonus_Total'])
                         tipos_analise.append('PREVISAO_FUTURO')
                         
                     except Exception as e:
@@ -509,7 +531,7 @@ class AnalisadorApostas:
                     padroes.append(resultado['Padrao'])
                     recomendacoes.append(resultado['Recomendacao'])
                     analises_texto.append("HISTORICO - " + resultado['Analise_Texto'])
-                    bonuses.append(resultado['Bonus_Complementar'])
+                    bonuses.append(resultado['Bonus_Total'])
                     tipos_analise.append('ANALISE_HISTORICA')
                 except Exception as e:
                     probabilidades.append(None)
@@ -526,7 +548,7 @@ class AnalisadorApostas:
         self.df['Padrao_Identificado'] = padroes
         self.df['Recomendacao'] = recomendacoes
         self.df['Analise_Detalhada'] = analises_texto
-        self.df['Bonus_Complementar'] = bonuses
+        self.df['Bonus_Total'] = bonuses
         self.df['Tipo_Analise'] = tipos_analise
         
         # Salvar
@@ -544,13 +566,13 @@ class AnalisadorApostas:
         
         print(f"Total de jogos analisados: {total_jogos}")
         print(f"Jogos futuros com previsao: {jogos_futuros}")
-        print(f"Jogos com bonus complementar: {jogos_com_bonus}")
+        print(f"Jogos com bonus: {jogos_com_bonus}")
         print(f"Jogos com historico: {total_jogos - jogos_futuros}")
 
 # EXECUÇÃO PRINCIPAL
 if __name__ == "__main__":
-    # Inicializar analisador
-    analisador = AnalisadorApostas('adam choi_dados_20251006_234547.csv')
+    # ⬇️⬇️⬇️ APONTANDO PARA O ARQUIVO ATUALIZADO ⬇️⬇️⬇️
+    analisador = AnalisadorApostas('adam choi_dados_20251005_000421.csv')
     
     # Limpar dados
     analisador.limpar_dados()
@@ -559,33 +581,11 @@ if __name__ == "__main__":
     # Analisar jogos complementares
     analisador.analisar_jogos_complementares()
     
-    # Treinar modelo (se houver dados históricos)
+    # Treinar modelo
     analisador.treinar_modelo()
     
-    # Analisar Kansas City especificamente
-    try:
-        kansas_analysis = analisador.analisar_jogo(
-            league="US NWSL",
-            stat="Kansas City Current W have Won their last 7 away league matches",
-            next_match="Away vs Angel City W",
-            odds=1.57,
-            date="Monday, 06 October 23:30"
-        )
-        
-        print("\n" + "="*60)
-        print("ANALISE KANSAS CITY CURRENT W")
-        print("="*60)
-        print(f"Probabilidade: {kansas_analysis['Probabilidade_Sucesso']:.2%}")
-        print(f"Previsao: {kansas_analysis['Previsao']}")
-        print(f"Padrao: {kansas_analysis['Padrao']}")
-        print(f"Recomendacao: {kansas_analysis['Recomendacao']}")
-        print(f"Bonus: +{kansas_analysis['Bonus_Complementar']:.1%}")
-        print(f"Analise: {kansas_analysis['Analise_Texto']}")
-    except Exception as e:
-        print(f"Erro na analise do Kansas City: {e}")
-    
-    # Salvar CSV completo
-    analisador.adicionar_analise_csv('analise_completa_final.csv')
+    # Salvar análise completa
+    analisador.adicionar_analise_csv('analise_completa_atualizada.csv')
     
     print("\n" + "="*60)
     print("PROCESSO CONCLUIDO!")
