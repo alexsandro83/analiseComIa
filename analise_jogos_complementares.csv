@@ -1,4 +1,4 @@
-﻿Jogo,Liga,Confronto,Combinacao_Stats,Total_Stats,Taxa_Acerto,Stats_Detalhadas
-2025-10-05 08:30:00_League One,League One,Away vs Guangxi Baoyun,OVER_2.5,2,1.0,"['Chongqing Tongliang Long: OVER_2.5 (Odds: 1.9)', 'Shenzhen Juniors: OVER_2.5 (Odds: 1.7)']"
-2025-10-05 09:00:00_Allsvenskan Women,Allsvenskan Women,Away vs Linkoping W,BTTS + OVER_2.5,4,,"['Brommapojkarna W: BTTS (Odds: nan)', 'Brommapojkarna W: OVER_2.5 (Odds: nan)', 'Linkoping W: OVER_2.5 (Odds: nan)', 'Linkoping W: OVER_2.5 (Odds: nan)']"
-2025-10-05 10:00:00_Allsvenskan Women,Allsvenskan Women,Home vs Djurgarden W,DERROTA + OVER_2.5,4,,"['Pitea W: DERROTA (Odds: nan)', 'Pitea W: OVER_2.5 (Odds: nan)', 'Växjö W: OVER_2.5 (Odds: nan)', 'Växjö W: OVER_2.5 (Odds: nan)']"
+﻿Jogo;Liga;Confronto;Combinacao_Stats;Total_Stats;Taxa_Acerto;Stats_Detalhadas
+2025-10-05 08:30:00_League One;League One;Away vs Guangxi Baoyun;OVER_2.5;2;1.0;['Chongqing Tongliang Long: OVER_2.5 (Odds: 1.9)', 'Shenzhen Juniors: OVER_2.5 (Odds: 1.7)']
+2025-10-05 09:00:00_Allsvenskan Women;Allsvenskan Women;Away vs Linkoping W;BTTS + OVER_2.5;4;;['Brommapojkarna W: BTTS (Odds: nan)', 'Brommapojkarna W: OVER_2.5 (Odds: nan)', 'Linkoping W: OVER_2.5 (Odds: nan)', 'Linkoping W: OVER_2.5 (Odds: nan)']
+2025-10-05 10:00:00_Allsvenskan Women;Allsvenskan Women;Home vs Djurgarden W;DERROTA + OVER_2.5;4;;['Pitea W: DERROTA (Odds: nan)', 'Pitea W: OVER_2.5 (Odds: nan)', 'Växjö W: OVER_2.5 (Odds: nan)', 'Växjö W: OVER_2.5 (Odds: nan)']
