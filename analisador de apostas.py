@@ -397,41 +397,48 @@ class AnalisadorApostasEvolutivo:
             'Bonus_Total': bonus_total
         }
     def _gerar_multiplas_recomendadas(self, df_futuros, num_multiplas=20):
-        """Gerar múltiplas recomendadas priorizando confiança alta e proximidade temporal"""
-        print("\n🎲 GERANDO MÚLTIPLAS RECOMENDADAS:")
+        """Gerar múltiplas de 2, 3 ou 4 times APENAS com confiança > 75%"""
+        print("\n🎲 GERANDO MÚLTIPLAS DE ALTA CONFIANÇA (>75%):")
         print("="*50)
+        
+        if df_futuros is None or len(df_futuros) == 0:
+            print("❌ Dados futuros não disponíveis para gerar múltiplas")
+            return []
         
         jogos_excelentes = df_futuros[df_futuros['Recomendacao'] == 'EXCELENTE']
         jogos_bons = df_futuros[df_futuros['Recomendacao'] == 'BOA']
         
-        # Combinar todos os jogos recomendados e ordenar por confiança
+        # Combinar e ordenar por confiança
         todos_jogos = pd.concat([jogos_excelentes, jogos_bons])
         todos_jogos = todos_jogos.sort_values('Probabilidade_Sucesso', ascending=False)
         
+        print(f"📊 Jogos excelentes: {len(jogos_excelentes)}, Jogos bons: {len(jogos_bons)}")
+        
         if len(todos_jogos) < 2:
             print("❌ Número insuficiente de jogos para gerar múltiplas")
-            return
+            return []
         
-        # Criar lista de jogos com identificadores únicos
+        # Criar lista de jogos com ID da partida
         jogos_lista = []
+        
         for idx, row in todos_jogos.iterrows():
-            time_casa = row.get('Time_Casa', row.get('Time', ''))
-            mercado = row.get('Mercado', row.get('Tipo_Estatistica', ''))
+            time = row.get('Time', 'TIME_DESCONHECIDO')
+            mercado = row.get('Tipo_Estatistica', 'MERCADO_DESCONHECIDO')
             
-            # ADICIONAR INFORMAÇÃO DE DATA/HORA SE DISPONÍVEL
-            data_hora = row.get('Data', row.get('Horario', ''))  # Ajuste para suas colunas
+            # Extrair ID único da partida do Next Match
+            id_partida = self._extrair_id_partida(row)
             
             jogos_lista.append({
-                'id': f"{time_casa}_{mercado}",
-                'time': time_casa,
+                'id': f"{time}_{mercado}",
+                'time': time,
                 'mercado': mercado,
                 'odds': row.get('Odds', 1.0),
                 'confianca': row.get('Probabilidade_Sucesso', 0),
-                'data_hora': data_hora,  # ← ADICIONAR PARA PROXIMIDADE TEMPORAL
-                'analise': row.get('Analise_Detalhada', '')
+                'analise': row.get('Analise_Detalhada', ''),
+                'id_partida': id_partida  # ID único da partida
             })
         
-        # Remover duplicatas exatas
+        # Remover duplicatas
         jogos_unicos = []
         ids_vistos = set()
         for jogo in jogos_lista:
@@ -439,128 +446,264 @@ class AnalisadorApostasEvolutivo:
                 ids_vistos.add(jogo['id'])
                 jogos_unicos.append(jogo)
         
-        if len(jogos_unicos) < 2:
-            print("❌ Número insuficiente de jogos únicos para múltiplas")
-            return
+        print(f"🎯 Jogos únicos disponíveis: {len(jogos_unicos)}")
         
-        # Gerar combinações possíveis
+        # 🔥 NOVA LÓGICA: IDENTIFICAR JOGOS COM CONFLITO MAS CRIAR MÚLTIPLAS SEPARADAS
+        jogos_para_multiplas = []
+        grupos_conflito = {}
+        
+        # Identificar grupos de conflito (times do mesmo jogo)
+        for jogo in jogos_unicos:
+            if jogo['id_partida'] != 'DESCONHECIDO':
+                if jogo['id_partida'] not in grupos_conflito:
+                    grupos_conflito[jogo['id_partida']] = []
+                grupos_conflito[jogo['id_partida']].append(jogo)
+        
+        print("🔍 Grupos de conflito identificados:")
+        for partida_id, jogos in grupos_conflito.items():
+            if len(jogos) > 1:
+                times = [f"{j['time']}({j['confianca']:.1%})" for j in jogos]
+                print(f"   🎯 {partida_id}: {', '.join(times)}")
+        
+        # MANTER TODOS OS JOGOS, mas marcar os que têm conflito
+        for jogo in jogos_unicos:
+            jogo['tem_conflito'] = False
+            if jogo['id_partida'] in grupos_conflito and len(grupos_conflito[jogo['id_partida']]) > 1:
+                jogo['tem_conflito'] = True
+            jogos_para_multiplas.append(jogo)
+        
+        print(f"🎯 Jogos para múltiplas: {len(jogos_para_multiplas)} (incluindo opções de conflito)")
+        
+        if len(jogos_para_multiplas) < 2:
+            print("❌ Número insuficiente de jogos para gerar múltiplas")
+            return []
+        
+        # GERAR MÚLTIPLAS EVITANDO CONFLITOS DIRETOS
+        todas_multiplas = []
         from itertools import combinations
         
-        todas_combinacoes = list(combinations(jogos_unicos, 2))
+        # 1. Múltiplas de 2 jogos
+        print("🔄 Gerando múltiplas de 2 jogos (evitando conflitos diretos)...")
+        comb_2_jogos = list(combinations(jogos_para_multiplas, 2))
         
-        print(f"📊 Gerando {len(todas_combinacoes)} combinações possíveis...")
-        
-        # Calcular métricas para cada combinação - AQUI ESTÁ O CORAÇÃO DA ALTERAÇÃO!
-        multiplas_com_metricas = []
-        
-        for combo in todas_combinacoes:
+        multiplas_validas_2 = 0
+        for combo in comb_2_jogos:
             jogo1, jogo2 = combo
             
-            # Ordenar para evitar permutações
-            jogos_ordenados = sorted([jogo1, jogo2], key=lambda x: x['id'])
+            # EVITAR: dois times do mesmo jogo na mesma múltipla
+            if jogo1['id_partida'] == jogo2['id_partida'] and jogo1['id_partida'] != 'DESCONHECIDO':
+                continue
             
-            # Calcular odd total
-            odd1 = jogo1['odds'] if pd.notna(jogo1['odds']) and jogo1['odds'] > 0 else 1.0
-            odd2 = jogo2['odds'] if pd.notna(jogo2['odds']) and jogo2['odds'] > 0 else 1.0
-            odd_total = odd1 * odd2
-            
-            # Calcular confiança média
-            confianca_media = (jogo1['confianca'] + jogo2['confianca']) / 2
-            
-            # *** NOVO SISTEMA DE SCORE - PRIORIZANDO CONFIANÇA ALTA ***
-            # Peso maior para confiança (70%) e menor para odds (30%)
-            peso_confianca = 0.7
-            peso_odds = 0.3
-            
-            # Score baseado principalmente na confiança
-            score_confianca = confianca_media * 100  # Converte para escala 0-100
-            
-            # Bonus por odds (limitado para não dominar)
-            bonus_odds = min((odd_total - 1) * 10, 20)  # Máximo 20 pontos bonus
-            
-            # Penalidade por odds muito altas (pouco prováveis)
-            if odd_total > 5.0:
-                bonus_odds *= 0.5  # Reduz bonus pela metade
-            
-            # *** BONUS POR PROXIMIDADE TEMPORAL ***
-            bonus_proximidade = 0
-            if jogo1['data_hora'] and jogo2['data_hora']:
-                # Se as datas/horas forem iguais ou muito próximas
-                if jogo1['data_hora'] == jogo2['data_hora']:
-                    bonus_proximidade = 15  # Bônus por jogos no mesmo horário
-                # Aqui você pode adicionar mais lógica de proximidade temporal
-            
-            # Score final - CONFIANÇA TEM PESO MAIOR
-            score_final = (score_confianca * peso_confianca) + (bonus_odds * peso_odds) + bonus_proximidade
-            
-            multiplas_com_metricas.append({
-                'jogos': jogos_ordenados,
-                'odd_total': odd_total,
-                'confianca_media': confianca_media,
-                'score': score_final,
-                'bonus_proximidade': bonus_proximidade
-            })
+            multipla = self._calcular_metricas_multipla([jogo1, jogo2])
+            if multipla['confianca_media'] > 0.75:
+                todas_multiplas.append(multipla)
+                multiplas_validas_2 += 1
         
-        # *** ORDENAR PRINCIPALMENTE POR CONFIANÇA ***
-        multiplas_com_metricas.sort(key=lambda x: (x['confianca_media'], x['score']), reverse=True)
+        print(f"   ✅ Múltiplas de 2 válidas: {multiplas_validas_2}")
         
-        # Remover duplicatas finais
+        # 2. Múltiplas de 3 jogos
+        multiplas_validas_3 = 0
+        if len(jogos_para_multiplas) >= 3:
+            print("🔄 Gerando múltiplas de 3 jogos (evitando conflitos diretos)...")
+            comb_3_jogos = list(combinations(jogos_para_multiplas, 3))
+            
+            for combo in comb_3_jogos:
+                # Verificar se há times do mesmo jogo no combo
+                tem_conflito = False
+                partidas_no_combo = {}
+                
+                for jogo in combo:
+                    if jogo['id_partida'] != 'DESCONHECIDO':
+                        if jogo['id_partida'] not in partidas_no_combo:
+                            partidas_no_combo[jogo['id_partida']] = []
+                        partidas_no_combo[jogo['id_partida']].append(jogo['time'])
+                
+                # Se alguma partida tem mais de 1 time, há conflito
+                for partida, times in partidas_no_combo.items():
+                    if len(times) > 1:
+                        tem_conflito = True
+                        break
+                
+                if tem_conflito:
+                    continue
+                
+                multipla = self._calcular_metricas_multipla(combo)
+                if multipla['confianca_media'] > 0.75:
+                    todas_multiplas.append(multipla)
+                    multiplas_validas_3 += 1
+            
+            print(f"   ✅ Múltiplas de 3 válidas: {multiplas_validas_3}")
+        
+        # 3. Múltiplas de 4 jogos
+        multiplas_validas_4 = 0
+        if len(jogos_para_multiplas) >= 4:
+            print("🔄 Gerando múltiplas de 4 jogos (evitando conflitos diretos)...")
+            comb_4_jogos = list(combinations(jogos_para_multiplas, 4))
+            
+            for combo in comb_4_jogos:
+                # Verificar se há times do mesmo jogo no combo
+                tem_conflito = False
+                partidas_no_combo = {}
+                
+                for jogo in combo:
+                    if jogo['id_partida'] != 'DESCONHECIDO':
+                        if jogo['id_partida'] not in partidas_no_combo:
+                            partidas_no_combo[jogo['id_partida']] = []
+                        partidas_no_combo[jogo['id_partida']].append(jogo['time'])
+                
+                # Se alguma partida tem mais de 1 time, há conflito
+                for partida, times in partidas_no_combo.items():
+                    if len(times) > 1:
+                        tem_conflito = True
+                        break
+                
+                if tem_conflito:
+                    continue
+                
+                multipla = self._calcular_metricas_multipla(combo)
+                if multipla['confianca_media'] > 0.75:
+                    todas_multiplas.append(multipla)
+                    multiplas_validas_4 += 1
+            
+            print(f"   ✅ Múltiplas de 4 válidas: {multiplas_validas_4}")
+        
+        print(f"📊 Múltiplas geradas com confiança > 75%: {len(todas_multiplas)}")
+        
+        if len(todas_multiplas) == 0:
+            print("❌ Nenhuma múltipla atingiu o mínimo de 75% de confiança")
+            return []
+        
+        # ORDENAR POR CONFIANÇA (melhores primeiro)
+        todas_multiplas.sort(key=lambda x: (x['confianca_media'], x['score']), reverse=True)
+        
+        # Remover duplicatas
         multiplas_unicas = []
         combinacoes_vistas = set()
         
-        for multipla in multiplas_com_metricas:
+        for multipla in todas_multiplas:
             chave = tuple(jogo['id'] for jogo in multipla['jogos'])
-            
             if chave not in combinacoes_vistas:
                 combinacoes_vistas.add(chave)
                 multiplas_unicas.append(multipla)
         
-        # Exibir estatísticas
-        confianca_minima = min(m['confianca_media'] for m in multiplas_unicas[:10])
-        confianca_maxima = max(m['confianca_media'] for m in multiplas_unicas[:10])
+        # CLASSIFICAR POR NÍVEL DE CONFIANÇA
+        multiplas_altissima = [m for m in multiplas_unicas if m['confianca_media'] > 0.85]
+        multiplas_alta = [m for m in multiplas_unicas if m['confianca_media'] > 0.75]
         
-        print(f"🎯 {len(multiplas_unicas)} múltiplas únicas geradas")
-        print(f"📊 Confiança das top 10: {confianca_minima:.1%} - {confianca_maxima:.1%}")
+        print(f"\n🎯 CLASSIFICAÇÃO DAS MÚLTIPLAS (>75%):")
+        print(f"   ⭐⭐⭐ ALTÍSSIMA (>85%): {len(multiplas_altissima)} múltiplas")
+        print(f"   ⭐⭐ ALTA (>75%): {len(multiplas_alta)} múltiplas")
+        print(f"   📊 Distribuição: 2-jogos={multiplas_validas_2}, 3-jogos={multiplas_validas_3}, 4-jogos={multiplas_validas_4}")
         
-        # Exibir apenas as melhores por confiança
-        multiplas_para_exibir = multiplas_unicas[:num_multiplas]
+        # EXIBIR POR CATEGORIA
+        self._exibir_multiplas_por_categoria(multiplas_altissima, "ALTÍSSIMA CONFIANÇA", "⭐⭐⭐", min(10, len(multiplas_altissima)))
+        self._exibir_multiplas_por_categoria(multiplas_alta, "ALTA CONFIANÇA", "⭐⭐", min(10, len(multiplas_alta)))
         
-        for i, multipla in enumerate(multiplas_para_exibir, 1):
-            print(f"\n🔮 MÚLTIPLA {i}:")
+        return multiplas_unicas
+    def _tem_conflito_logico(self, jogo1, jogo2):
+        """Verificar se há conflito lógico entre dois jogos - VERSÃO RIGOROSA"""
+        # Se são da mesma partida, NÃO PERMITIR NENHUMA COMBINAÇÃO
+        if jogo1['id_partida'] == jogo2['id_partida'] and jogo1['id_partida'] != 'DESCONHECIDO':
+            print(f"❌ CONFLITO: {jogo1['time']} e {jogo2['time']} são do mesmo jogo {jogo1['id_partida']}")
+            return True
+        
+        return False
+        
+    def _extrair_id_partida(self, row):
+        """Extrair ID único da partida usando Stat + Next Match"""
+        stat = str(row.get('Stat', ''))
+        next_match = str(row.get('Next Match', ''))
+        
+        # Extrair time principal da coluna Stat (ex: "Brann have won their last 5 matches")
+        time_principal = stat.split(' have ')[0] if ' have ' in stat else 'TIME_DESCONHECIDO'
+        
+        # Extrair time adversário e local da coluna Next Match
+        if ' vs ' in next_match.lower():
+            # Formato: "Home vs Atlante" ou "Away vs Atlante"
+            partes = next_match.lower().split(' vs ')
+            if len(partes) == 2:
+                local = partes[0].strip()  # "home" ou "away"
+                adversario = partes[1].strip().title()
+                
+                # Determinar times baseado no local
+                if local == 'home':
+                    time_casa = time_principal
+                    time_visitante = adversario
+                elif local == 'away':
+                    time_casa = adversario
+                    time_visitante = time_principal
+                else:
+                    return 'DESCONHECIDO'
+                
+                # Criar ID único ordenando os times
+                times_ordenados = sorted([time_casa, time_visitante])
+                id_partida = f"{times_ordenados[0]}_vs_{times_ordenados[1]}"
+                
+                print(f"🔍 DEBUG Partida: {time_principal} ({local}) vs {adversario} → ID: {id_partida}")
+                return id_partida
+        
+        return 'DESCONHECIDO'
+    def _calcular_metricas_multipla(self, combinacao_jogos):
+        """Calcular métricas para uma múltipla de qualquer tamanho"""
+        jogos_ordenados = sorted(combinacao_jogos, key=lambda x: x['id'])
+        
+        # Calcular odd total
+        odd_total = 1.0
+        confiancas = []
+        
+        for jogo in combinacao_jogos:
+            odd = jogo['odds'] if pd.notna(jogo['odds']) and jogo['odds'] > 0 else 1.0
+            odd_total *= odd
+            confiancas.append(jogo['confianca'])
+        
+        # Calcular confiança média
+        confianca_media = sum(confiancas) / len(confiancas)
+        
+        # Score com peso maior na confiança
+        peso_confianca = 0.8
+        peso_odds = 0.2
+        
+        score_confianca = confianca_media * 100
+        bonus_odds = min((odd_total - 1) * 5, 15)
+        
+        # Penalidade por muitas seleções
+        penalidade_tamanho = (len(combinacao_jogos) - 2) * 5
+        
+        score_final = (score_confianca * peso_confianca) + (bonus_odds * peso_odds) - penalidade_tamanho
+        
+        return {
+            'jogos': jogos_ordenados,
+            'odd_total': odd_total,
+            'confianca_media': confianca_media,
+            'score': score_final,
+            'tamanho': len(combinacao_jogos)
+        }
+
+    def _exibir_multiplas_por_categoria(self, multiplas, categoria, icone, max_exibir):
+        """Exibir múltiplas por categoria de confiança"""
+        if not multiplas:
+            return
+        
+        print(f"\n{icone} {categoria} {icone}")
+        print("=" * 50)
+        
+        for i, multipla in enumerate(multiplas[:max_exibir], 1):
+            tamanho_str = {
+                2: "DUPLA",
+                3: "TRIPLA", 
+                4: "QUÁDRUPLA"
+            }.get(multipla['tamanho'], f"{multipla['tamanho']} JOGOS")
+            
+            print(f"\n🔮 {tamanho_str} {i}:")
             print(f"   Odd Total: {multipla['odd_total']:.2f}")
-            print(f"   Confiança Média: {multipla['confianca_media']:.1%} ⭐")  # Destaque na confiança
-            if multipla['bonus_proximidade'] > 0:
-                print(f"   🕒 Bônus Proximidade: +{multipla['bonus_proximidade']} pontos")
+            print(f"   Confiança Média: {multipla['confianca_media']:.1%} ⭐")
+            print(f"   Nº de Seleções: {multipla['tamanho']}")
             
             for jogo in multipla['jogos']:
                 odd_str = f"@{jogo['odds']:.2f}" if pd.notna(jogo['odds']) and jogo['odds'] > 0 else "@nan"
-                confianca_individual = f"({jogo['confianca']:.1%})"
-                print(f"   ✅ {jogo['time']} - {jogo['mercado']} {odd_str} {confianca_individual}")
+                conf_individual = f"({jogo['confianca']:.1%})"
+                print(f"   ✅ {jogo['time']} - {jogo['mercado']} {odd_str} {conf_individual}")
             print("-" * 40)
-        
-        # Salvar todas as múltiplas
-        self._salvar_multiplas_completas(multiplas_unicas)
-        
-        return multiplas_unicas
-    def _salvar_multiplas_completas(self, multiplas):
-        """Salvar todas as múltiplas em um arquivo CSV"""
-        import csv
-        
-        with open('multiplas_completas.csv', 'w', newline='', encoding='utf-8-sig') as f:
-            writer = csv.writer(f, delimiter=';')
-            writer.writerow(['Multipla', 'Time_1', 'Mercado_1', 'Odd_1', 'Time_2', 'Mercado_2', 'Odd_2', 'Odd_Total', 'Confianca_Media'])
-            
-            for i, multipla in enumerate(multiplas, 1):
-                jogo1, jogo2 = multipla['jogos']
-                writer.writerow([
-                    f"Multipla {i}",
-                    jogo1['time'], jogo1['mercado'], jogo1['odds'],
-                    jogo2['time'], jogo2['mercado'], jogo2['odds'],
-                    multipla['odd_total'],
-                    multipla['confianca_media']
-                ])
-        
-        print(f"💾 Todas as {len(multiplas)} múltiplas salvas em: multiplas_completas.csv")
         
     # EXECUÇÃO PRINCIPAL INTELIGENTE
 if __name__ == "__main__":
