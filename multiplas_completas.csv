@@ -1,37 +1,37 @@
 ﻿Multipla;Time_1;Mercado_1;Odd_1;Time_2;Mercado_2;Odd_2;Odd_Total;Confianca_Media
-Multipla 1;Independiente Medellín;BTTS;1.83;Santander;OVER_2.5;1.7;3.111;0.6819335317460317
-Multipla 2;Concepcion;OVER_2.5;2.0;Santander;OVER_2.5;1.7;3.4;0.6734761904761903
-Multipla 3;Concepcion;OVER_2.5;2.0;LA Galaxy;OVER_2.5;1.36;2.72;0.7027161796536794
-Multipla 4;Concepcion;OVER_2.5;2.0;Independiente Medellín;BTTS;1.83;3.66;0.6460109126984126
-Multipla 5;LA Galaxy;OVER_2.5;1.36;Santander;OVER_2.5;1.7;2.3120000000000003;0.7386387987012984
-Multipla 6;Independiente Medellín;BTTS;1.83;LA Galaxy;OVER_2.5;1.36;2.4888000000000003;0.7111735209235207
-Multipla 7;Concepcion;OVER_2.5;2.0;Orlando City SC;BTTS;1.5;3.0;0.6289166666666666
-Multipla 8;Orlando City SC;BTTS;1.5;Santander;OVER_2.5;1.7;2.55;0.6648392857142856
-Multipla 9;Independiente Medellín;BTTS;1.83;Orlando City SC;BTTS;1.5;2.745;0.6373740079365079
-Multipla 10;Concepcion;OVER_2.5;2.0;Louisville City;VITORIA;1.3;2.6;0.6535605158730158
-Multipla 11;Concepcion;OVER_2.5;2.0;Vålerenga W;VITORIA;nan;2.0;0.724973124098124
-Multipla 12;Barcelona W;VITORIA;nan;Concepcion;OVER_2.5;2.0;2.0;0.7237371031746032
-Multipla 13;Louisville City;VITORIA;1.3;Santander;OVER_2.5;1.7;2.21;0.6894831349206348
-Multipla 14;Independiente Medellín;BTTS;1.83;Louisville City;VITORIA;1.3;2.379;0.6620178571428571
-Multipla 15;Santander;OVER_2.5;1.7;Vålerenga W;VITORIA;nan;1.7;0.760895743145743
-Multipla 16;Barcelona W;VITORIA;nan;Santander;OVER_2.5;1.7;1.7;0.7596597222222221
-Multipla 17;Independiente Medellín;BTTS;1.83;Vålerenga W;VITORIA;nan;1.83;0.7334304653679653
-Multipla 18;Barcelona W;VITORIA;nan;Independiente Medellín;BTTS;1.83;1.83;0.7321944444444444
-Multipla 19;LA Galaxy;OVER_2.5;1.36;Orlando City SC;BTTS;1.5;2.04;0.6940792748917747
-Multipla 20;Brann W;VITORIA;nan;Concepcion;OVER_2.5;2.0;2.0;0.6837371031746031
-Multipla 21;LA Galaxy;OVER_2.5;1.36;Louisville City;VITORIA;1.3;1.7680000000000002;0.7187231240981239
-Multipla 22;LA Galaxy;OVER_2.5;1.36;Vålerenga W;VITORIA;nan;1.36;0.7901357323232321
-Multipla 23;Barcelona W;VITORIA;nan;LA Galaxy;OVER_2.5;1.36;1.36;0.7888997113997112
-Multipla 24;Brann W;VITORIA;nan;Santander;OVER_2.5;1.7;1.7;0.7196597222222221
-Multipla 25;Brann W;VITORIA;nan;Independiente Medellín;BTTS;1.83;1.83;0.6921944444444443
-Multipla 26;Brann W;VITORIA;nan;LA Galaxy;OVER_2.5;1.36;1.36;0.7488997113997111
-Multipla 27;Louisville City;VITORIA;1.3;Orlando City SC;BTTS;1.5;1.9500000000000002;0.6449236111111111
-Multipla 28;Orlando City SC;BTTS;1.5;Vålerenga W;VITORIA;nan;1.5;0.7163362193362193
-Multipla 29;Barcelona W;VITORIA;nan;Orlando City SC;BTTS;1.5;1.5;0.7151001984126983
-Multipla 30;Barcelona W;VITORIA;nan;Vålerenga W;VITORIA;nan;1.0;0.8111566558441559
-Multipla 31;Louisville City;VITORIA;1.3;Vålerenga W;VITORIA;nan;1.3;0.7409800685425685
-Multipla 32;Barcelona W;VITORIA;nan;Louisville City;VITORIA;1.3;1.3;0.7397440476190476
-Multipla 33;Brann W;VITORIA;nan;Orlando City SC;BTTS;1.5;1.5;0.6751001984126983
-Multipla 34;Brann W;VITORIA;nan;Vålerenga W;VITORIA;nan;1.0;0.7711566558441558
-Multipla 35;Barcelona W;VITORIA;nan;Brann W;VITORIA;nan;1.0;0.7699206349206349
-Multipla 36;Brann W;VITORIA;nan;Louisville City;VITORIA;1.3;1.3;0.6997440476190475
+Multipla 1;Barcelona W;VITORIA;nan;Vålerenga W;VITORIA;nan;1.0;0.8111566558441559
+Multipla 2;LA Galaxy;OVER_2.5;1.36;Vålerenga W;VITORIA;nan;1.36;0.7901357323232321
+Multipla 3;Barcelona W;VITORIA;nan;LA Galaxy;OVER_2.5;1.36;1.36;0.7888997113997112
+Multipla 4;Brann W;VITORIA;nan;Vålerenga W;VITORIA;nan;1.0;0.7711566558441558
+Multipla 5;Barcelona W;VITORIA;nan;Brann W;VITORIA;nan;1.0;0.7699206349206349
+Multipla 6;Santander;OVER_2.5;1.7;Vålerenga W;VITORIA;nan;1.7;0.760895743145743
+Multipla 7;Barcelona W;VITORIA;nan;Santander;OVER_2.5;1.7;1.7;0.7596597222222221
+Multipla 8;Brann W;VITORIA;nan;LA Galaxy;OVER_2.5;1.36;1.36;0.7488997113997111
+Multipla 9;Louisville City;VITORIA;1.3;Vålerenga W;VITORIA;nan;1.3;0.7409800685425685
+Multipla 10;Barcelona W;VITORIA;nan;Louisville City;VITORIA;1.3;1.3;0.7397440476190476
+Multipla 11;LA Galaxy;OVER_2.5;1.36;Santander;OVER_2.5;1.7;2.3120000000000003;0.7386387987012984
+Multipla 12;Independiente Medellín;BTTS;1.83;Vålerenga W;VITORIA;nan;1.83;0.7334304653679653
+Multipla 13;Barcelona W;VITORIA;nan;Independiente Medellín;BTTS;1.83;1.83;0.7321944444444444
+Multipla 14;Concepcion;OVER_2.5;2.0;Vålerenga W;VITORIA;nan;2.0;0.724973124098124
+Multipla 15;Barcelona W;VITORIA;nan;Concepcion;OVER_2.5;2.0;2.0;0.7237371031746032
+Multipla 16;Brann W;VITORIA;nan;Santander;OVER_2.5;1.7;1.7;0.7196597222222221
+Multipla 17;LA Galaxy;OVER_2.5;1.36;Louisville City;VITORIA;1.3;1.7680000000000002;0.7187231240981239
+Multipla 18;Orlando City SC;BTTS;1.5;Vålerenga W;VITORIA;nan;1.5;0.7163362193362193
+Multipla 19;Barcelona W;VITORIA;nan;Orlando City SC;BTTS;1.5;1.5;0.7151001984126983
+Multipla 20;Independiente Medellín;BTTS;1.83;LA Galaxy;OVER_2.5;1.36;2.4888000000000003;0.7111735209235207
+Multipla 21;Concepcion;OVER_2.5;2.0;LA Galaxy;OVER_2.5;1.36;2.72;0.7027161796536794
+Multipla 22;Brann W;VITORIA;nan;Louisville City;VITORIA;1.3;1.3;0.6997440476190475
+Multipla 23;LA Galaxy;OVER_2.5;1.36;Orlando City SC;BTTS;1.5;2.04;0.6940792748917747
+Multipla 24;Brann W;VITORIA;nan;Independiente Medellín;BTTS;1.83;1.83;0.6921944444444443
+Multipla 25;Louisville City;VITORIA;1.3;Santander;OVER_2.5;1.7;2.21;0.6894831349206348
+Multipla 26;Brann W;VITORIA;nan;Concepcion;OVER_2.5;2.0;2.0;0.6837371031746031
+Multipla 27;Independiente Medellín;BTTS;1.83;Santander;OVER_2.5;1.7;3.111;0.6819335317460317
+Multipla 28;Brann W;VITORIA;nan;Orlando City SC;BTTS;1.5;1.5;0.6751001984126983
+Multipla 29;Concepcion;OVER_2.5;2.0;Santander;OVER_2.5;1.7;3.4;0.6734761904761903
+Multipla 30;Orlando City SC;BTTS;1.5;Santander;OVER_2.5;1.7;2.55;0.6648392857142856
+Multipla 31;Independiente Medellín;BTTS;1.83;Louisville City;VITORIA;1.3;2.379;0.6620178571428571
+Multipla 32;Concepcion;OVER_2.5;2.0;Louisville City;VITORIA;1.3;2.6;0.6535605158730158
+Multipla 33;Concepcion;OVER_2.5;2.0;Independiente Medellín;BTTS;1.83;3.66;0.6460109126984126
+Multipla 34;Louisville City;VITORIA;1.3;Orlando City SC;BTTS;1.5;1.9500000000000002;0.6449236111111111
+Multipla 35;Independiente Medellín;BTTS;1.83;Orlando City SC;BTTS;1.5;2.745;0.6373740079365079
+Multipla 36;Concepcion;OVER_2.5;2.0;Orlando City SC;BTTS;1.5;3.0;0.6289166666666666
