@@ -713,7 +713,7 @@ if __name__ == "__main__":
     # CONFIGURAÇÃO - AJUSTE ESTES CAMINHOS
     config = {
         'base_treino': 'todos_ate_05-10-25.csv',      # Base completa COM históricos
-        'base_futuros': 'jogos_futuros.csv',          # Apenas jogos futuros
+        'base_futuros': 'adam choi_dados_20251012_221510.csv',          # Apenas jogos futuros # poder ser o arquivo jogos_futuros.csv
         'modelo_salvo': 'modelo_apostas_evolutivo.joblib'
     }
     
