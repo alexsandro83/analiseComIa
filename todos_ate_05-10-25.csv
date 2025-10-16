@@ -1,144 +1,647 @@
-League;Stat;Next Match;Odds;Date;Resultado;Situacao
-Liga de Expansión MX;CA La Paz have had Over 2.5 Match Goalsin their last 6 league matches;Home vs Cancún;1.53;Saturday, 04 October 00:00;02/abr;FALSO
-J League;Cerezo Osaka have had BTTS in their last 6 league matches;Away vs Nagoya Grampus;1.62;Saturday, 04 October 01:30;02/jan;FALSO
-K League 1;Daegu have had Over 2.5 Match Goalsin their last 13 away league matches;Away vs Gwangju;1.85;Saturday, 04 October 02:00;02/mar;FALSO
-1. Lig;Adana Demirspor have Lost their last 7 league matches;Away vs Pendikspor;1.05;Saturday, 04 October 07:30;3-0;VERDADEIRO
-1. Lig;Adana Demirspor have had Over 2.5 Match Goalsin their last 8 league matches;Away vs Pendikspor;1.17;Saturday, 04 October 07:30;3-0;VERDADEIRO
-Super League;Meizhou Hakka have had Over 2.5 Match Goalsin their last 12 home league matches;Home vs Qingdao Hainiu;1.66;Saturday, 04 October 08:00;1-0;FALSO
-Bundesliga 2;Preußen Münster have had BTTS in their last 7 league matches;Away vs Hertha;1.67;Saturday, 04 October 08:00;02/jan;FALSO
-Allsvenskan Women;Rosengard W have Lost their last 6 league matches;Away vs Malmö FF W;;Saturday, 04 October 08:00;01/fev;FALSO
-Allsvenskan Women;Rosengard W have had Over 2.5 Match Goalsin their last 7 league matches;Away vs Malmö FF W;;Saturday, 04 October 08:00;01/fev;FALSO
-Championship;Hull have had Over 2.5 Match Goalsin their last 7 league matches;Home vs Sheffield United;1.91;Saturday, 04 October 08:30;1-0;FALSO
-Super League;Shandong Taishan have Won their last 6 home league matches;Home vs Yunnan Yukun;1.37;Saturday, 04 October 08:35;01/jan;FALSO
-Super League;Shandong Taishan have had Over 2.5 Match Goalsin their last 6 home league matches;Home vs Yunnan Yukun;1.3;Saturday, 04 October 08:35;01/jan;FALSO
-Super League;Shandong Taishan have had Over 2.5 Match Goalsin their last 8 league matches;Home vs Yunnan Yukun;1.3;Saturday, 04 October 08:35;01/jan;FALSO
-Super League;Yunnan Yukun have had BTTS in their last 11 league matches;Away vs Shandong Taishan;1.44;Saturday, 04 October 08:35;01/jan;FALSO
-Super league;Dinamo Samarqand have had BTTS in their last 8 away league matches;Away vs Surkhon Termez;;Saturday, 04 October 09:00;0-2;FALSO
-3. Liga;Ulm have had BTTS in their last 7 league matches;Away vs Ingolstadt;1.5;Saturday, 04 October 09:00;04/jan;FALSO
-Tweede Divisie;ACV have Lost their last 6 league matches;Home vs Barendrecht;2.2;Saturday, 04 October 09:30;;VERDADEIRO
-Tweede Divisie;HHC have Won their last 7 league matches;Home vs Jong Sparta;1.53;Saturday, 04 October 09:30;0-2;FALSO
-Vysshaya Liga;Dinamo Minsk have had BTTS in their last 6 league matches;Away vs Molodechno-DYuSSh 4;;Saturday, 04 October 09:45;01/mar;FALSO
-Vysshaya Liga;Dinamo Minsk have had Over 2.5 Match Goalsin their last 7 league matches;Away vs Molodechno-DYuSSh 4;;Saturday, 04 October 09:45;01/mar;FALSO
-Serie B;Catanzaro haveDrewtheir last 6 league matches;Away vs Monza;3.5;Saturday, 04 October 10:00;02/jan;FALSO
-Czech Liga;Karviná have had BTTS in their last 7 league matches;Away vs Pardubice;1.67;Saturday, 04 October 10:00;02/jan;FALSO
-Czech Liga;Karviná have had Over 2.5 Match Goalsin their last 7 league matches;Away vs Pardubice;1.8;Saturday, 04 October 10:00;02/jan;FALSO
-Iceland Besta Deildin;Afturelding have had BTTS in their last 14 league matches;Away vs KR Reykjavík;1.36;Saturday, 04 October 11:00;02/fev;FALSO
-Iceland Besta Deildin;Afturelding have had BTTS in their last 7 away league matches;Away vs KR Reykjavík;1.36;Saturday, 04 October 11:00;02/fev;FALSO
-Allsvenskan Women;Alingsås W have Lost their last 6 league matches;Home vs Häcken W;;Saturday, 04 October 11:00;0-2;VERDADEIRO
-Scottish League 2;Dumbarton have had BTTS in their last 8 league matches;Away vs Stirling;1.57;Saturday, 04 October 11:00;02/fev;FALSO
-Scottish League 1;East Fife have had BTTS in their last 6 league matches;Home vs Cove Rangers;1.73;Saturday, 04 October 11:00;2-0;FALSO
-Scottish League 2;Edinburgh City have had BTTS in their last 8 league matches;Away vs Spartans;1.67;Saturday, 04 October 11:00;;FALSO
-National League;Halifax have had Over 2.5 Match Goalsin their last 6 league matches;Home vs Brackley Town;2.15;Saturday, 04 October 11:00;2-0;FALSO
-Allsvenskan Women;Häcken W have Won their last 7 away league matches;Away vs Alingsås W;;Saturday, 04 October 11:00;0-2;VERDADEIRO
-Allsvenskan Women;Häcken W have had Over 2.5 Match Goalsin their last 6 away league matches;Away vs Alingsås W;;Saturday, 04 October 11:00;0-2;FALSO
-Norwegian 1. Division;Hødd have had BTTS in their last 8 away league matches;Away vs Lillestrøm;2.0;Saturday, 04 October 11:00;0-4;FALSO
-Norwegian 1. Division;Kongsvinger have had BTTS in their last 9 league matches;Home vs Skeid;1.62;Saturday, 04 October 11:00;3-0;FALSO
-Northern Ireland Premiership;Larne have Won their last 6 league matches;Away vs Dungannon Swifts;1.9;Saturday, 04 October 11:00;;FALSO
-Norwegian 1. Division;Lillestrøm have Won their last 11 league matches;Home vs Hødd;1.17;Saturday, 04 October 11:00;0-4;FALSO
-Norwegian 1. Division;Lillestrøm have had Over 2.5 Match Goalsin their last 7 league matches;Home vs Hødd;1.36;Saturday, 04 October 11:00;0-4;VERDADEIRO
-Norwegian 1. Division;Mjøndalen IF have had Over 2.5 Match Goalsin their last 6 away league matches;Away vs Åsane;1.65;Saturday, 04 October 11:00;02/mar;FALSO
-National League;Morecambe have had Over 2.5 Match Goalsin their last 7 league matches;Away vs Tamworth;1.53;Saturday, 04 October 11:00;01/jan;FALSO
-Scottish League 1;Peterhead have had Over 2.5 Match Goalsin their last 6 league matches;Away vs Kelty Hearts;1.8;Saturday, 04 October 11:00;01/fev;FALSO
-Norwegian 1. Division;Raufoss have had Over 2.5 Match Goalsin their last 8 away league matches;Away vs IK Start;1.53;Saturday, 04 October 11:00;4-0;VERDADEIRO
-Scottish Championship;Ross County have had BTTS in their last 6 league matches;Home vs Raith R vs;1.83;Saturday, 04 October 11:00;2-0;FALSO
-Norwegian Eliteserien;Sandefjord have had Over 2.5 Match Goalsin their last 9 league matches;Home vs Bryne;1.67;Saturday, 04 October 11:00;1-0;FALSO
-Norwegian 1. Division;Sogndal have had BTTS in their last 11 league matches;Away vs Aalesunds FK;1.67;Saturday, 04 October 11:00;2-0;FALSO
-Meistriliiga;Tallinna Kalev have Lost their last 7 league matches;Home vs Trans;1.38;Saturday, 04 October 11:00;;VERDADEIRO
-National League;Truro City have Lost their last 6 away league matches;Away vs Woking;2.05;Saturday, 04 October 11:00;;FALSO
-Segunda Liga;Portimonense SAD have had BTTS in their last 6 league matches;Home vs União de Leiria;1.73;Saturday, 04 October 11:30;;VERDADEIRO
-Bundesliga;WSG Tirol have had BTTS in their last 7 league matches;Away vs SV Ried;1.8;Saturday, 04 October 12:00;2-0;FALSO
-Ekstraklasa;Zaglebie Lubin have had Over 2.5 Match Goalsin their last 6 league matches;Away vs Radomiak Radom;1.85;Saturday, 04 October 12:30;03/jan;FALSO
-Meistriliiga;Flora have had Over 2.5 Match Goalsin their last 8 league matches;Away vs Harju Jalgpallikool;1.5;Saturday, 04 October 13:00;01/fev;FALSO
-Meistriliiga;Harju Jalgpallikool have had Over 2.5 Match Goalsin their last 8 league matches;Home vs Flora;1.5;Saturday, 04 October 13:00;01/fev;FALSO
-1. HNL;Slaven Koprivnica have had Over 2.5 Match Goalsin their last 7 league matches;Home vs Osijek;1.85;Saturday, 04 October 13:00;;VERDADEIRO
-Northern Ireland Premiership;Glenavon have Lost their last 9 league matches;Away vs Portadown;1.9;Saturday, 04 October 13:30;;VERDADEIRO
-Northern Ireland Premiership;Portadown have had Over 2.5 Match Goalsin their last 6 league matches;Home vs Glenavon;1.95;Saturday, 04 October 13:30;;VERDADEIRO
-Turkish Super Lig;Galatasaray have Won their last 7 league matches;Home vs Besiktas;1.56;Saturday, 04 October 14:00;01/jan;FALSO
-Serie B;Cesena have had BTTS in their last 6 league matches;Home vs Reggiana;2.0;Saturday, 04 October 14:30;01/fev;FALSO
-Premier League;HFX Wanderers have had Over 2.5 Match Goalsin their last 6 home league matches;Home vs York9;1.8;Saturday, 04 October 15:00;;FALSO
-Primera Division;Los Chankas have had BTTS in their last 10 home league matches;Home vs Cusco FC;1.67;Saturday, 04 October 15:00;;VERDADEIRO
-Swiss Super League;Grasshopper have had BTTS in their last 7 league matches;Home vs Zürich;1.53;Saturday, 04 October 15:30;3-0;FALSO
-US MLS;Nashville SC (MLS)have Lost their last 6 away league matches;Away vs CF Montréal;3.3;Saturday, 04 October 15:30;;FALSO
-Fortuna Liga;Žilina have had Over 2.5 Match Goalsin their last 7 league matches;Home vs FK Košice;1.53;Saturday, 04 October 15:30;;VERDADEIRO
-Colombia Primera A;Envigado haveDrewtheir last 6 home league matches;Home vs Atlético Bucaramanga;3.2;Saturday, 04 October 16:00;;FALSO
-Iceland Besta Deildin;Valur have had BTTS in their last 7 home league matches;Home vs Stjarnan;1.36;Saturday, 04 October 17:00;03/fev;FALSO
-Premier League;Forge have Won their last 6 home league matches;Home vs Vancouver FC;1.27;Saturday, 04 October 17:30;;FALSO
-USL Championship;Loudoun United have had BTTS in their last 7 league matches;Home vs Birmingham Legion;1.61;Saturday, 04 October 18:00;;FALSO
-USL Championship;Loudoun United have had Over 2.5 Match Goalsin their last 7 league matches;Home vs Birmingham Legion;1.61;Saturday, 04 October 18:00;;FALSO
-Serie A;Bragantino have had BTTS in their last 6 home league matches;Home vs Grêmio;1.91;Saturday, 04 October 18:30;1-0;FALSO
-Serie A;Bragantino have had BTTS in their last 6 league matches;Home vs Grêmio;1.91;Saturday, 04 October 18:30;1-0;FALSO
-Serie A;Internacional RS have had BTTS in their last 11 league matches;Home vs Botafogo FR;1.95;Saturday, 04 October 18:30;;FALSO
-Serie A;Internacional RS have had BTTS in their last 6 home league matches;Home vs Botafogo FR;1.95;Saturday, 04 October 18:30;;FALSO
-Primera Division;Platense have had BTTS in their last 6 league matches;Away vs Atlético Tucumán;2.25;Saturday, 04 October 19:00;2-0;FALSO
-Honduras Liga Nacional;Olancho have had BTTS in their last 8 league matches;Away vs Victoria;;Saturday, 04 October 20:15;02/fev;FALSO
-US MLS;Orlando City SC have had BTTS in their last 13 league matches;Home vs Columbus Crew;1.44;Saturday, 04 October 20:30;;VERDADEIRO
-US MLS;Orlando City SC have had BTTS in their last 7 home league matches;Home vs Columbus Crew;1.44;Saturday, 04 October 20:30;;VERDADEIRO
-US MLS;Sporting KC have had Over 2.5 Match Goalsin their last 8 away league matches;Away vs Minnesota United;1.44;Saturday, 04 October 21:30;;VERDADEIRO
-US MLS;Toronto haveDrewtheir last 7 league matches;Away vs Chicago Fire;4.33;Saturday, 04 October 21:30;;VERDADEIRO
-Liga de Expansión MX;Dorados have Lost their last 6 league matches;Away vs Universidad Guadalajara;1.45;Saturday, 04 October 22:00;2-0;VERDADEIRO
-Liga de Expansión MX;Jaiba Brava have had BTTS in their last 6 league matches;Home vs Mineros de Zacatecas;;Saturday, 04 October 22:00;;VERDADEIRO
-US MLS;Colorado Rapids have had Over 2.5 Match Goalsin their last 9 away league matches;Away vs Real Salt Lake;1.53;Saturday, 04 October 22:30;;FALSO
-US NWSL;Bay FC W have had BTTS in their last 7 away league matches;Away vs Portland Thorns W;;Saturday, 04 October 23:00;;VERDADEIRO
-USL Championship;Orange County have had BTTS in their last 6 league matches;Home vs El Paso Locomotive;1.66;Saturday, 04 October 23:00;;FALSO
-USL Championship;Orange County have had Over 2.5 Match Goalsin their last 11 home league matches;Home vs El Paso Locomotive;1.8;Saturday, 04 October 23:00;;FALSO
-US MLS;Seattle Sounders FC have had BTTS in their last 6 home league matches;Home vs Portland Timbers;1.57;Saturday, 04 October 23:30;;FALSO
-J League 2;Sagan Tosu have had BTTS in their last 6 league matches;Away vs Renofa Yamaguchi;1.91;Sunday, 05 October 02:00;01/fev;VERDADEIRO
-Premier League;Gazovik Orenburg have had BTTS in their last 6 league matches;Home vs Rostov;;Sunday, 05 October 06:00;;FALSO
-Premier League;Gazovik Orenburg have had Over 2.5 Match Goalsin their last 6 league matches;Home vs Rostov;;Sunday, 05 October 06:00;;FALSO
-Swedish Superettan;Utsikten have had Over 2.5 Match Goalsin their last 6 league matches;Away vs Oddevold;1.8;Sunday, 05 October 08:00;;FALSO
-League One;Chongqing Tongliang Long have had Over 2.5 Match Goalsin their last 6 away league matches;Away vs Guangxi Baoyun;1.9;Sunday, 05 October 08:30;01/fev;VERDADEIRO
-Meistriliiga;Levadia have had BTTS in their last 8 league matches;Home vs Tammeka;2.2;Sunday, 05 October 08:30;6-0;FALSO
-Meistriliiga;Levadia have had Over 2.5 Match Goalsin their last 8 league matches;Home vs Tammeka;1.28;Sunday, 05 October 08:30;6-0;VERDADEIRO
-League One;Shenzhen Juniors have had Over 2.5 Match Goalsin their last 9 league matches;Away vs Guangzhou E-Power;;Sunday, 05 October 08:30;;FALSO
-Allsvenskan Women;Brommapojkarna W have had BTTS in their last 8 league matches;Away vs Linkoping W;;Sunday, 05 October 09:00;;VERDADEIRO
-Allsvenskan Women;Brommapojkarna W have had Over 2.5 Match Goalsin their last 8 league matches;Away vs Linkoping W;;Sunday, 05 October 09:00;;VERDADEIRO
-Liga 1;CFR Cluj have had BTTS in their last 7 league matches;Home vs Hermannstadt;2.0;Sunday, 05 October 09:00;02/jan;VERDADEIRO
-Allsvenskan Women;Linkoping W have had Over 2.5 Match Goalsin their last 6 league matches;Home vs Brommapojkarna W;;Sunday, 05 October 09:00;;VERDADEIRO
-Allsvenskan Women;Linkoping W have had Over 2.5 Match Goalsin their last 7 home league matches;Home vs Brommapojkarna W;;Sunday, 05 October 09:00;;VERDADEIRO
-Premier League;Dynamo Kyiv have had BTTS in their last 6 league matches;Home vs Metalist 1925 Kharkiv;;Sunday, 05 October 09:30;01/jan;VERDADEIRO
-Premier League;Dynamo Kyiv have had Over 2.5 Match Goalsin their last 6 league matches;Home vs Metalist 1925 Kharkiv;;Sunday, 05 October 09:30;01/jan;FALSO
-Swedish Superettan;Falkenbergs FF have had Over 2.5 Match Goalsin their last 6 league matches;Away vs Orebro SK;1.67;Sunday, 05 October 10:00;;VERDADEIRO
-Allsvenskan Women;Pitea W have Lost their last 6 home league matches;Home vs Djurgarden W;;Sunday, 05 October 10:00;;FALSO
-Allsvenskan Women;Pitea W have had Over 2.5 Match Goalsin their last 7 home league matches;Home vs Djurgarden W;;Sunday, 05 October 10:00;;FALSO
-Allsvenskan Women;Växjö W have had Over 2.5 Match Goalsin their last 7 away league matches;Away vs Norrköping W;;Sunday, 05 October 10:00;;FALSO
-Allsvenskan Women;Växjö W have had Over 2.5 Match Goalsin their last 9 league matches;Away vs Norrköping W;;Sunday, 05 October 10:00;;FALSO
-Super Liga;Čukarički have had BTTS in their last 8 league matches;Home vs Javor Ivanjica;2.0;Sunday, 05 October 10:30;;FALSO
-Superliga;AGF Aarhus have Won their last 7 league matches;Home vs Silkeborg IF;1.49;Sunday, 05 October 11:00;;VERDADEIRO
-First Division B;SK Beveren have Won their last 8 league matches;Away vs Kortrijk;2.55;Sunday, 05 October 11:00;01/mar;VERDADEIRO
-Swedish Allsvenskan;IK Sirius have had Over 2.5 Match Goalsin their last 6 league matches;Home vs Malmö FF;1.67;Sunday, 05 October 11:30;;VERDADEIRO
-Norwegian 1. Division;Moss have had BTTS in their last 7 league matches;Away vs Lyn;1.62;Sunday, 05 October 12:00;4-0;FALSO
-Norwegian Eliteserien;Strømsgodset IF have had Over 2.5 Match Goalsin their last 6 league matches;Home vs KFUM;1.95;Sunday, 05 October 12:00;;FALSO
-1. Liga;Miedź Legnica have had Over 2.5 Match Goalsin their last 7 away league matches;Away vs Górnik Łęczna;1.73;Sunday, 05 October 12:30;;FALSO
-Superliga;FC København have had BTTS in their last 7 league matches;Home vs Midtjylland;1.7;Sunday, 05 October 13:00;;VERDADEIRO
-Segunda Division;Santander have had BTTS in their last 7 league matches;Home vs Malaga;1.8;Sunday, 05 October 13:30;3-0;FALSO
-Segunda Division;Santander have had Over 2.5 Match Goalsin their last 7 league matches;Home vs Malaga;1.85;Sunday, 05 October 13:30;3-0;VERDADEIRO
-Segunda Liga;Benfica II have had BTTS in their last 6 league matches;Home vs Penafiel;1.8;Sunday, 05 October 14:00;;FALSO
-Super Liga;Crvena Zvezda have Won their last 8 league matches;Away vs Napredak;1.18;Sunday, 05 October 14:00;0-3;VERDADEIRO
-Eredivisie;NEC Nijmegen have had Over 2.5 Match Goalsin their last 7 league matches;Away vs Go Ahead Eagles;1.44;Sunday, 05 October 15:00;01/jan;FALSO
-1. SNL;Celje have had Over 2.5 Match Goalsin their last 6 away league matches;Away vs Radomlje;1.4;Sunday, 05 October 15:15;0-3;VERDADEIRO
-1. SNL;Celje have had Over 2.5 Match Goalsin their last 8 league matches;Away vs Radomlje;1.4;Sunday, 05 October 15:15;0-3;VERDADEIRO
-Primera B Nacional;Talleres Remedios de Escalada have Lost their last 6 away league matches;Away vs Almirante Brown;1.81;Sunday, 05 October 15:30;02/jan;VERDADEIRO
-La Liga;Celta have had BTTS in their last 6 league matches;Home vs Ath Madrid;1.75;Sunday, 05 October 16:00;01/jan;VERDADEIRO
-Iceland Besta Deildin;Víkingur Reykjavík have had BTTS in their last 10 home league matches;Home vs FH;1.61;Sunday, 05 October 16:15;;FALSO
-Iceland Besta Deildin;Víkingur Reykjavík have had Over 2.5 Match Goalsin their last 11 home league matches;Home vs FH;1.44;Sunday, 05 October 16:15;;FALSO
-Venezuela Primera Division;Yaracuyanos have Lost their last 7 away league matches;Away vs Estudiantes Mérida;1.33;Sunday, 05 October 16:30;0-2;FALSO
-US NWSL;Chicago Red Stars W have had BTTS in their last 8 home league matches;Home vs Utah Royals W;;Sunday, 05 October 17:00;;VERDADEIRO
-Portugese Liga NOS;Porto have Won their last 7 league matches;Home vs Benfica;1.86;Sunday, 05 October 17:15;0-0;FALSO
-Colombia Primera B;Leones FC have Lost their last 6 league matches;Away vs Cúcuta Deportivo;1.25;Sunday, 05 October 18:00;;VERDADEIRO
-Primera Division;Peñarol have Won their last 10 home league matches;Home vs Danubio;1.45;Sunday, 05 October 18:00;;VERDADEIRO
-Premier League;Cavalry have had Over 2.5 Match Goalsin their last 7 league matches;Away vs Pacific;1.75;Sunday, 05 October 19:00;;VERDADEIRO
-Serie B;Athletico PR have Won their last 7 league matches;Away vs Atlético GO;2.65;Sunday, 05 October 20:30;;FALSO
-Eerste Divisie;Graafschap have had BTTS in their last 6 league matches;Away vs SC Cambuur;1.36;Saturday, 11 October 16:00;2-0;FALSO
-Swedish Superettan;Varbergs BoIS have had BTTS in their last 7 league matches;Away vs Landskrona;1.67;Monday, 06 October 14:01;;VERDADEIRO
-Swedish Superettan;Örgryte have Won their last 7 away league matches;Away vs Sandviken;1.75;Monday, 06 October 14:00;01/jan;FALSO
-Primera Division;Deportivo Riestra have Won their last 6 home league matches;Home vs Vélez Sarsfield;3.25;Monday, 06 October 19:00;02/fev;FALSO
-Liga de Expansión MX;Dorados have Lost their last 7 league matches;Home vs Atlante;1.57;Sunday, 12 October 00:00;0-0;FALSO
-K League 2;Jeonnam Dragons have had BTTS in their last 6 league matches;Home vs Ansan Greeners;1.83;Sunday, 12 October 02:00;0-1;FALSO
-Primera Division Women;Barcelona W have Won their last 6 league matches;Away vs Atletico Madrid W;;Sunday, 12 October 07:00;0-6;VERDADEIRO
-League One;Heilongjiang Lava Spring have Won their last 6 home league matches;Home vs Nantong Zhiyun;3.1;Sunday, 12 October 08:30;01/jan;FALSO
-Segunda Division;Santander have had Over 2.5 Match Goalsin their last 8 league matches;Away vs Sp Gijon;1.7;Sunday, 12 October 11:15;02/jan;VERDADEIRO
-Toppserien;Brann W have Won their last 10 league matches;Away vs Vålerenga W;;Sunday, 12 October 12:00;;VERDADEIRO
-Toppserien;Brann W have Won their last 6 away league matches;Away vs Vålerenga W;;Sunday, 12 October 12:00;2-4;VERDADEIRO
-Toppserien;Vålerenga W have Won their last 8 home league matches;Home vs Brann W;;Sunday, 12 October 12:00;2-4;FALSO
-Premier League;Vancouver FC have had BTTS in their last 6 league matches;Away vs Atlético Ottawa;2.25;Sunday, 12 October 16:00;;FALSO
-Primera B Nacional;Estudiantes de Buenos Aires have Won their last 6 home league matches;Home vs Deportivo Maipú;1.57;Sunday, 12 October 17:10;;VERDADEIRO
+League,Stat,Next Match,Odds,Date,Result,Situacao
+Primera Division,Cusco FC have Won their last 6 home league matches,Home vs ADT,1.5,2025-09-22 21:15:00,0-2,FALSO
+J League,Shonan Bellmare have had BTTS in their last 6 home league matches,Home vs Kawasaki Frontale,1.67,2025-09-23 07:00:00,0-0,FALSO
+1. Lig,Hatayspor have had BTTS in their last 6 league matches,Away vs Iğdır FK,1.83,2025-09-23 14:00:00,0-0,FALSO
+Bolivia Primera Division,Independiente Petrolero have had Over 2.5 Match Goals in their last 6 league matches,Away vs Oriente Petrolero,1.57,2025-09-23 16:00:00,0-0,FALSO
+Meistriliiga,Flora have Won their last 6 league matches,Home vs Levadia,3.0,2025-09-24 13:00:00,2-3,FALSO
+Meistriliiga,Flora have Won their last 7 home league matches,Home vs Levadia,3.0,2025-09-24 13:00:00,2-3,FALSO
+Meistriliiga,Flora have had Over 2.5 Match Goals in their last 6 league matches,Home vs Levadia,1.65,2025-09-24 13:00:00,2-3,VERDADEIRO
+Meistriliiga,Levadia have had BTTS in their last 6 league matches,Away vs Flora,1.61,2025-09-24 13:00:00,1-2,VERDADEIRO
+Meistriliiga,Levadia have had Over 2.5 Match Goals in their last 6 league matches,Away vs Flora,1.65,2025-09-24 13:00:00,1-2,VERDADEIRO
+Toppserien,Vålerenga W have Won their last 7 home league matches,Home vs Lyn W,,2025-09-24 13:00:00,,VERDADEIRO
+Finnish Ykkosliiga,SJK Akatemia have had BTTS in their last 6 league matches,Away vs Klubi-04,1.28,2025-09-24 14:00:00,1-4,VERDADEIRO
+Finnish Ykkosliiga,SJK Akatemia have had BTTS in their last 8 away league matches,Away vs Klubi-04,1.28,2025-09-24 14:00:00,1-4,VERDADEIRO
+Finnish Ykkosliiga,SJK Akatemia have had Over 2.5 Match Goals in their last 8 away league matches,Away vs Klubi-04,1.25,2025-09-24 14:00:00,1-4,VERDADEIRO
+First Division B,SK Beveren have Won their last 6 league matches,Away vs RFC Liège,1.95,2025-09-24 15:00:00,1-2,FALSO
+National League,Wealdstone have had BTTS in their last 6 league matches,Away vs Tamworth,1.7,2025-09-24 15:45:00,1-1,VERDADEIRO
+National League,Wealdstone have had Over 2.5 Match Goals in their last 6 league matches,Away vs Tamworth,1.8,2025-09-24 15:45:00,1-1,FALSO
+Liga MX,Cruz Azul have Won their last 7 league matches,Home vs Querétaro,1.19,2025-09-24 21:00:00,2-2,FALSO
+1. Lig,Adana Demirspor have had Over 2.5 Match Goals in their last 6 league matches,Away vs Sivasspor,1.36,2025-09-25 11:00:00,5-0,VERDADEIRO
+Toppserien,Kolbotn W have Lost their last 7 league matches,Home vs Stabæk W,,2025-09-25 13:00:00,,FALSO
+Swedish Superettan,Örgryte have Won their last 6 away league matches,Away vs Trelleborg,2.0,2025-09-25 14:00:00,,VERDADEIRO
+Liga Pro Serie B,Chacaritas have had BTTS in their last 7 league matches,Away vs Vargas Torres,,2025-09-25 17:30:00,0-0,FALSO
+Bolivia Primera Division,Real Oruro have had Over 2.5 Match Goals in their last 6 league matches,Home vs Guabirá,1.57,2025-09-25 21:00:00,,VERDADEIRO
+Super League,Shanghai Port have had BTTS in their last 10 league matches,Home vs Wuhan Three Towns,1.67,2025-09-26 09:00:00,,VERDADEIRO
+Super League,Wuhan Three Towns have had Over 2.5 Match Goals in their last 7 away league matches,Away vs Shanghai Port,1.3,2025-09-26 09:00:00,3-2,VERDADEIRO
+Turkish Super Lig,Galatasaray have Won their last 6 league matches,Away vs Alanyaspor,1.39,2025-09-26 14:00:00,0-1,VERDADEIRO
+K League 1,Daegu have had Over 2.5 Match Goals in their last 6 league matches,Home vs Ulsan HD,1.57,2025-09-27 04:30:00,0-0,FALSO
+J League,Albirex Niigata have Lost their last 8 away league matches,Away vs Gamba Osaka,1.66,2025-09-27 05:00:00,0-4,FALSO
+K League 1,Seoul have had Over 2.5 Match Goals in their last 6 league matches,Home vs Jeonbuk Motors,1.9,2025-09-27 07:00:00,0-0,FALSO
+Meistriliiga,Harju Jalgpallikool have had Over 2.5 Match Goals in their last 7 league matches,Home vs Vaprus,1.44,2025-09-27 08:30:00,0-1,FALSO
+League One,Shenzhen Juniors have had Over 2.5 Match Goals in their last 8 league matches,Home vs Dalian Huayi,1.95,2025-09-27 08:30:00,,VERDADEIRO
+Liga 1,Csikszereda have had BTTS in their last 6 league matches,Away vs UTA Arad,1.8,2025-09-27 09:00:00,,FALSO
+Finnish Ykkosliiga,TPS have had Over 2.5 Match Goals in their last 7 home league matches,Home vs JIPPO,1.5,2025-09-27 09:00:00,0-1,FALSO
+Vysshaya Liga,Vitebsk have Lost their last 6 league matches,Away vs Slutsk,,2025-09-27 09:00:00,0-1,FALSO
+Allsvenskan Women,Alingsås W have Lost their last 9 away league matches,Away vs Norrköping W,,2025-09-27 10:00:00,,VERDADEIRO
+Finnish Ykkosliiga,FC Lahti have had BTTS in their last 7 home league matches,Home vs PK-35,1.72,2025-09-27 10:00:00,1-0,FALSO
+Finnish Ykkosliiga,FC Lahti have had Over 2.5 Match Goals in their last 7 home league matches,Home vs PK-35,1.57,2025-09-27 10:00:00,1-0,FALSO
+Tweede Divisie,HHC have Won their last 6 league matches,Away vs Spakenburg,,2025-09-27 10:00:00,2-3,FALSO
+Czech Liga,Karviná have had BTTS in their last 6 league matches,Away vs Slovácko,1.67,2025-09-27 10:00:00,,VERDADEIRO
+Czech Liga,Karviná have had Over 2.5 Match Goals in their last 6 league matches,Away vs Slovácko,1.8,2025-09-27 10:00:00,,VERDADEIRO
+Premier League,Lokomotiv M have had BTTS in their last 8 league matches,Home vs Rubin Kazan,,2025-09-27 10:30:00,1-0,FALSO
+League One,Bradford have had BTTS in their last 7 league matches,Home vs Blackpool,1.75,2025-09-27 11:00:00,1-0,FALSO
+Scottish League 2,Dumbarton have had BTTS in their last 7 league matches,Home vs Stranraer,1.73,2025-09-27 11:00:00,0-1,FALSO
+Scottish League 2,Edinburgh City have had BTTS in their last 7 league matches,Home vs Forfar,1.57,2025-09-27 11:00:00,,VERDADEIRO
+Scottish League 2,Edinburgh City have had Over 2.5 Match Goals in their last 7 league matches,Home vs Forfar,1.6,2025-09-27 11:00:00,,FALSO
+Northern Ireland Premiership,Glenavon have Lost their last 8 league matches,Home vs Crusaders,2.37,2025-09-27 11:00:00,,VERDADEIRO
+Finnish Veikkausliiga,KTP have Lost their last 7 league matches,Away vs Oulu,1.85,2025-09-27 11:00:00,0-2,FALSO
+Finnish Veikkausliiga,KTP have had Over 2.5 Match Goals in their last 12 away league matches,Away vs Oulu,1.53,2025-09-27 11:00:00,0-2,FALSO
+Championship,Sheffield United have Lost their last 6 league matches,Away vs Oxford,3.0,2025-09-27 11:00:00,0-1,FALSO
+National League,Wealdstone have had BTTS in their last 7 league matches,Home vs Eastleigh,1.62,2025-09-27 11:00:00,0-0,FALSO
+La Liga,Real Madrid have Won their last 6 league matches,Away vs Ath Madrid,2.25,2025-09-27 11:15:00,0-5,FALSO
+Superliga,FC København have had BTTS in their last 6 league matches,Away vs Sønderjyske Fodbold,1.8,2025-09-27 13:00:00,,VERDADEIRO
+Swiss Super League,Grasshopper have had BTTS in their last 6 league matches,Away vs FC Lugano,1.67,2025-09-27 13:00:00,0-2,FALSO
+Iceland 1 Deild,HK have had Over 2.5 Match Goals in their last 10 away league matches,Away vs Keflavík,,2025-09-27 13:15:00,4-0,VERDADEIRO
+Iceland 1 Deild,Keflavík have had Over 2.5 Match Goals in their last 7 home league matches,Home vs HK,,2025-09-27 13:15:00,,VERDADEIRO
+Iceland 1 Deild,Keflavík have had Over 2.5 Match Goals in their last 9 league matches,Home vs HK,,2025-09-27 13:15:00,,VERDADEIRO
+Finnish Ykkosliiga,SalPa have had Over 2.5 Match Goals in their last 9 away league matches,Away vs Klubi-04,,2025-09-27 13:30:00,1-0,FALSO
+Segunda Division,Santander have had BTTS in their last 6 league matches,Home vs FC Andorra,1.62,2025-09-27 13:30:00,0-1,FALSO
+Segunda Division,Santander have had Over 2.5 Match Goals in their last 6 league matches,Home vs FC Andorra,1.62,2025-09-27 13:30:00,0-1,FALSO
+Premier League,Cavalry have had Over 2.5 Match Goals in their last 6 league matches,Away vs Atlético Ottawa,2.0,2025-09-27 14:00:00,,VERDADEIRO
+First Division B,SK Beveren have Won their last 7 league matches,Home vs RFC Seraing,1.3,2025-09-27 15:00:00,0-2,FALSO
+1. SNL,Celje have had Over 2.5 Match Goals in their last 7 league matches,Home vs Maribor,1.57,2025-09-27 15:15:00,3-0,VERDADEIRO
+Eredivisie,Heracles Almelo have Lost their last 6 league matches,Home vs Sparta Rotterdam,2.3,2025-09-27 16:00:00,,FALSO
+Paraguay Division Profesional,Cerro Porteño have had BTTS in their last 6 away league matches,Away vs Sportivo Luqueño,1.83,2025-09-27 17:00:00,,FALSO
+Serie C,Ponte Preta have Won their last 6 league matches,Home vs Náutico,,2025-09-27 17:00:00,0-1,FALSO
+US MLS,Toronto have Drew their last 6 league matches,Home vs Club Internacional de Fútbol Miami,4.2,2025-09-27 17:30:00,,VERDADEIRO
+Serie A,Internacional RS have had BTTS in their last 9 league matches,Away vs Juventude,1.95,2025-09-27 18:30:00,,VERDADEIRO
+Serie A,Internacional RS have had Over 2.5 Match Goals in their last 7 league matches,Away vs Juventude,2.25,2025-09-27 18:30:00,,FALSO
+USL Championship,Louisville City have Won their last 6 away league matches,Away vs Detroit City,2.2,2025-09-27 20:00:00,,VERDADEIRO
+Serie B,Athletico PR have Won their last 6 league matches,Home vs Operário PR,1.57,2025-09-27 20:30:00,,VERDADEIRO
+US MLS,CF Montréal have had BTTS in their last 6 away league matches,Away vs Charlotte,1.57,2025-09-27 20:30:00,,VERDADEIRO
+US MLS,Charlotte have Won their last 6 home league matches,Home vs CF Montréal,1.56,2025-09-27 20:30:00,,FALSO
+USL Championship,Birmingham Legion have had BTTS in their last 7 league matches,Away vs San Antonio,1.72,2025-09-27 21:30:00,,FALSO
+USL Championship,Birmingham Legion have had BTTS in their last 9 away league matches,Away vs San Antonio,1.72,2025-09-27 21:30:00,,FALSO
+US MLS,Chicago Fire have had Over 2.5 Match Goals in their last 6 league matches,Home vs Columbus Crew,1.44,2025-09-27 21:30:00,,FALSO
+US MLS,St. Louis City have had BTTS in their last 10 home league matches,Home vs Los Angeles FC,1.44,2025-09-27 21:30:00,,FALSO
+Liga de Expansión MX,Morelia have had Over 2.5 Match Goals in their last 6 league matches,Home vs Atlante,1.95,2025-09-27 22:00:00,0-2,FALSO
+US MLS,Colorado Rapids have had Over 2.5 Match Goals in their last 12 league matches,Home vs Minnesota United,1.53,2025-09-27 22:30:00,,FALSO
+US MLS,Minnesota United have had BTTS in their last 7 away league matches,Away vs Colorado Rapids,1.5,2025-09-27 22:30:00,,FALSO
+Honduras Liga Nacional,Olancho have had BTTS in their last 7 league matches,Home vs Real España,,2025-09-27 22:30:00,0-1,FALSO
+USL Championship,Orange County have had Over 2.5 Match Goals in their last 10 home league matches,Home vs Charleston Battery,1.85,2025-09-27 23:00:00,,VERDADEIRO
+US MLS,LA Galaxy have had Over 2.5 Match Goals in their last 6 home league matches,Home vs Sporting KC,1.36,2025-09-27 23:30:00,,VERDADEIRO
+US MLS,SJ Earthquakes have had BTTS in their last 15 league matches,Away vs San Diego,1.4,2025-09-27 23:30:00,,FALSO
+US MLS,SJ Earthquakes have had BTTS in their last 8 away league matches,Away vs San Diego,1.4,2025-09-27 23:30:00,,FALSO
+US MLS,SJ Earthquakes have had Over 2.5 Match Goals in their last 10 league matches,Away vs San Diego,1.36,2025-09-27 23:30:00,,FALSO
+US MLS,SJ Earthquakes have had Over 2.5 Match Goals in their last 6 away league matches,Away vs San Diego,1.36,2025-09-27 23:30:00,,FALSO
+US MLS,Sporting KC have had Over 2.5 Match Goals in their last 7 away league matches,Away vs LA Galaxy,1.36,2025-09-27 23:30:00,,VERDADEIRO
+K League 1,Suwon have had BTTS in their last 8 away league matches,Away vs Jeju United,1.62,2025-09-28 04:30:00,,VERDADEIRO
+K League 1,Suwon have had Over 2.5 Match Goals in their last 6 away league matches,Away vs Jeju United,1.73,2025-09-28 04:30:00,,VERDADEIRO
+J League,Shonan Bellmare have Lost their last 7 away league matches,Away vs Yokohama,2.01,2025-09-28 05:00:00,1-0,VERDADEIRO
+Eredivisie,NEC Nijmegen have had Over 2.5 Match Goals in their last 6 league matches,Home vs AZ Alkmaar,1.44,2025-09-28 07:15:00,0-2,FALSO
+Allsvenskan Women,Brommapojkarna W have had BTTS in their last 7 league matches,Away vs Rosengard W,,2025-09-28 08:00:00,,VERDADEIRO
+Allsvenskan Women,Brommapojkarna W have had Over 2.5 Match Goals in their last 7 league matches,Away vs Rosengard W,,2025-09-28 08:00:00,,VERDADEIRO
+Super League,Henan Songshan Longmen have had BTTS in their last 7 away league matches,Away vs Tianjin Jinmen Tiger,1.5,2025-09-28 08:00:00,,FALSO
+Czech Liga,Pardubice have had BTTS in their last 8 league matches,Away vs Teplice,1.7,2025-09-28 08:00:00,0-0,FALSO
+Allsvenskan Women,Pitea W have had Over 2.5 Match Goals in their last 6 home league matches,Home vs Vittsjo W,,2025-09-28 08:00:00,,VERDADEIRO
+Allsvenskan Women,Rosengard W have had Over 2.5 Match Goals in their last 6 league matches,Home vs Brommapojkarna W,,2025-09-28 08:00:00,,VERDADEIRO
+Swedish Superettan,Varbergs BoIS have had BTTS in their last 6 league matches,Home vs Oddevold,1.8,2025-09-28 08:00:00,,VERDADEIRO
+Meistriliiga,Flora have had Over 2.5 Match Goals in their last 7 league matches,Away vs Nõmme Kalju,1.65,2025-09-28 08:30:00,0-3,FALSO
+Bundesliga 2,Preußen Münster have had BTTS in their last 6 league matches,Home vs Braunschweig,1.57,2025-09-28 08:30:00,,VERDADEIRO
+3. Liga,Verl have had BTTS in their last 7 league matches,Away vs Regensburg,1.53,2025-09-28 08:30:00,2-0,FALSO
+Norwegian 1. Division,Kongsvinger have had BTTS in their last 7 away league matches,Away vs Sogndal,1.44,2025-09-28 09:30:00,0-2,FALSO
+Norwegian 1. Division,Kongsvinger have had BTTS in their last 8 league matches,Away vs Sogndal,1.44,2025-09-28 09:30:00,0-2,FALSO
+Norwegian 1. Division,Sogndal have had BTTS in their last 10 league matches,Home vs Kongsvinger,1.44,2025-09-28 09:30:00,0-2,FALSO
+Norwegian 1. Division,Sogndal have had BTTS in their last 7 home league matches,Home vs Kongsvinger,1.44,2025-09-28 09:30:00,0-2,FALSO
+Bundesliga,WSG Tirol have had BTTS in their last 6 league matches,Home vs FC Salzburg,1.67,2025-09-28 09:30:00,0-1,FALSO
+Finnish Veikkausliiga,Jaro have had Over 2.5 Match Goals in their last 6 league matches,Home vs Mariehamn,1.57,2025-09-28 10:00:00,0-2,FALSO
+Allsvenskan Women,Linkoping W have Lost their last 6 away league matches,Away vs Djurgarden W,,2025-09-28 10:00:00,,VERDADEIRO
+Meistriliiga,Levadia have had BTTS in their last 7 league matches,Home vs Tallinna Kalev,,2025-09-28 11:00:00,,VERDADEIRO
+Meistriliiga,Levadia have had Over 2.5 Match Goals in their last 7 league matches,Home vs Tallinna Kalev,,2025-09-28 11:00:00,,VERDADEIRO
+Finnish Ykkosliiga,SJK Akatemia have had BTTS in their last 7 league matches,Home vs JäPS,1.33,2025-09-28 11:00:00,0-1,FALSO
+Meistriliiga,Tallinna Kalev have Lost their last 6 league matches,Away vs Levadia,,2025-09-28 11:00:00,,VERDADEIRO
+Allsvenskan Women,Växjö W have had Over 2.5 Match Goals in their last 8 league matches,Home vs Hammarby W,,2025-09-28 11:00:00,,VERDADEIRO
+Swedish Allsvenskan,GAIS have had Over 2.5 Match Goals in their last 6 away league matches,Away vs AIK,2.15,2025-09-28 11:30:00,,FALSO
+Swiss Super League,Lausanne Sport have had BTTS in their last 6 league matches,Away vs Sion,1.67,2025-09-28 11:30:00,,FALSO
+Super Liga,Čukarički have had BTTS in their last 7 league matches,Away vs Mladost Lučani,,2025-09-28 12:00:00,,VERDADEIRO
+Superliga,AGF Aarhus have Won their last 6 league matches,Away vs FC Nordsjaelland,2.4,2025-09-28 13:00:00,,VERDADEIRO
+Iceland Besta Deildin,Afturelding have had BTTS in their last 13 league matches,Home vs KA Akureyri,,2025-09-28 13:00:00,0-3,FALSO
+Iceland Besta Deildin,Afturelding have had BTTS in their last 6 home league matches,Home vs KA Akureyri,,2025-09-28 13:00:00,0-3,FALSO
+1. Lig,Hatayspor have had BTTS in their last 7 league matches,Home vs Bandırmaspor,1.67,2025-09-28 13:00:00,0-3,FALSO
+1. HNL,Slaven Koprivnica have had Over 2.5 Match Goals in their last 6 league matches,Away vs Dinamo Zagreb,1.5,2025-09-28 13:15:00,,VERDADEIRO
+Vysshaya Liga,Dinamo Minsk have Won their last 9 home league matches,Home vs Isloch,,2025-09-28 13:30:00,,VERDADEIRO
+Vysshaya Liga,Dinamo Minsk have had Over 2.5 Match Goals in their last 6 league matches,Home vs Isloch,,2025-09-28 13:30:00,,VERDADEIRO
+Super Liga,Crvena Zvezda have Won their last 7 league matches,Home vs Radnički Kragujevac,1.2,2025-09-28 14:00:00,0-2,FALSO
+Fortuna Liga,Žilina have had Over 2.5 Match Goals in their last 6 league matches,Home vs Spartak Trnava,1.6,2025-09-28 14:00:00,,VERDADEIRO
+Pro League,Dender have Lost their last 6 league matches,Home vs La Louvière,2.7,2025-09-28 14:15:00,0-0,FALSO
+Superliga,Odense BK have had BTTS in their last 6 league matches,Away vs Brøndby IF,1.62,2025-09-28 15:00:00,,VERDADEIRO
+Primera B Nacional,Deportivo Madryn have Won their last 7 home league matches,Home vs Arsenal de Sarandí,1.46,2025-09-28 15:30:00,,VERDADEIRO
+Primera Division,Nacional have had Over 2.5 Match Goals in their last 6 league matches,Away vs Juventud,1.8,2025-09-28 16:00:00,0-1,FALSO
+Premier League,Valour have had Over 2.5 Match Goals in their last 10 away league matches,Away vs York9,1.72,2025-09-28 16:00:00,,FALSO
+Premier League,York 9 have had Over 2.5 Match Goals in their last 6 home league matches,Home vs Valour,1.72,2025-09-28 16:00:00,,FALSO
+Iceland Besta Deildin,Valur have had BTTS in their last 9 league matches,Away vs Fram,,2025-09-28 16:15:00,2-0,FALSO
+USL Championship,Loudoun United have had BTTS in their last 6 league matches,Home vs Tampa Bay Rowdies,1.57,2025-09-28 18:00:00,,VERDADEIRO
+USL Championship,Loudoun United have had Over 2.5 Match Goals in their last 6 league matches,Home vs Tampa Bay Rowdies,1.61,2025-09-28 18:00:00,,VERDADEIRO
+US MLS,Orlando City SC have had BTTS in their last 12 league matches,Away vs Cincinnati,1.53,2025-09-28 20:00:00,,VERDADEIRO
+US MLS,Orlando City SC have had BTTS in their last 6 away league matches,Away vs Cincinnati,1.53,2025-09-28 20:00:00,,VERDADEIRO
+Ekstraklasa,Zaglebie Lubin have had BTTS in their last 7 league matches,Home vs Arka Gdynia,1.75,2025-09-29 13:00:00,4-0,FALSO
+1. Lig,Adana Demirspor have Lost their last 6 league matches,Home vs Sarıyer,1.11,2025-09-29 14:00:00,0-3,VERDADEIRO
+1. Lig,Adana Demirspor have had Over 2.5 Match Goals in their last 7 league matches,Home vs Sarıyer,1.36,2025-09-29 14:00:00,0-3,VERDADEIRO
+Norwegian 1. Division,Lyn have Won their last 6 away league matches,Away vs Hødd,2.0,2025-09-29 14:00:00,0-1,VERDADEIRO
+Norwegian 1. Division,Moss have had BTTS in their last 6 home league matches,Home vs Lillestrøm,1.67,2025-09-29 14:00:00,0-1,FALSO
+Norwegian 1. Division,Moss have had BTTS in their last 6 league matches,Home vs Lillestrøm,1.67,2025-09-29 14:00:00,0-1,FALSO
+Norwegian 1. Division,Moss have had Over 2.5 Match Goals in their last 8 home league matches,Home vs Lillestrøm,1.48,2025-09-29 14:00:00,0-1,FALSO
+Norwegian Eliteserien,Sandefjord have had Over 2.5 Match Goals in their last 8 league matches,Away vs FK Haugesund,1.48,2025-09-29 14:00:00,0-2,FALSO
+Liga 1,CFR Cluj have had BTTS in their last 6 league matches,Away vs Universitatea Cluj,1.83,2025-09-29 15:00:00,0-2,FALSO
+Portugese Liga NOS,Porto have Won their last 6 league matches,Away vs Arouca,1.33,2025-09-29 16:00:00,0-4,VERDADEIRO
+Bolivia Primera Division,The Strongest have Won their last 9 home league matches,Home vs Oriente Petrolero,1.3,2025-09-29 16:00:00,2-0,VERDADEIRO
+Bolivia Primera Division,The Strongest have had Over 2.5 Match Goals in their last 8 home league matches,Home vs Oriente Petrolero,1.3,2025-09-29 16:00:00,2-0,FALSO
+Bolivia Primera Division,Always Ready have Won their last 8 home league matches,Home vs Real Oruro,1.19,2025-09-29 18:30:00,4-0,VERDADEIRO
+Eerste Divisie,FC Den Bosch have had Over 2.5 Match Goals in their last 6 league matches,Away vs VVV-Venlo,1.53,2025-09-30 15:00:00,0-1,FALSO
+Finnish Veikkausliiga,Jaro have had Over 2.5 Match Goals in their last 6 home league matches,Home vs Haka,1.57,2025-10-03 12:00:00,0-2,FALSO
+Finnish Veikkausliiga,Jaro have had Over 2.5 Match Goals in their last 7 league matches,Home vs Haka,1.57,2025-10-03 12:00:00,0-2,FALSO
+Finnish Ykkosliiga,SJK Akatemia have had BTTS in their last 8 league matches,Away vs FC Lahti,1.66,2025-10-03 12:30:00,3-0,FALSO
+Finnish Ykkosliiga,SJK Akatemia have had BTTS in their last 9 away league matches,Away vs FC Lahti,1.66,2025-10-03 12:30:00,3-0,FALSO
+Finnish Ykkosliiga,SJK Akatemia have had Over 2.5 Match Goals in their last 9 away league matches,Away vs FC Lahti,1.28,2025-10-03 12:30:00,3-0,VERDADEIRO
+Eerste Divisie,Den Haag have Won their last 6 league matches,Away vs Jong AZ,1.46,2025-10-03 15:00:00,0-4,VERDADEIRO
+J League,Cerezo Osaka have had BTTS in their last 6 league matches,Away vs Nagoya Grampus,1.62,2025-10-04 01:30:00,2-1,VERDADEIRO
+K League 1,Daegu have had Over 2.5 Match Goals in their last 13 away league matches,Away vs Gwangju,1.85,2025-10-04 02:00:00,2-3,VERDADEIRO
+Liga de Expansión MX,CA La Paz have had Over 2.5 Match Goals in their last 6 league matches,Home vs Cancún,1.53,2025-10-04 00:00:00,2-4,FALSO
+1. Lig,Adana Demirspor have Lost their last 7 league matches,Away vs Pendikspor,,2025-10-04 07:30:00,3-0,VERDADEIRO
+1. Lig,Adana Demirspor have had Over 2.5 Match Goals in their last 8 league matches,Away vs Pendikspor,,2025-10-04 07:30:00,3-0,VERDADEIRO
+Super League,Meizhou Hakka have had Over 2.5 Match Goals in their last 12 home league matches,Home vs Qingdao Hainiu,,2025-10-04 08:00:00,1-0,FALSO
+Bundesliga 2,Preußen Münster have had BTTS in their last 7 league matches,Away vs Hertha,1.67,2025-10-04 08:00:00,0-2,FALSO
+Allsvenskan Women,Rosengard W have Lost their last 6 league matches,Away vs Malmö FF W,,2025-10-04 08:00:00,0-1,FALSO
+Allsvenskan Women,Rosengard W have had Over 2.5 Match Goals in their last 7 league matches,Away vs Malmö FF W,,2025-10-04 08:00:00,0-1,FALSO
+Championship,Hull have had Over 2.5 Match Goals in their last 7 league matches,Home vs Sheffield United,1.91,2025-10-04 08:30:00,1-0,FALSO
+Super League,Shandong Taishan have Won their last 6 home league matches,Home vs Yunnan Yukun,1.37,2025-10-04 08:35:00,1-1,FALSO
+Super League,Shandong Taishan have had Over 2.5 Match Goals in their last 6 home league matches,Home vs Yunnan Yukun,1.3,2025-10-04 08:35:00,1-1,FALSO
+Super League,Shandong Taishan have had Over 2.5 Match Goals in their last 8 league matches,Home vs Yunnan Yukun,1.3,2025-10-04 08:35:00,1-1,FALSO
+Super League,Yunnan Yukun have had BTTS in their last 11 league matches,Away vs Shandong Taishan,1.44,2025-10-04 08:35:00,1-1,VERDADEIRO
+Super league,Dinamo Samarqand have had BTTS in their last 8 away league matches,Away vs Surkhon Termez,,2025-10-04 09:00:00,0-2,FALSO
+3. Liga,Ulm have had BTTS in their last 7 league matches,Away vs Ingolstadt,1.5,2025-10-04 09:00:00,4-1,VERDADEIRO
+Tweede Divisie,ACV have Lost their last 6 league matches,Home vs Barendrecht,2.2,2025-10-04 09:30:00,,VERDADEIRO
+Tweede Divisie,HHC have Won their last 7 league matches,Home vs Jong Sparta,1.53,2025-10-04 09:30:00,0-2,FALSO
+Vysshaya Liga,Dinamo Minsk have had BTTS in their last 6 league matches,Away vs Molodechno-DYuSSh 4,,2025-10-04 09:45:00,1-3,FALSO
+Vysshaya Liga,Dinamo Minsk have had Over 2.5 Match Goals in their last 7 league matches,Away vs Molodechno-DYuSSh 4,,2025-10-04 09:45:00,1-3,FALSO
+Serie B,Catanzaro have Drew their last 6 league matches,Away vs Monza,3.5,2025-10-04 10:00:00,0-2,FALSO
+Czech Liga,Karviná have had BTTS in their last 7 league matches,Away vs Pardubice,1.67,2025-10-04 10:00:00,0-2,FALSO
+Czech Liga,Karviná have had Over 2.5 Match Goals in their last 7 league matches,Away vs Pardubice,1.8,2025-10-04 10:00:00,0-2,FALSO
+Iceland Besta Deildin,Afturelding have had BTTS in their last 14 league matches,Away vs KR Reykjavík,1.36,2025-10-04 11:00:00,2-2,VERDADEIRO
+Iceland Besta Deildin,Afturelding have had BTTS in their last 7 away league matches,Away vs KR Reykjavík,1.36,2025-10-04 11:00:00,2-2,VERDADEIRO
+Allsvenskan Women,Alingsås W have Lost their last 6 league matches,Home vs Häcken W,,2025-10-04 11:00:00,0-2,VERDADEIRO
+Scottish League 2,Dumbarton have had BTTS in their last 8 league matches,Away vs Stirling,1.57,2025-10-04 11:00:00,2-2,VERDADEIRO
+Scottish League 1,East Fife have had BTTS in their last 6 league matches,Home vs Cove Rangers,1.73,2025-10-04 11:00:00,2-0,FALSO
+Scottish League 2,Edinburgh City have had BTTS in their last 8 league matches,Away vs Spartans,1.67,2025-10-04 11:00:00,,FALSO
+National League,Halifax have had Over 2.5 Match Goals in their last 6 league matches,Home vs Brackley Town,2.15,2025-10-04 11:00:00,2-0,FALSO
+Allsvenskan Women,Häcken W have Won their last 7 away league matches,Away vs Alingsås W,,2025-10-04 11:00:00,0-2,VERDADEIRO
+Allsvenskan Women,Häcken W have had Over 2.5 Match Goals in their last 6 away league matches,Away vs Alingsås W,,2025-10-04 11:00:00,0-2,FALSO
+Norwegian 1. Division,Hødd have had BTTS in their last 8 away league matches,Away vs Lillestrøm,2.0,2025-10-04 11:00:00,0-4,FALSO
+Norwegian 1. Division,Kongsvinger have had BTTS in their last 9 league matches,Home vs Skeid,1.62,2025-10-04 11:00:00,3-0,FALSO
+Northern Ireland Premiership,Larne have Won their last 6 league matches,Away vs Dungannon Swifts,1.9,2025-10-04 11:00:00,,FALSO
+Norwegian 1. Division,Lillestrøm have Won their last 11 league matches,Home vs Hødd,1.17,2025-10-04 11:00:00,0-4,VERDADEIRO
+Norwegian 1. Division,Lillestrøm have had Over 2.5 Match Goals in their last 7 league matches,Home vs Hødd,1.36,2025-10-04 11:00:00,0-4,VERDADEIRO
+Norwegian 1. Division,Mjøndalen IF have had Over 2.5 Match Goals in their last 6 away league matches,Away vs Åsane,1.65,2025-10-04 11:00:00,2-3,FALSO
+National League,Morecambe have had Over 2.5 Match Goals in their last 7 league matches,Away vs Tamworth,1.53,2025-10-04 11:00:00,1-1,FALSO
+Scottish League 1,Peterhead have had Over 2.5 Match Goals in their last 6 league matches,Away vs Kelty Hearts,1.8,2025-10-04 11:00:00,1-2,VERDADEIRO
+Norwegian 1. Division,Raufoss have had Over 2.5 Match Goals in their last 8 away league matches,Away vs IK Start,1.53,2025-10-04 11:00:00,4-0,VERDADEIRO
+Scottish Championship,Ross County have had BTTS in their last 6 league matches,Home vs Raith R vs,1.83,2025-10-04 11:00:00,2-0,FALSO
+Norwegian Eliteserien,Sandefjord have had Over 2.5 Match Goals in their last 9 league matches,Home vs Bryne,1.67,2025-10-04 11:00:00,1-0,FALSO
+Norwegian 1. Division,Sogndal have had BTTS in their last 11 league matches,Away vs Aalesunds FK,1.67,2025-10-04 11:00:00,2-0,FALSO
+Meistriliiga,Tallinna Kalev have Lost their last 7 league matches,Home vs Trans,1.38,2025-10-04 11:00:00,,VERDADEIRO
+National League,Truro City have Lost their last 6 away league matches,Away vs Woking,2.05,2025-10-04 11:00:00,,FALSO
+Segunda Liga,Portimonense SAD have had BTTS in their last 6 league matches,Home vs União de Leiria,1.73,2025-10-04 11:30:00,,VERDADEIRO
+Bundesliga,WSG Tirol have had BTTS in their last 7 league matches,Away vs SV Ried,1.8,2025-10-04 12:00:00,2-0,FALSO
+Ekstraklasa,Zaglebie Lubin have had Over 2.5 Match Goals in their last 6 league matches,Away vs Radomiak Radom,1.85,2025-10-04 12:30:00,3-1,VERDADEIRO
+Meistriliiga,Flora have had Over 2.5 Match Goals in their last 8 league matches,Away vs Harju Jalgpallikool,1.5,2025-10-04 13:00:00,1-2,VERDADEIRO
+Meistriliiga,Harju Jalgpallikool have had Over 2.5 Match Goals in their last 8 league matches,Home vs Flora,1.5,2025-10-04 13:00:00,1-2,VERDADEIRO
+1. HNL,Slaven Koprivnica have had Over 2.5 Match Goals in their last 7 league matches,Home vs Osijek,1.85,2025-10-04 13:00:00,,VERDADEIRO
+Northern Ireland Premiership,Glenavon have Lost their last 9 league matches,Away vs Portadown,1.9,2025-10-04 13:30:00,,VERDADEIRO
+Northern Ireland Premiership,Portadown have had Over 2.5 Match Goals in their last 6 league matches,Home vs Glenavon,1.95,2025-10-04 13:30:00,,VERDADEIRO
+Turkish Super Lig,Galatasaray have Won their last 7 league matches,Home vs Besiktas,1.56,2025-10-04 14:00:00,1-1,FALSO
+Serie B,Cesena have had BTTS in their last 6 league matches,Home vs Reggiana,2.0,2025-10-04 14:30:00,1-2,VERDADEIRO
+Premier League,HFX Wanderers have had Over 2.5 Match Goals in their last 6 home league matches,Home vs York9,1.8,2025-10-04 15:00:00,,FALSO
+Primera Division,Los Chankas have had BTTS in their last 10 home league matches,Home vs Cusco FC,1.67,2025-10-04 15:00:00,,VERDADEIRO
+Swiss Super League,Grasshopper have had BTTS in their last 7 league matches,Home vs Zürich,1.53,2025-10-04 15:30:00,3-0,FALSO
+US MLS,Nashville SC (MLS)have Lost their last 6 away league matches,Away vs CF Montréal,3.3,2025-10-04 15:30:00,,FALSO
+Fortuna Liga,Žilina have had Over 2.5 Match Goals in their last 7 league matches,Home vs FK Košice,1.53,2025-10-04 15:30:00,,VERDADEIRO
+Colombia Primera A,Envigado have Drew their last 6 home league matches,Home vs Atlético Bucaramanga,3.2,2025-10-04 16:00:00,,FALSO
+Iceland Besta Deildin,Valur have had BTTS in their last 7 home league matches,Home vs Stjarnan,1.36,2025-10-04 17:00:00,3-2,VERDADEIRO
+Premier League,Forge have Won their last 6 home league matches,Home vs Vancouver FC,1.27,2025-10-04 17:30:00,,FALSO
+USL Championship,Loudoun United have had BTTS in their last 7 league matches,Home vs Birmingham Legion,1.61,2025-10-04 18:00:00,,FALSO
+USL Championship,Loudoun United have had Over 2.5 Match Goals in their last 7 league matches,Home vs Birmingham Legion,1.61,2025-10-04 18:00:00,,FALSO
+Serie A,Bragantino have had BTTS in their last 6 home league matches,Home vs Grêmio,1.91,2025-10-04 18:30:00,1-0,FALSO
+Serie A,Bragantino have had BTTS in their last 6 league matches,Home vs Grêmio,1.91,2025-10-04 18:30:00,1-0,FALSO
+Serie A,Internacional RS have had BTTS in their last 11 league matches,Home vs Botafogo FR,1.95,2025-10-04 18:30:00,,FALSO
+Serie A,Internacional RS have had BTTS in their last 6 home league matches,Home vs Botafogo FR,1.95,2025-10-04 18:30:00,,FALSO
+Primera Division,Platense have had BTTS in their last 6 league matches,Away vs Atlético Tucumán,2.25,2025-10-04 19:00:00,2-0,FALSO
+Honduras Liga Nacional,Olancho have had BTTS in their last 8 league matches,Away vs Victoria,,2025-10-04 20:15:00,2-2,VERDADEIRO
+US MLS,Orlando City SC have had BTTS in their last 13 league matches,Home vs Columbus Crew,1.44,2025-10-04 20:30:00,,VERDADEIRO
+US MLS,Orlando City SC have had BTTS in their last 7 home league matches,Home vs Columbus Crew,1.44,2025-10-04 20:30:00,,VERDADEIRO
+US MLS,Sporting KC have had Over 2.5 Match Goals in their last 8 away league matches,Away vs Minnesota United,1.44,2025-10-04 21:30:00,,VERDADEIRO
+US MLS,Toronto have Drew their last 7 league matches,Away vs Chicago Fire,4.33,2025-10-04 21:30:00,,VERDADEIRO
+Liga de Expansión MX,Dorados have Lost their last 6 league matches,Away vs Universidad Guadalajara,1.45,2025-10-04 22:00:00,2-0,VERDADEIRO
+Liga de Expansión MX,Jaiba Brava have had BTTS in their last 6 league matches,Home vs Mineros de Zacatecas,,2025-10-04 22:00:00,,VERDADEIRO
+US MLS,Colorado Rapids have had Over 2.5 Match Goals in their last 9 away league matches,Away vs Real Salt Lake,1.53,2025-10-04 22:30:00,,FALSO
+US NWSL,Bay FC W have had BTTS in their last 7 away league matches,Away vs Portland Thorns W,,2025-10-04 23:00:00,,VERDADEIRO
+USL Championship,Orange County have had BTTS in their last 6 league matches,Home vs El Paso Locomotive,1.66,2025-10-04 23:00:00,,FALSO
+USL Championship,Orange County have had Over 2.5 Match Goals in their last 11 home league matches,Home vs El Paso Locomotive,1.8,2025-10-04 23:00:00,,FALSO
+US MLS,Seattle Sounders FC have had BTTS in their last 6 home league matches,Home vs Portland Timbers,1.57,2025-10-04 23:30:00,,FALSO
+J League 2,Sagan Tosu have had BTTS in their last 6 league matches,Away vs Renofa Yamaguchi,1.91,2025-10-05 02:00:00,1-2,VERDADEIRO
+Premier League,Gazovik Orenburg have had BTTS in their last 6 league matches,Home vs Rostov,,2025-10-05 06:00:00,,FALSO
+Premier League,Gazovik Orenburg have had Over 2.5 Match Goals in their last 6 league matches,Home vs Rostov,,2025-10-05 06:00:00,,FALSO
+Swedish Superettan,Utsikten have had Over 2.5 Match Goals in their last 6 league matches,Away vs Oddevold,1.8,2025-10-05 08:00:00,,FALSO
+League One,Chongqing Tongliang Long have had Over 2.5 Match Goals in their last 6 away league matches,Away vs Guangxi Baoyun,1.9,2025-10-05 08:30:00,1-2,VERDADEIRO
+Meistriliiga,Levadia have had BTTS in their last 8 league matches,Home vs Tammeka,2.2,2025-10-05 08:30:00,6-0,FALSO
+Meistriliiga,Levadia have had Over 2.5 Match Goals in their last 8 league matches,Home vs Tammeka,1.28,2025-10-05 08:30:00,6-0,VERDADEIRO
+League One,Shenzhen Juniors have had Over 2.5 Match Goals in their last 9 league matches,Away vs Guangzhou E-Power,,2025-10-05 08:30:00,,FALSO
+Allsvenskan Women,Brommapojkarna W have had BTTS in their last 8 league matches,Away vs Linkoping W,,2025-10-05 09:00:00,,VERDADEIRO
+Allsvenskan Women,Brommapojkarna W have had Over 2.5 Match Goals in their last 8 league matches,Away vs Linkoping W,,2025-10-05 09:00:00,,VERDADEIRO
+Liga 1,CFR Cluj have had BTTS in their last 7 league matches,Home vs Hermannstadt,2.0,2025-10-05 09:00:00,0-2,VERDADEIRO
+Allsvenskan Women,Linkoping W have had Over 2.5 Match Goals in their last 6 league matches,Home vs Brommapojkarna W,,2025-10-05 09:00:00,,VERDADEIRO
+Allsvenskan Women,Linkoping W have had Over 2.5 Match Goals in their last 7 home league matches,Home vs Brommapojkarna W,,2025-10-05 09:00:00,,VERDADEIRO
+Premier League,Dynamo Kyiv have had BTTS in their last 6 league matches,Home vs Metalist 1925 Kharkiv,,2025-10-05 09:30:00,1-1,VERDADEIRO
+Premier League,Dynamo Kyiv have had Over 2.5 Match Goals in their last 6 league matches,Home vs Metalist 1925 Kharkiv,,2025-10-05 09:30:00,1-1,FALSO
+Swedish Superettan,Falkenbergs FF have had Over 2.5 Match Goals in their last 6 league matches,Away vs Orebro SK,1.67,2025-10-05 10:00:00,,VERDADEIRO
+Allsvenskan Women,Pitea W have Lost their last 6 home league matches,Home vs Djurgarden W,,2025-10-05 10:00:00,,FALSO
+Allsvenskan Women,Pitea W have had Over 2.5 Match Goals in their last 7 home league matches,Home vs Djurgarden W,,2025-10-05 10:00:00,,FALSO
+Allsvenskan Women,Växjö W have had Over 2.5 Match Goals in their last 7 away league matches,Away vs Norrköping W,,2025-10-05 10:00:00,,FALSO
+Allsvenskan Women,Växjö W have had Over 2.5 Match Goals in their last 9 league matches,Away vs Norrköping W,,2025-10-05 10:00:00,,FALSO
+Super Liga,Čukarički have had BTTS in their last 8 league matches,Home vs Javor Ivanjica,2.0,2025-10-05 10:30:00,,FALSO
+Superliga,AGF Aarhus have Won their last 7 league matches,Home vs Silkeborg IF,1.49,2025-10-05 11:00:00,,VERDADEIRO
+First Division B,SK Beveren have Won their last 8 league matches,Away vs Kortrijk,2.55,2025-10-05 11:00:00,1-3,VERDADEIRO
+Swedish Allsvenskan,IK Sirius have had Over 2.5 Match Goals in their last 6 league matches,Home vs Malmö FF,1.67,2025-10-05 11:30:00,,VERDADEIRO
+Norwegian 1. Division,Moss have had BTTS in their last 7 league matches,Away vs Lyn,1.62,2025-10-05 12:00:00,4-0,FALSO
+Norwegian Eliteserien,Strømsgodset IF have had Over 2.5 Match Goals in their last 6 league matches,Home vs KFUM,1.95,2025-10-05 12:00:00,,FALSO
+1. Liga,Miedź Legnica have had Over 2.5 Match Goals in their last 7 away league matches,Away vs Górnik Łęczna,1.73,2025-10-05 12:30:00,,FALSO
+Superliga,FC København have had BTTS in their last 7 league matches,Home vs Midtjylland,1.7,2025-10-05 13:00:00,,VERDADEIRO
+Segunda Division,Santander have had BTTS in their last 7 league matches,Home vs Malaga,1.8,2025-10-05 13:30:00,3-0,FALSO
+Segunda Division,Santander have had Over 2.5 Match Goals in their last 7 league matches,Home vs Malaga,1.85,2025-10-05 13:30:00,3-0,VERDADEIRO
+Segunda Liga,Benfica II have had BTTS in their last 6 league matches,Home vs Penafiel,1.8,2025-10-05 14:00:00,,FALSO
+Super Liga,Crvena Zvezda have Won their last 8 league matches,Away vs Napredak,1.18,2025-10-05 14:00:00,0-3,VERDADEIRO
+Eredivisie,NEC Nijmegen have had Over 2.5 Match Goals in their last 7 league matches,Away vs Go Ahead Eagles,1.44,2025-10-05 15:00:00,0-1,FALSO
+1. SNL,Celje have had Over 2.5 Match Goals in their last 6 away league matches,Away vs Radomlje,1.4,2025-10-05 15:15:00,0-3,VERDADEIRO
+1. SNL,Celje have had Over 2.5 Match Goals in their last 8 league matches,Away vs Radomlje,1.4,2025-10-05 15:15:00,0-3,VERDADEIRO
+Primera B Nacional,Talleres Remedios de Escalada have Lost their last 6 away league matches,Away vs Almirante Brown,1.81,2025-10-05 15:30:00,0-2,VERDADEIRO
+La Liga,Celta have had BTTS in their last 6 league matches,Home vs Ath Madrid,1.75,2025-10-05 16:00:00,1-1,VERDADEIRO
+Iceland Besta Deildin,Víkingur Reykjavík have had BTTS in their last 10 home league matches,Home vs FH,1.61,2025-10-05 16:15:00,,FALSO
+Iceland Besta Deildin,Víkingur Reykjavík have had Over 2.5 Match Goals in their last 11 home league matches,Home vs FH,1.44,2025-10-05 16:15:00,,FALSO
+Venezuela Primera Division,Yaracuyanos have Lost their last 7 away league matches,Away vs Estudiantes Mérida,1.33,2025-10-05 16:30:00,0-2,FALSO
+US NWSL,Chicago Red Stars W have had BTTS in their last 8 home league matches,Home vs Utah Royals W,,2025-10-05 17:00:00,,VERDADEIRO
+Portugese Liga NOS,Porto have Won their last 7 league matches,Home vs Benfica,1.86,2025-10-05 17:15:00,0-0,FALSO
+Colombia Primera B,Leones FC have Lost their last 6 league matches,Away vs Cúcuta Deportivo,1.25,2025-10-05 18:00:00,,VERDADEIRO
+Primera Division,Peñarol have Won their last 10 home league matches,Home vs Danubio,1.45,2025-10-05 18:00:00,,VERDADEIRO
+Premier League,Cavalry have had Over 2.5 Match Goals in their last 7 league matches,Away vs Pacific,1.75,2025-10-05 19:00:00,,VERDADEIRO
+Serie B,Athletico PR have Won their last 7 league matches,Away vs Atlético GO,2.65,2025-10-05 20:30:00,,FALSO
+Swedish Superettan,Varbergs BoIS have had BTTS in their last 7 league matches,Away vs Landskrona,1.67,2025-10-06 14:01:00,,
+Swedish Superettan,Örgryte have Won their last 7 away league matches,Away vs Sandviken,1.75,2025-10-06 14:00:00,,
+Primera Division,Deportivo Riestra have Won their last 6 home league matches,Home vs Vélez Sarsfield,3.25,2025-10-06 19:00:00,,
+Liga de Expansión MX,Dorados have Lost their last 7 league matches,Home vs Atlante,1.57,2025-10-12 00:00:00,0-0,FALSO
+K League 2,Jeonnam Dragons have had BTTS in their last 6 league matches,Home vs Ansan Greeners,1.83,2025-10-12 02:00:00,0-1,FALSO
+Primera Division Women,Barcelona W have Won their last 6 league matches,Away vs Atletico Madrid W,,2025-10-12 07:00:00,0-6,VERDADEIRO
+League One,Heilongjiang Lava Spring have Won their last 6 home league matches,Home vs Nantong Zhiyun,3.1,2025-10-12 08:30:00,0-1,FALSO
+Segunda Division,Santander have had Over 2.5 Match Goals in their last 8 league matches,Away vs Sp Gijon,1.7,2025-10-12 11:15:00,0-2,VERDADEIRO
+Toppserien,Brann W have Won their last 10 league matches,Away vs Vålerenga W,,2025-10-12 12:00:00,,VERDADEIRO
+Toppserien,Brann W have Won their last 6 away league matches,Away vs Vålerenga W,,2025-10-12 12:00:00,,VERDADEIRO
+Toppserien,Vålerenga W have Won their last 8 home league matches,Home vs Brann W,,2025-10-12 12:00:00,,FALSO
+Premier League,Vancouver FC have had BTTS in their last 6 league matches,Away vs Atlético Ottawa,2.25,2025-10-12 16:00:00,,FALSO
+Primera B Nacional,Estudiantes de Buenos Aires have Won their last 6 home league matches,Home vs Deportivo Maipú,1.57,2025-10-12 17:10:00,,VERDADEIRO
+US MLS,Los Angeles FC have Won their last 6 league matches,Away vs Austin,2.35,2025-10-12 20:00:00,1-0,FALSO
+Colombia Primera A,Independiente Medellín have had BTTS in their last 7 league matches,Away vs Once Caldas,1.83,2025-10-13 19:15:00,1-5,VERDADEIRO
+Liga Pro Serie B,Chacaritas have had BTTS in their last 7 home league matches,Home vs 22 de Julio,,2025-10-08 17:00:00,0-1,FALSO
+Primera Division,Melgar have had BTTS in their last 6 league matches,Home vs Cienciano,1.67,2025-10-02 21:30:00,2-0,FALSO
+J League,Shonan Bellmare have Lost their last 6 league matches,Home vs Tokyo Verdy,2.35,2025-10-03 07:00:00,0-1,VERDADEIRO
+J League,Shonan Bellmare have had BTTS in their last 7 home league matches,Home vs Tokyo Verdy,2.0,2025-10-03 07:00:00,0-1,FALSO
+Finnish Veikkausliiga,Jaro have had Over 2.5 Match Goals in their last 6 home league matches,Home vs Haka,1.57,2025-10-03 12:00:00,0-2,FALSO
+Finnish Veikkausliiga,Jaro have had Over 2.5 Match Goals in their last 7 league matches,Home vs Haka,1.57,2025-10-03 12:00:00,0-2,FALSO
+Finnish Ykkosliiga,SJK Akatemia have had BTTS in their last 8 league matches,Away vs FC Lahti,1.66,2025-10-03 12:30:00,3-0,FALSO
+Finnish Ykkosliiga,SJK Akatemia have had BTTS in their last 9 away league matches,Away vs FC Lahti,1.66,2025-10-03 12:30:00,3-0,FALSO
+Finnish Ykkosliiga,SJK Akatemia have had Over 2.5 Match Goals in their last 9 away league matches,Away vs FC Lahti,1.28,2025-10-03 12:30:00,3-0,VERDADEIRO
+Eerste Divisie,Den Haag have Won their last 6 league matches,Away vs Jong AZ,1.46,2025-10-03 15:00:00,0-4,VERDADEIRO
+J League,Cerezo Osaka have had BTTS in their last 6 league matches,Away vs Nagoya Grampus,1.62,2025-10-04 01:30:00,2-1,VERDADEIRO
+K League 1,Daegu have had Over 2.5 Match Goals in their last 13 away league matches,Away vs Gwangju,1.85,2025-10-04 02:00:00,2-3,VERDADEIRO
+1. Lig,Adana Demirspor have Lost their last 7 league matches,Away vs Pendikspor,,2025-10-04 07:30:00,3-0,VERDADEIRO
+1. Lig,Adana Demirspor have had Over 2.5 Match Goals in their last 8 league matches,Away vs Pendikspor,,2025-10-04 07:30:00,3-0,VERDADEIRO
+Super League,Meizhou Hakka have had Over 2.5 Match Goals in their last 12 home league matches,Home vs Qingdao Hainiu,,2025-10-04 08:00:00,1-0,FALSO
+Championship,Hull have had Over 2.5 Match Goals in their last 7 league matches,Home vs Sheffield United,1.91,2025-10-04 08:30:00,1-0,FALSO
+Super League,Shandong Taishan have Won their last 6 home league matches,Home vs Yunnan Yukun,1.41,2025-10-04 08:35:00,1-1,FALSO
+Super League,Shandong Taishan have had Over 2.5 Match Goals in their last 6 home league matches,Home vs Yunnan Yukun,1.33,2025-10-04 08:35:00,1-1,FALSO
+Super League,Shandong Taishan have had Over 2.5 Match Goals in their last 8 league matches,Home vs Yunnan Yukun,1.33,2025-10-04 08:35:00,1-1,FALSO
+Super League,Yunnan Yukun have had BTTS in their last 11 league matches,Away vs Shandong Taishan,1.5,2025-10-04 08:35:00,1-1,VERDADEIRO
+3. Liga,Ulm have had BTTS in their last 7 league matches,Away vs Ingolstadt,1.5,2025-10-04 09:00:00,4-1,VERDADEIRO
+Tweede Divisie,HHC have Won their last 7 league matches,Home vs Jong Sparta,,2025-10-04 09:30:00,0-2,FALSO
+Iceland Besta Deildin,Afturelding have had BTTS in their last 14 league matches,Away vs KR Reykjavík,1.36,2025-10-04 11:00:00,2-2,VERDADEIRO
+Iceland Besta Deildin,Afturelding have had BTTS in their last 7 away league matches,Away vs KR Reykjavík,1.36,2025-10-04 11:00:00,2-2,VERDADEIRO
+Scottish League 2,Dumbarton have had BTTS in their last 8 league matches,Away vs Stirling,1.57,2025-10-04 11:00:00,2-2,VERDADEIRO
+Scottish League 1,East Fife have had BTTS in their last 6 league matches,Home vs Cove Rangers,1.73,2025-10-04 11:00:00,2-0,FALSO
+National League,Halifax have had Over 2.5 Match Goals in their last 6 league matches,Home vs Brackley Town,2.1,2025-10-04 11:00:00,2-0,FALSO
+Norwegian 1. Division,Kongsvinger have had BTTS in their last 9 league matches,Home vs Skeid,1.62,2025-10-04 11:00:00,3-0,FALSO
+National League,Morecambe have had Over 2.5 Match Goals in their last 7 league matches,Away vs Tamworth,1.6,2025-10-04 11:00:00,1-1,FALSO
+Scottish League 1,Peterhead have had Over 2.5 Match Goals in their last 6 league matches,Away vs Kelty Hearts,1.73,2025-10-04 11:00:00,1-2,VERDADEIRO
+Norwegian 1. Division,Raufoss have had Over 2.5 Match Goals in their last 8 away league matches,Away vs IK Start,1.53,2025-10-04 11:00:00,4-0,VERDADEIRO
+Scottish Championship,Ross County have had BTTS in their last 6 league matches,Home vs Raith R vs,1.8,2025-10-04 11:00:00,2-0,FALSO
+Norwegian Eliteserien,Sandefjord have had Over 2.5 Match Goals in their last 9 league matches,Home vs Bryne,1.67,2025-10-04 11:00:00,1-0,FALSO
+Norwegian 1. Division,Sogndal have had BTTS in their last 11 league matches,Away vs Aalesunds FK,1.67,2025-10-04 11:00:00,2-0,FALSO
+Bundesliga,WSG Tirol have had BTTS in their last 7 league matches,Away vs SV Ried,1.8,2025-10-04 12:00:00,2-0,FALSO
+Ekstraklasa,Zaglebie Lubin have had Over 2.5 Match Goals in their last 6 league matches,Away vs Radomiak Radom,1.9,2025-10-04 12:30:00,3-1,VERDADEIRO
+Meistriliiga,Flora have had Over 2.5 Match Goals in their last 8 league matches,Away vs Harju Jalgpallikool,1.5,2025-10-04 13:00:00,1-2,VERDADEIRO
+Meistriliiga,Harju Jalgpallikool have had Over 2.5 Match Goals in their last 8 league matches,Home vs Flora,1.5,2025-10-04 13:00:00,1-2,VERDADEIRO
+Turkish Super Lig,Galatasaray have Won their last 7 league matches,Home vs Besiktas,1.61,2025-10-04 14:00:00,1-1,FALSO
+Serie B,Cesena have had BTTS in their last 6 league matches,Home vs Reggiana,2.0,2025-10-04 14:30:00,1-2,VERDADEIRO
+Swiss Super League,Grasshopper have had BTTS in their last 7 league matches,Home vs Zürich,1.53,2025-10-04 15:30:00,3-0,FALSO
+Iceland Besta Deildin,Valur have had BTTS in their last 7 home league matches,Home vs Stjarnan,1.36,2025-10-04 16:15:00,3-2,VERDADEIRO
+Primera Division,Platense have had BTTS in their last 6 league matches,Away vs Atlético Tucumán,2.25,2025-10-04 19:00:00,2-0,FALSO
+Honduras Liga Nacional,Olancho have had BTTS in their last 8 league matches,Away vs Victoria,,2025-10-04 20:15:00,2-2,VERDADEIRO
+Liga de Expansión MX,Dorados have Lost their last 6 league matches,Away vs Universidad Guadalajara,1.45,2025-10-04 22:00:00,2-0,VERDADEIRO
+League One,Chongqing Tongliang Long have had Over 2.5 Match Goals in their last 6 away league matches,Away vs Guangxi Baoyun,1.9,2025-10-05 08:30:00,1-2,FALSO
+Meistriliiga,Levadia have had BTTS in their last 8 league matches,Home vs Tammeka,2.37,2025-10-05 08:30:00,6-0,FALSO
+Meistriliiga,Levadia have had Over 2.5 Match Goals in their last 8 league matches,Home vs Tammeka,1.33,2025-10-05 08:30:00,6-0,VERDADEIRO
+Liga 1,CFR Cluj have had BTTS in their last 7 league matches,Home vs Hermannstadt,2.0,2025-10-05 09:00:00,0-2,FALSO
+Premier League,Dynamo Kyiv have had BTTS in their last 6 league matches,Home vs Metalist 1925 Kharkiv,1.8,2025-10-05 09:30:00,0-1,FALSO
+Premier League,Dynamo Kyiv have had Over 2.5 Match Goals in their last 6 league matches,Home vs Metalist 1925 Kharkiv,1.8,2025-10-05 09:30:00,0-1,FALSO
+First Division B,SK Beveren have Won their last 8 league matches,Away vs Kortrijk,2.7,2025-10-05 11:00:00,1-3,FALSO
+Norwegian 1. Division,Moss have had BTTS in their last 7 league matches,Away vs Lyn,1.62,2025-10-05 12:00:00,4-0,FALSO
+Segunda Division,Santander have had BTTS in their last 7 league matches,Home vs Malaga,1.8,2025-10-05 13:30:00,3-0,FALSO
+Segunda Division,Santander have had Over 2.5 Match Goals in their last 7 league matches,Home vs Malaga,1.85,2025-10-05 13:30:00,3-0,VERDADEIRO
+Super Liga,Crvena Zvezda have Won their last 8 league matches,Away vs Napredak,1.2,2025-10-05 14:00:00,0-3,VERDADEIRO
+Eredivisie,NEC Nijmegen have had Over 2.5 Match Goals in their last 7 league matches,Away vs Go Ahead Eagles,1.44,2025-10-05 15:00:00,0-1,FALSO
+1. SNL,Celje have had Over 2.5 Match Goals in their last 6 away league matches,Away vs Radomlje,1.4,2025-10-05 15:15:00,0-3,VERDADEIRO
+1. SNL,Celje have had Over 2.5 Match Goals in their last 8 league matches,Away vs Radomlje,1.4,2025-10-05 15:15:00,0-3,VERDADEIRO
+Primera B Nacional,Talleres Remedios de Escalada have Lost their last 6 away league matches,Away vs Almirante Brown,1.81,2025-10-05 15:30:00,0-2,FALSO
+La Liga,Celta have had BTTS in their last 6 league matches,Home vs Ath Madrid,1.8,2025-10-05 16:00:00,0-1,FALSO
+Venezuela Primera Division,Yaracuyanos have Lost their last 7 away league matches,Away vs Estudiantes Mérida,1.36,2025-10-05 16:30:00,0-2,FALSO
+Portugese Liga NOS,Porto have Won their last 7 league matches,Home vs Benfica,1.86,2025-10-05 17:15:00,0-0,FALSO
+Liga Pro Serie B,Chacaritas have had BTTS in their last 7 home league matches,Home vs 22 de Julio,,2025-10-08 17:00:00,0-1,FALSO
+Primera Division,Melgar have had BTTS in their last 6 league matches,Home vs Cienciano,1.67,2025-10-02 21:30:00,2-0,FALSO
+J League,Shonan Bellmare have Lost their last 6 league matches,Home vs Tokyo Verdy,2.35,2025-10-03 07:00:00,0-1,VERDADEIRO
+J League,Shonan Bellmare have had BTTS in their last 7 home league matches,Home vs Tokyo Verdy,2.0,2025-10-03 07:00:00,0-1,FALSO
+Finnish Veikkausliiga,Jaro have had Over 2.5 Match Goals in their last 6 home league matches,Home vs Haka,1.57,2025-10-03 12:00:00,0-2,FALSO
+Finnish Veikkausliiga,Jaro have had Over 2.5 Match Goals in their last 7 league matches,Home vs Haka,1.57,2025-10-03 12:00:00,0-2,FALSO
+Finnish Ykkosliiga,SJK Akatemia have had BTTS in their last 8 league matches,Away vs FC Lahti,1.66,2025-10-03 12:30:00,3-0,FALSO
+Finnish Ykkosliiga,SJK Akatemia have had BTTS in their last 9 away league matches,Away vs FC Lahti,1.66,2025-10-03 12:30:00,3-0,FALSO
+Finnish Ykkosliiga,SJK Akatemia have had Over 2.5 Match Goals in their last 9 away league matches,Away vs FC Lahti,1.28,2025-10-03 12:30:00,3-0,VERDADEIRO
+Eerste Divisie,Den Haag have Won their last 6 league matches,Away vs Jong AZ,1.46,2025-10-03 15:00:00,0-4,VERDADEIRO
+J League,Cerezo Osaka have had BTTS in their last 6 league matches,Away vs Nagoya Grampus,1.62,2025-10-04 01:30:00,2-1,VERDADEIRO
+K League 1,Daegu have had Over 2.5 Match Goals in their last 13 away league matches,Away vs Gwangju,1.85,2025-10-04 02:00:00,2-3,VERDADEIRO
+1. Lig,Adana Demirspor have Lost their last 7 league matches,Away vs Pendikspor,,2025-10-04 07:30:00,3-0,VERDADEIRO
+1. Lig,Adana Demirspor have had Over 2.5 Match Goals in their last 8 league matches,Away vs Pendikspor,,2025-10-04 07:30:00,3-0,VERDADEIRO
+Super League,Meizhou Hakka have had Over 2.5 Match Goals in their last 12 home league matches,Home vs Qingdao Hainiu,,2025-10-04 08:00:00,1-0,FALSO
+Championship,Hull have had Over 2.5 Match Goals in their last 7 league matches,Home vs Sheffield United,1.91,2025-10-04 08:30:00,1-0,FALSO
+Super League,Shandong Taishan have Won their last 6 home league matches,Home vs Yunnan Yukun,1.41,2025-10-04 08:35:00,1-1,FALSO
+Super League,Shandong Taishan have had Over 2.5 Match Goals in their last 6 home league matches,Home vs Yunnan Yukun,1.33,2025-10-04 08:35:00,1-1,FALSO
+Super League,Shandong Taishan have had Over 2.5 Match Goals in their last 8 league matches,Home vs Yunnan Yukun,1.33,2025-10-04 08:35:00,1-1,FALSO
+Super League,Yunnan Yukun have had BTTS in their last 11 league matches,Away vs Shandong Taishan,1.5,2025-10-04 08:35:00,1-1,VERDADEIRO
+3. Liga,Ulm have had BTTS in their last 7 league matches,Away vs Ingolstadt,1.5,2025-10-04 09:00:00,4-1,VERDADEIRO
+Tweede Divisie,HHC have Won their last 7 league matches,Home vs Jong Sparta,,2025-10-04 09:30:00,0-2,FALSO
+Iceland Besta Deildin,Afturelding have had BTTS in their last 14 league matches,Away vs KR Reykjavík,1.36,2025-10-04 11:00:00,2-2,VERDADEIRO
+Iceland Besta Deildin,Afturelding have had BTTS in their last 7 away league matches,Away vs KR Reykjavík,1.36,2025-10-04 11:00:00,2-2,VERDADEIRO
+Scottish League 2,Dumbarton have had BTTS in their last 8 league matches,Away vs Stirling,1.57,2025-10-04 11:00:00,2-2,VERDADEIRO
+Scottish League 1,East Fife have had BTTS in their last 6 league matches,Home vs Cove Rangers,1.73,2025-10-04 11:00:00,2-0,FALSO
+National League,Halifax have had Over 2.5 Match Goals in their last 6 league matches,Home vs Brackley Town,2.1,2025-10-04 11:00:00,2-0,FALSO
+Norwegian 1. Division,Kongsvinger have had BTTS in their last 9 league matches,Home vs Skeid,1.62,2025-10-04 11:00:00,3-0,FALSO
+National League,Morecambe have had Over 2.5 Match Goals in their last 7 league matches,Away vs Tamworth,1.6,2025-10-04 11:00:00,1-1,FALSO
+Scottish League 1,Peterhead have had Over 2.5 Match Goals in their last 6 league matches,Away vs Kelty Hearts,1.73,2025-10-04 11:00:00,1-2,VERDADEIRO
+Norwegian 1. Division,Raufoss have had Over 2.5 Match Goals in their last 8 away league matches,Away vs IK Start,1.53,2025-10-04 11:00:00,4-0,VERDADEIRO
+Scottish Championship,Ross County have had BTTS in their last 6 league matches,Home vs Raith R vs,1.8,2025-10-04 11:00:00,2-0,FALSO
+Norwegian Eliteserien,Sandefjord have had Over 2.5 Match Goals in their last 9 league matches,Home vs Bryne,1.67,2025-10-04 11:00:00,1-0,FALSO
+Norwegian 1. Division,Sogndal have had BTTS in their last 11 league matches,Away vs Aalesunds FK,1.67,2025-10-04 11:00:00,2-0,FALSO
+Bundesliga,WSG Tirol have had BTTS in their last 7 league matches,Away vs SV Ried,1.8,2025-10-04 12:00:00,2-0,FALSO
+Ekstraklasa,Zaglebie Lubin have had Over 2.5 Match Goals in their last 6 league matches,Away vs Radomiak Radom,1.9,2025-10-04 12:30:00,3-1,VERDADEIRO
+Meistriliiga,Flora have had Over 2.5 Match Goals in their last 8 league matches,Away vs Harju Jalgpallikool,1.5,2025-10-04 13:00:00,1-2,VERDADEIRO
+Meistriliiga,Harju Jalgpallikool have had Over 2.5 Match Goals in their last 8 league matches,Home vs Flora,1.5,2025-10-04 13:00:00,1-2,VERDADEIRO
+Turkish Super Lig,Galatasaray have Won their last 7 league matches,Home vs Besiktas,1.61,2025-10-04 14:00:00,1-1,FALSO
+Serie B,Cesena have had BTTS in their last 6 league matches,Home vs Reggiana,2.0,2025-10-04 14:30:00,1-2,VERDADEIRO
+Swiss Super League,Grasshopper have had BTTS in their last 7 league matches,Home vs Zürich,1.53,2025-10-04 15:30:00,3-0,FALSO
+Iceland Besta Deildin,Valur have had BTTS in their last 7 home league matches,Home vs Stjarnan,1.36,2025-10-04 16:15:00,3-2,VERDADEIRO
+Primera Division,Platense have had BTTS in their last 6 league matches,Away vs Atlético Tucumán,2.25,2025-10-04 19:00:00,2-0,FALSO
+Honduras Liga Nacional,Olancho have had BTTS in their last 8 league matches,Away vs Victoria,,2025-10-04 20:15:00,2-2,VERDADEIRO
+Liga de Expansión MX,Dorados have Lost their last 6 league matches,Away vs Universidad Guadalajara,1.45,2025-10-04 22:00:00,2-0,VERDADEIRO
+J League 2,Sagan Tosu have had BTTS in their last 6 league matches,Away vs Renofa Yamaguchi,1.91,2025-10-05 02:00:00,0-1,FALSO
+League One,Chongqing Tongliang Long have had Over 2.5 Match Goals in their last 6 away league matches,Away vs Guangxi Baoyun,1.9,2025-10-05 08:30:00,1-2,FALSO
+Meistriliiga,Levadia have had BTTS in their last 8 league matches,Home vs Tammeka,2.37,2025-10-05 08:30:00,6-0,FALSO
+Meistriliiga,Levadia have had Over 2.5 Match Goals in their last 8 league matches,Home vs Tammeka,1.33,2025-10-05 08:30:00,6-0,VERDADEIRO
+Liga 1,CFR Cluj have had BTTS in their last 7 league matches,Home vs Hermannstadt,2.0,2025-10-05 09:00:00,0-2,FALSO
+Premier League,Dynamo Kyiv have had BTTS in their last 6 league matches,Home vs Metalist 1925 Kharkiv,1.8,2025-10-05 09:30:00,0-1,FALSO
+Premier League,Dynamo Kyiv have had Over 2.5 Match Goals in their last 6 league matches,Home vs Metalist 1925 Kharkiv,1.8,2025-10-05 09:30:00,0-1,FALSO
+First Division B,SK Beveren have Won their last 8 league matches,Away vs Kortrijk,2.7,2025-10-05 11:00:00,1-3,FALSO
+Norwegian 1. Division,Moss have had BTTS in their last 7 league matches,Away vs Lyn,1.62,2025-10-05 12:00:00,4-0,FALSO
+Segunda Division,Santander have had BTTS in their last 7 league matches,Home vs Malaga,1.8,2025-10-05 13:30:00,3-0,FALSO
+Segunda Division,Santander have had Over 2.5 Match Goals in their last 7 league matches,Home vs Malaga,1.85,2025-10-05 13:30:00,3-0,VERDADEIRO
+Super Liga,Crvena Zvezda have Won their last 8 league matches,Away vs Napredak,1.2,2025-10-05 14:00:00,0-3,VERDADEIRO
+Eredivisie,NEC Nijmegen have had Over 2.5 Match Goals in their last 7 league matches,Away vs Go Ahead Eagles,1.44,2025-10-05 15:00:00,0-1,FALSO
+1. SNL,Celje have had Over 2.5 Match Goals in their last 6 away league matches,Away vs Radomlje,1.4,2025-10-05 15:15:00,0-3,VERDADEIRO
+1. SNL,Celje have had Over 2.5 Match Goals in their last 8 league matches,Away vs Radomlje,1.4,2025-10-05 15:15:00,0-3,VERDADEIRO
+Primera B Nacional,Talleres Remedios de Escalada have Lost their last 6 away league matches,Away vs Almirante Brown,1.81,2025-10-05 15:30:00,0-2,FALSO
+La Liga,Celta have had BTTS in their last 6 league matches,Home vs Ath Madrid,1.8,2025-10-05 16:00:00,0-1,FALSO
+Venezuela Primera Division,Yaracuyanos have Lost their last 7 away league matches,Away vs Estudiantes Mérida,1.36,2025-10-05 16:30:00,0-2,FALSO
+Portugese Liga NOS,Porto have Won their last 7 league matches,Home vs Benfica,1.86,2025-10-05 17:15:00,0-0,FALSO
+J League,Shonan Bellmare have Lost their last 7 away league matches,Away vs Yokohama,2.01,2025-09-28 05:00:00,1-0,VERDADEIRO
+Eredivisie,NEC Nijmegen have had Over 2.5 Match Goals in their last 6 league matches,Home vs AZ Alkmaar,1.44,2025-09-28 07:15:00,0-2,FALSO
+Meistriliiga,Flora have had Over 2.5 Match Goals in their last 7 league matches,Away vs Nõmme Kalju,1.66,2025-09-28 08:30:00,0-3,FALSO
+3. Liga,Verl have had BTTS in their last 7 league matches,Away vs Regensburg,1.53,2025-09-28 08:30:00,2-0,FALSO
+Norwegian 1. Division,Kongsvinger have had BTTS in their last 7 away league matches,Away vs Sogndal,1.44,2025-09-28 09:30:00,0-2,FALSO
+Norwegian 1. Division,Kongsvinger have had BTTS in their last 8 league matches,Away vs Sogndal,1.44,2025-09-28 09:30:00,0-2,FALSO
+Norwegian 1. Division,Sogndal have had BTTS in their last 10 league matches,Home vs Kongsvinger,1.44,2025-09-28 09:30:00,0-2,FALSO
+Norwegian 1. Division,Sogndal have had BTTS in their last 7 home league matches,Home vs Kongsvinger,1.44,2025-09-28 09:30:00,0-2,FALSO
+Bundesliga,WSG Tirol have had BTTS in their last 6 league matches,Home vs FC Salzburg,1.67,2025-09-28 09:30:00,0-1,FALSO
+Finnish Veikkausliiga,Jaro have had Over 2.5 Match Goals in their last 6 league matches,Home vs Mariehamn,1.57,2025-09-28 10:00:00,0-2,FALSO
+Finnish Ykkosliiga,SJK Akatemia have had BTTS in their last 7 league matches,Home vs JäPS,1.33,2025-09-28 11:00:00,0-1,FALSO
+Iceland Besta Deildin,Afturelding have had BTTS in their last 13 league matches,Home vs KA Akureyri,1.44,2025-09-28 13:00:00,0-3,FALSO
+Iceland Besta Deildin,Afturelding have had BTTS in their last 6 home league matches,Home vs KA Akureyri,1.44,2025-09-28 13:00:00,0-3,FALSO
+1. Lig,Hatayspor have had BTTS in their last 7 league matches,Home vs Bandırmaspor,1.67,2025-09-28 13:00:00,0-3,FALSO
+Super Liga,Crvena Zvezda have Won their last 7 league matches,Home vs Radnički Kragujevac,1.2,2025-09-28 14:00:00,0-2,FALSO
+Pro League,Dender have Lost their last 6 league matches,Home vs La Louvière,2.7,2025-09-28 14:15:00,0-0,FALSO
+Primera Division,Nacional have had Over 2.5 Match Goals in their last 6 league matches,Away vs Juventud,1.8,2025-09-28 16:00:00,0-1,FALSO
+Iceland Besta Deildin,Valur have had BTTS in their last 9 league matches,Away vs Fram,1.44,2025-09-28 16:15:00,2-0,FALSO
+Ekstraklasa,Zaglebie Lubin have had BTTS in their last 7 league matches,Home vs Arka Gdynia,1.75,2025-09-29 13:00:00,4-0,FALSO
+1. Lig,Adana Demirspor have Lost their last 6 league matches,Home vs Sarıyer,1.11,2025-09-29 14:00:00,0-3,VERDADEIRO
+1. Lig,Adana Demirspor have had Over 2.5 Match Goals in their last 7 league matches,Home vs Sarıyer,1.36,2025-09-29 14:00:00,0-3,VERDADEIRO
+Norwegian 1. Division,Lyn have Won their last 6 away league matches,Away vs Hødd,2.0,2025-09-29 14:00:00,0-1,VERDADEIRO
+Norwegian 1. Division,Moss have had BTTS in their last 6 home league matches,Home vs Lillestrøm,1.67,2025-09-29 14:00:00,0-1,FALSO
+Norwegian 1. Division,Moss have had BTTS in their last 6 league matches,Home vs Lillestrøm,1.67,2025-09-29 14:00:00,0-1,FALSO
+Norwegian 1. Division,Moss have had Over 2.5 Match Goals in their last 8 home league matches,Home vs Lillestrøm,1.48,2025-09-29 14:00:00,0-1,FALSO
+Norwegian Eliteserien,Sandefjord have had Over 2.5 Match Goals in their last 8 league matches,Away vs FK Haugesund,1.48,2025-09-29 14:00:00,0-2,FALSO
+Liga 1,CFR Cluj have had BTTS in their last 6 league matches,Away vs Universitatea Cluj,1.83,2025-09-29 15:00:00,0-2,FALSO
+Portugese Liga NOS,Porto have Won their last 6 league matches,Away vs Arouca,1.33,2025-09-29 16:00:00,0-4,VERDADEIRO
+Bolivia Primera Division,The Strongest have Won their last 9 home league matches,Home vs Oriente Petrolero,1.3,2025-09-29 16:00:00,2-0,VERDADEIRO
+Bolivia Primera Division,The Strongest have had Over 2.5 Match Goals in their last 8 home league matches,Home vs Oriente Petrolero,1.3,2025-09-29 16:00:00,2-0,FALSO
+Bolivia Primera Division,Always Ready have Won their last 8 home league matches,Home vs Real Oruro,1.19,2025-09-29 18:30:00,4-0,VERDADEIRO
+Eerste Divisie,FC Den Bosch have had Over 2.5 Match Goals in their last 6 league matches,Away vs VVV-Venlo,1.53,2025-09-30 15:00:00,0-1,FALSO
+Meistriliiga,Flora have Won their last 6 league matches,Home vs Levadia,3.0,2025-09-24 13:00:00,2-3,FALSO
+Meistriliiga,Flora have Won their last 7 home league matches,Home vs Levadia,3.0,2025-09-24 13:00:00,2-3,FALSO
+Meistriliiga,Flora have had Over 2.5 Match Goals in their last 6 league matches,Home vs Levadia,1.65,2025-09-24 13:00:00,2-3,VERDADEIRO
+Meistriliiga,Levadia have had BTTS in their last 6 league matches,Away vs Flora,1.61,2025-09-24 13:00:00,1-2,VERDADEIRO
+Meistriliiga,Levadia have had Over 2.5 Match Goals in their last 6 league matches,Away vs Flora,1.65,2025-09-24 13:00:00,1-2,VERDADEIRO
+Toppserien,Vålerenga W have Won their last 7 home league matches,Home vs Lyn W,,2025-09-24 13:00:00,,VERDADEIRO
+Finnish Ykkosliiga,SJK Akatemia have had BTTS in their last 6 league matches,Away vs Klubi-04,1.28,2025-09-24 14:00:00,1-4,VERDADEIRO
+Finnish Ykkosliiga,SJK Akatemia have had BTTS in their last 8 away league matches,Away vs Klubi-04,1.28,2025-09-24 14:00:00,1-4,VERDADEIRO
+Finnish Ykkosliiga,SJK Akatemia have had Over 2.5 Match Goals in their last 8 away league matches,Away vs Klubi-04,1.25,2025-09-24 14:00:00,1-4,VERDADEIRO
+First Division B,SK Beveren have Won their last 6 league matches,Away vs RFC Liège,1.95,2025-09-24 15:00:00,1-2,FALSO
+National League,Wealdstone have had BTTS in their last 6 league matches,Away vs Tamworth,1.7,2025-09-24 15:45:00,1-1,VERDADEIRO
+National League,Wealdstone have had Over 2.5 Match Goals in their last 6 league matches,Away vs Tamworth,1.8,2025-09-24 15:45:00,1-1,FALSO
+Liga MX,Cruz Azul have Won their last 7 league matches,Home vs Querétaro,1.19,2025-09-24 21:00:00,2-2,FALSO
+1. Lig,Adana Demirspor have had Over 2.5 Match Goals in their last 6 league matches,Away vs Sivasspor,1.36,2025-09-25 11:00:00,5-0,VERDADEIRO
+Toppserien,Kolbotn W have Lost their last 7 league matches,Home vs Stabæk W,,2025-09-25 13:00:00,,FALSO
+Swedish Superettan,Örgryte have Won their last 6 away league matches,Away vs Trelleborg,2.0,2025-09-25 14:00:00,,VERDADEIRO
+Liga Pro Serie B,Chacaritas have had BTTS in their last 7 league matches,Away vs Vargas Torres,,2025-09-25 17:30:00,0-0,FALSO
+Bolivia Primera Division,Real Oruro have had Over 2.5 Match Goals in their last 6 league matches,Home vs Guabirá,1.57,2025-09-25 21:00:00,,VERDADEIRO
+Super League,Shanghai Port have had BTTS in their last 10 league matches,Home vs Wuhan Three Towns,1.67,2025-09-26 09:00:00,,VERDADEIRO
+Super League,Wuhan Three Towns have had Over 2.5 Match Goals in their last 7 away league matches,Away vs Shanghai Port,1.3,2025-09-26 09:00:00,3-2,VERDADEIRO
+Turkish Super Lig,Galatasaray have Won their last 6 league matches,Away vs Alanyaspor,1.39,2025-09-26 14:00:00,0-1,VERDADEIRO
+K League 1,Daegu have had Over 2.5 Match Goals in their last 6 league matches,Home vs Ulsan HD,1.57,2025-09-27 04:30:00,0-0,FALSO
+J League,Albirex Niigata have Lost their last 8 away league matches,Away vs Gamba Osaka,1.66,2025-09-27 05:00:00,0-4,FALSO
+K League 1,Seoul have had Over 2.5 Match Goals in their last 6 league matches,Home vs Jeonbuk Motors,1.9,2025-09-27 07:00:00,0-0,FALSO
+Meistriliiga,Harju Jalgpallikool have had Over 2.5 Match Goals in their last 7 league matches,Home vs Vaprus,1.44,2025-09-27 08:30:00,0-1,FALSO
+League One,Shenzhen Juniors have had Over 2.5 Match Goals in their last 8 league matches,Home vs Dalian Huayi,1.95,2025-09-27 08:30:00,,VERDADEIRO
+Liga 1,Csikszereda have had BTTS in their last 6 league matches,Away vs UTA Arad,1.8,2025-09-27 09:00:00,,FALSO
+Finnish Ykkosliiga,TPS have had Over 2.5 Match Goals in their last 7 home league matches,Home vs JIPPO,1.5,2025-09-27 09:00:00,0-1,FALSO
+Vysshaya Liga,Vitebsk have Lost their last 6 league matches,Away vs Slutsk,,2025-09-27 09:00:00,0-1,FALSO
+Allsvenskan Women,Alingsås W have Lost their last 9 away league matches,Away vs Norrköping W,,2025-09-27 10:00:00,,VERDADEIRO
+Finnish Ykkosliiga,FC Lahti have had BTTS in their last 7 home league matches,Home vs PK-35,1.72,2025-09-27 10:00:00,1-0,FALSO
+Finnish Ykkosliiga,FC Lahti have had Over 2.5 Match Goals in their last 7 home league matches,Home vs PK-35,1.57,2025-09-27 10:00:00,1-0,FALSO
+Tweede Divisie,HHC have Won their last 6 league matches,Away vs Spakenburg,,2025-09-27 10:00:00,2-3,FALSO
+Czech Liga,Karviná have had BTTS in their last 6 league matches,Away vs Slovácko,1.67,2025-09-27 10:00:00,,VERDADEIRO
+Czech Liga,Karviná have had Over 2.5 Match Goals in their last 6 league matches,Away vs Slovácko,1.8,2025-09-27 10:00:00,,VERDADEIRO
+Premier League,Lokomotiv M have had BTTS in their last 8 league matches,Home vs Rubin Kazan,,2025-09-27 10:30:00,1-0,FALSO
+League One,Bradford have had BTTS in their last 7 league matches,Home vs Blackpool,1.75,2025-09-27 11:00:00,1-0,FALSO
+Scottish League 2,Dumbarton have had BTTS in their last 7 league matches,Home vs Stranraer,1.73,2025-09-27 11:00:00,0-1,FALSO
+Scottish League 2,Edinburgh City have had BTTS in their last 7 league matches,Home vs Forfar,1.57,2025-09-27 11:00:00,,VERDADEIRO
+Scottish League 2,Edinburgh City have had Over 2.5 Match Goals in their last 7 league matches,Home vs Forfar,1.6,2025-09-27 11:00:00,,FALSO
+Northern Ireland Premiership,Glenavon have Lost their last 8 league matches,Home vs Crusaders,2.37,2025-09-27 11:00:00,,VERDADEIRO
+Finnish Veikkausliiga,KTP have Lost their last 7 league matches,Away vs Oulu,1.85,2025-09-27 11:00:00,0-2,FALSO
+Finnish Veikkausliiga,KTP have had Over 2.5 Match Goals in their last 12 away league matches,Away vs Oulu,1.53,2025-09-27 11:00:00,0-2,FALSO
+Championship,Sheffield United have Lost their last 6 league matches,Away vs Oxford,3.0,2025-09-27 11:00:00,0-1,FALSO
+National League,Wealdstone have had BTTS in their last 7 league matches,Home vs Eastleigh,1.62,2025-09-27 11:00:00,0-0,FALSO
+La Liga,Real Madrid have Won their last 6 league matches,Away vs Ath Madrid,2.25,2025-09-27 11:15:00,0-5,FALSO
+Superliga,FC København have had BTTS in their last 6 league matches,Away vs Sønderjyske Fodbold,1.8,2025-09-27 13:00:00,,VERDADEIRO
+Swiss Super League,Grasshopper have had BTTS in their last 6 league matches,Away vs FC Lugano,1.67,2025-09-27 13:00:00,0-2,FALSO
+Iceland 1 Deild,HK have had Over 2.5 Match Goals in their last 10 away league matches,Away vs Keflavík,,2025-09-27 13:15:00,4-0,VERDADEIRO
+Iceland 1 Deild,Keflavík have had Over 2.5 Match Goals in their last 7 home league matches,Home vs HK,,2025-09-27 13:15:00,,VERDADEIRO
+Iceland 1 Deild,Keflavík have had Over 2.5 Match Goals in their last 9 league matches,Home vs HK,,2025-09-27 13:15:00,,VERDADEIRO
+Finnish Ykkosliiga,SalPa have had Over 2.5 Match Goals in their last 9 away league matches,Away vs Klubi-04,,2025-09-27 13:30:00,1-0,FALSO
+Segunda Division,Santander have had BTTS in their last 6 league matches,Home vs FC Andorra,1.62,2025-09-27 13:30:00,0-1,FALSO
+Segunda Division,Santander have had Over 2.5 Match Goals in their last 6 league matches,Home vs FC Andorra,1.62,2025-09-27 13:30:00,0-1,FALSO
+Premier League,Cavalry have had Over 2.5 Match Goals in their last 6 league matches,Away vs Atlético Ottawa,2.0,2025-09-27 14:00:00,,VERDADEIRO
+First Division B,SK Beveren have Won their last 7 league matches,Home vs RFC Seraing,1.3,2025-09-27 15:00:00,0-2,FALSO
+1. SNL,Celje have had Over 2.5 Match Goals in their last 7 league matches,Home vs Maribor,1.57,2025-09-27 15:15:00,3-0,VERDADEIRO
+Eredivisie,Heracles Almelo have Lost their last 6 league matches,Home vs Sparta Rotterdam,2.3,2025-09-27 16:00:00,,FALSO
+Paraguay Division Profesional,Cerro Porteño have had BTTS in their last 6 away league matches,Away vs Sportivo Luqueño,1.83,2025-09-27 17:00:00,,FALSO
+Serie C,Ponte Preta have Won their last 6 league matches,Home vs Náutico,,2025-09-27 17:00:00,0-1,FALSO
+US MLS,Toronto have Drew their last 6 league matches,Home vs Club Internacional de Fútbol Miami,4.2,2025-09-27 17:30:00,,VERDADEIRO
+Serie A,Internacional RS have had BTTS in their last 9 league matches,Away vs Juventude,1.95,2025-09-27 18:30:00,,VERDADEIRO
+Serie A,Internacional RS have had Over 2.5 Match Goals in their last 7 league matches,Away vs Juventude,2.25,2025-09-27 18:30:00,,FALSO
+USL Championship,Louisville City have Won their last 6 away league matches,Away vs Detroit City,2.2,2025-09-27 20:00:00,,VERDADEIRO
+Serie B,Athletico PR have Won their last 6 league matches,Home vs Operário PR,1.57,2025-09-27 20:30:00,,VERDADEIRO
+US MLS,CF Montréal have had BTTS in their last 6 away league matches,Away vs Charlotte,1.57,2025-09-27 20:30:00,,VERDADEIRO
+US MLS,Charlotte have Won their last 6 home league matches,Home vs CF Montréal,1.56,2025-09-27 20:30:00,,FALSO
+USL Championship,Birmingham Legion have had BTTS in their last 7 league matches,Away vs San Antonio,1.72,2025-09-27 21:30:00,,FALSO
+USL Championship,Birmingham Legion have had BTTS in their last 9 away league matches,Away vs San Antonio,1.72,2025-09-27 21:30:00,,FALSO
+US MLS,Chicago Fire have had Over 2.5 Match Goals in their last 6 league matches,Home vs Columbus Crew,1.44,2025-09-27 21:30:00,,FALSO
+US MLS,St. Louis City have had BTTS in their last 10 home league matches,Home vs Los Angeles FC,1.44,2025-09-27 21:30:00,,FALSO
+Liga de Expansión MX,Morelia have had Over 2.5 Match Goals in their last 6 league matches,Home vs Atlante,1.95,2025-09-27 22:00:00,0-2,FALSO
+US MLS,Colorado Rapids have had Over 2.5 Match Goals in their last 12 league matches,Home vs Minnesota United,1.53,2025-09-27 22:30:00,,FALSO
+US MLS,Minnesota United have had BTTS in their last 7 away league matches,Away vs Colorado Rapids,1.5,2025-09-27 22:30:00,,FALSO
+Honduras Liga Nacional,Olancho have had BTTS in their last 7 league matches,Home vs Real España,,2025-09-27 22:30:00,0-1,FALSO
+USL Championship,Orange County have had Over 2.5 Match Goals in their last 10 home league matches,Home vs Charleston Battery,1.85,2025-09-27 23:00:00,,VERDADEIRO
+US MLS,LA Galaxy have had Over 2.5 Match Goals in their last 6 home league matches,Home vs Sporting KC,1.36,2025-09-27 23:30:00,,VERDADEIRO
+US MLS,SJ Earthquakes have had BTTS in their last 15 league matches,Away vs San Diego,1.4,2025-09-27 23:30:00,,FALSO
+US MLS,SJ Earthquakes have had BTTS in their last 8 away league matches,Away vs San Diego,1.4,2025-09-27 23:30:00,,FALSO
+US MLS,SJ Earthquakes have had Over 2.5 Match Goals in their last 10 league matches,Away vs San Diego,1.36,2025-09-27 23:30:00,,FALSO
+US MLS,SJ Earthquakes have had Over 2.5 Match Goals in their last 6 away league matches,Away vs San Diego,1.36,2025-09-27 23:30:00,,FALSO
+US MLS,Sporting KC have had Over 2.5 Match Goals in their last 7 away league matches,Away vs LA Galaxy,1.36,2025-09-27 23:30:00,,VERDADEIRO
+K League 1,Suwon have had BTTS in their last 8 away league matches,Away vs Jeju United,1.62,2025-09-28 04:30:00,,VERDADEIRO
+K League 1,Suwon have had Over 2.5 Match Goals in their last 6 away league matches,Away vs Jeju United,1.73,2025-09-28 04:30:00,,VERDADEIRO
+J League,Shonan Bellmare have Lost their last 7 away league matches,Away vs Yokohama,2.01,2025-09-28 05:00:00,1-0,VERDADEIRO
+Eredivisie,NEC Nijmegen have had Over 2.5 Match Goals in their last 6 league matches,Home vs AZ Alkmaar,1.44,2025-09-28 07:15:00,0-2,FALSO
+Allsvenskan Women,Brommapojkarna W have had BTTS in their last 7 league matches,Away vs Rosengard W,,2025-09-28 08:00:00,,VERDADEIRO
+Allsvenskan Women,Brommapojkarna W have had Over 2.5 Match Goals in their last 7 league matches,Away vs Rosengard W,,2025-09-28 08:00:00,,VERDADEIRO
+Super League,Henan Songshan Longmen have had BTTS in their last 7 away league matches,Away vs Tianjin Jinmen Tiger,1.5,2025-09-28 08:00:00,,FALSO
+Czech Liga,Pardubice have had BTTS in their last 8 league matches,Away vs Teplice,1.7,2025-09-28 08:00:00,0-0,FALSO
+Allsvenskan Women,Pitea W have had Over 2.5 Match Goals in their last 6 home league matches,Home vs Vittsjo W,,2025-09-28 08:00:00,,VERDADEIRO
+Allsvenskan Women,Rosengard W have had Over 2.5 Match Goals in their last 6 league matches,Home vs Brommapojkarna W,,2025-09-28 08:00:00,,VERDADEIRO
+Swedish Superettan,Varbergs BoIS have had BTTS in their last 6 league matches,Home vs Oddevold,1.8,2025-09-28 08:00:00,,VERDADEIRO
+Meistriliiga,Flora have had Over 2.5 Match Goals in their last 7 league matches,Away vs Nõmme Kalju,1.65,2025-09-28 08:30:00,0-3,FALSO
+Bundesliga 2,Preußen Münster have had BTTS in their last 6 league matches,Home vs Braunschweig,1.57,2025-09-28 08:30:00,,VERDADEIRO
+3. Liga,Verl have had BTTS in their last 7 league matches,Away vs Regensburg,1.53,2025-09-28 08:30:00,2-0,FALSO
+Norwegian 1. Division,Kongsvinger have had BTTS in their last 7 away league matches,Away vs Sogndal,1.44,2025-09-28 09:30:00,0-2,FALSO
+Norwegian 1. Division,Kongsvinger have had BTTS in their last 8 league matches,Away vs Sogndal,1.44,2025-09-28 09:30:00,0-2,FALSO
+Norwegian 1. Division,Sogndal have had BTTS in their last 10 league matches,Home vs Kongsvinger,1.44,2025-09-28 09:30:00,0-2,FALSO
+Norwegian 1. Division,Sogndal have had BTTS in their last 7 home league matches,Home vs Kongsvinger,1.44,2025-09-28 09:30:00,0-2,FALSO
+Bundesliga,WSG Tirol have had BTTS in their last 6 league matches,Home vs FC Salzburg,1.67,2025-09-28 09:30:00,0-1,FALSO
+Finnish Veikkausliiga,Jaro have had Over 2.5 Match Goals in their last 6 league matches,Home vs Mariehamn,1.57,2025-09-28 10:00:00,0-2,FALSO
+Allsvenskan Women,Linkoping W have Lost their last 6 away league matches,Away vs Djurgarden W,,2025-09-28 10:00:00,,VERDADEIRO
+Meistriliiga,Levadia have had BTTS in their last 7 league matches,Home vs Tallinna Kalev,,2025-09-28 11:00:00,,VERDADEIRO
+Meistriliiga,Levadia have had Over 2.5 Match Goals in their last 7 league matches,Home vs Tallinna Kalev,,2025-09-28 11:00:00,,VERDADEIRO
+Finnish Ykkosliiga,SJK Akatemia have had BTTS in their last 7 league matches,Home vs JäPS,1.33,2025-09-28 11:00:00,0-1,FALSO
+Meistriliiga,Tallinna Kalev have Lost their last 6 league matches,Away vs Levadia,,2025-09-28 11:00:00,,VERDADEIRO
+Allsvenskan Women,Växjö W have had Over 2.5 Match Goals in their last 8 league matches,Home vs Hammarby W,,2025-09-28 11:00:00,,VERDADEIRO
+Swedish Allsvenskan,GAIS have had Over 2.5 Match Goals in their last 6 away league matches,Away vs AIK,2.15,2025-09-28 11:30:00,,FALSO
+Swiss Super League,Lausanne Sport have had BTTS in their last 6 league matches,Away vs Sion,1.67,2025-09-28 11:30:00,,FALSO
+Super Liga,Čukarički have had BTTS in their last 7 league matches,Away vs Mladost Lučani,,2025-09-28 12:00:00,,VERDADEIRO
+Superliga,AGF Aarhus have Won their last 6 league matches,Away vs FC Nordsjaelland,2.4,2025-09-28 13:00:00,,VERDADEIRO
+Iceland Besta Deildin,Afturelding have had BTTS in their last 13 league matches,Home vs KA Akureyri,,2025-09-28 13:00:00,0-3,FALSO
+Iceland Besta Deildin,Afturelding have had BTTS in their last 6 home league matches,Home vs KA Akureyri,,2025-09-28 13:00:00,0-3,FALSO
+1. Lig,Hatayspor have had BTTS in their last 7 league matches,Home vs Bandırmaspor,1.67,2025-09-28 13:00:00,0-3,FALSO
+1. HNL,Slaven Koprivnica have had Over 2.5 Match Goals in their last 6 league matches,Away vs Dinamo Zagreb,1.5,2025-09-28 13:15:00,,VERDADEIRO
+Vysshaya Liga,Dinamo Minsk have Won their last 9 home league matches,Home vs Isloch,,2025-09-28 13:30:00,,VERDADEIRO
+Vysshaya Liga,Dinamo Minsk have had Over 2.5 Match Goals in their last 6 league matches,Home vs Isloch,,2025-09-28 13:30:00,,VERDADEIRO
+Super Liga,Crvena Zvezda have Won their last 7 league matches,Home vs Radnički Kragujevac,1.2,2025-09-28 14:00:00,0-2,FALSO
+Fortuna Liga,Žilina have had Over 2.5 Match Goals in their last 6 league matches,Home vs Spartak Trnava,1.6,2025-09-28 14:00:00,,VERDADEIRO
+Pro League,Dender have Lost their last 6 league matches,Home vs La Louvière,2.7,2025-09-28 14:15:00,0-0,FALSO
+Superliga,Odense BK have had BTTS in their last 6 league matches,Away vs Brøndby IF,1.62,2025-09-28 15:00:00,,VERDADEIRO
+Primera B Nacional,Deportivo Madryn have Won their last 7 home league matches,Home vs Arsenal de Sarandí,1.46,2025-09-28 15:30:00,,VERDADEIRO
+Primera Division,Nacional have had Over 2.5 Match Goals in their last 6 league matches,Away vs Juventud,1.8,2025-09-28 16:00:00,0-1,FALSO
+Premier League,Valour have had Over 2.5 Match Goals in their last 10 away league matches,Away vs York9,1.72,2025-09-28 16:00:00,,FALSO
+Premier League,York 9 have had Over 2.5 Match Goals in their last 6 home league matches,Home vs Valour,1.72,2025-09-28 16:00:00,,FALSO
+Iceland Besta Deildin,Valur have had BTTS in their last 9 league matches,Away vs Fram,,2025-09-28 16:15:00,2-0,FALSO
+USL Championship,Loudoun United have had BTTS in their last 6 league matches,Home vs Tampa Bay Rowdies,1.57,2025-09-28 18:00:00,,VERDADEIRO
+USL Championship,Loudoun United have had Over 2.5 Match Goals in their last 6 league matches,Home vs Tampa Bay Rowdies,1.61,2025-09-28 18:00:00,,VERDADEIRO
+US MLS,Orlando City SC have had BTTS in their last 12 league matches,Away vs Cincinnati,1.53,2025-09-28 20:00:00,,VERDADEIRO
+US MLS,Orlando City SC have had BTTS in their last 6 away league matches,Away vs Cincinnati,1.53,2025-09-28 20:00:00,,VERDADEIRO
+Ekstraklasa,Zaglebie Lubin have had BTTS in their last 7 league matches,Home vs Arka Gdynia,1.75,2025-09-29 13:00:00,4-0,FALSO
+1. Lig,Adana Demirspor have Lost their last 6 league matches,Home vs Sarıyer,1.11,2025-09-29 14:00:00,0-3,VERDADEIRO
+1. Lig,Adana Demirspor have had Over 2.5 Match Goals in their last 7 league matches,Home vs Sarıyer,1.36,2025-09-29 14:00:00,0-3,VERDADEIRO
+Norwegian 1. Division,Lyn have Won their last 6 away league matches,Away vs Hødd,2.0,2025-09-29 14:00:00,0-1,VERDADEIRO
+Norwegian 1. Division,Moss have had BTTS in their last 6 home league matches,Home vs Lillestrøm,1.67,2025-09-29 14:00:00,0-1,FALSO
+Norwegian 1. Division,Moss have had BTTS in their last 6 league matches,Home vs Lillestrøm,1.67,2025-09-29 14:00:00,0-1,FALSO
+Norwegian 1. Division,Moss have had Over 2.5 Match Goals in their last 8 home league matches,Home vs Lillestrøm,1.48,2025-09-29 14:00:00,0-1,FALSO
+Norwegian Eliteserien,Sandefjord have had Over 2.5 Match Goals in their last 8 league matches,Away vs FK Haugesund,1.48,2025-09-29 14:00:00,0-2,FALSO
+Liga 1,CFR Cluj have had BTTS in their last 6 league matches,Away vs Universitatea Cluj,1.83,2025-09-29 15:00:00,0-2,FALSO
+Portugese Liga NOS,Porto have Won their last 6 league matches,Away vs Arouca,1.33,2025-09-29 16:00:00,0-4,VERDADEIRO
+Bolivia Primera Division,The Strongest have Won their last 9 home league matches,Home vs Oriente Petrolero,1.3,2025-09-29 16:00:00,2-0,VERDADEIRO
+Bolivia Primera Division,The Strongest have had Over 2.5 Match Goals in their last 8 home league matches,Home vs Oriente Petrolero,1.3,2025-09-29 16:00:00,2-0,FALSO
+Bolivia Primera Division,Always Ready have Won their last 8 home league matches,Home vs Real Oruro,1.19,2025-09-29 18:30:00,4-0,VERDADEIRO
+Eerste Divisie,FC Den Bosch have had Over 2.5 Match Goals in their last 6 league matches,Away vs VVV-Venlo,1.53,2025-09-30 15:00:00,0-1,FALSO
+Finnish Veikkausliiga,Jaro have had Over 2.5 Match Goals in their last 6 home league matches,Home vs Haka,1.57,2025-10-03 12:00:00,0-2,FALSO
+Finnish Veikkausliiga,Jaro have had Over 2.5 Match Goals in their last 7 league matches,Home vs Haka,1.57,2025-10-03 12:00:00,0-2,FALSO
+Finnish Ykkosliiga,SJK Akatemia have had BTTS in their last 8 league matches,Away vs FC Lahti,1.66,2025-10-03 12:30:00,3-0,FALSO
+Finnish Ykkosliiga,SJK Akatemia have had BTTS in their last 9 away league matches,Away vs FC Lahti,1.66,2025-10-03 12:30:00,3-0,FALSO
+Finnish Ykkosliiga,SJK Akatemia have had Over 2.5 Match Goals in their last 9 away league matches,Away vs FC Lahti,1.28,2025-10-03 12:30:00,3-0,VERDADEIRO
+Eerste Divisie,Den Haag have Won their last 6 league matches,Away vs Jong AZ,1.46,2025-10-03 15:00:00,0-4,VERDADEIRO
+J League,Cerezo Osaka have had BTTS in their last 6 league matches,Away vs Nagoya Grampus,1.62,2025-10-04 01:30:00,2-1,VERDADEIRO
+K League 1,Daegu have had Over 2.5 Match Goals in their last 13 away league matches,Away vs Gwangju,1.85,2025-10-04 02:00:00,2-3,VERDADEIRO
+Liga de Expansión MX,CA La Paz have had Over 2.5 Match Goals in their last 6 league matches,Home vs Cancún,1.53,2025-10-04 00:00:00,2-4,FALSO
+1. Lig,Adana Demirspor have Lost their last 7 league matches,Away vs Pendikspor,,2025-10-04 07:30:00,3-0,VERDADEIRO
+1. Lig,Adana Demirspor have had Over 2.5 Match Goals in their last 8 league matches,Away vs Pendikspor,,2025-10-04 07:30:00,3-0,VERDADEIRO
+Super League,Meizhou Hakka have had Over 2.5 Match Goals in their last 12 home league matches,Home vs Qingdao Hainiu,,2025-10-04 08:00:00,1-0,FALSO
+Bundesliga 2,Preußen Münster have had BTTS in their last 7 league matches,Away vs Hertha,1.67,2025-10-04 08:00:00,0-2,FALSO
+Allsvenskan Women,Rosengard W have Lost their last 6 league matches,Away vs Malmö FF W,,2025-10-04 08:00:00,0-1,FALSO
+Allsvenskan Women,Rosengard W have had Over 2.5 Match Goals in their last 7 league matches,Away vs Malmö FF W,,2025-10-04 08:00:00,0-1,FALSO
+Championship,Hull have had Over 2.5 Match Goals in their last 7 league matches,Home vs Sheffield United,1.91,2025-10-04 08:30:00,1-0,FALSO
+Super League,Shandong Taishan have Won their last 6 home league matches,Home vs Yunnan Yukun,1.37,2025-10-04 08:35:00,1-1,FALSO
+Super League,Shandong Taishan have had Over 2.5 Match Goals in their last 6 home league matches,Home vs Yunnan Yukun,1.3,2025-10-04 08:35:00,1-1,FALSO
+Super League,Shandong Taishan have had Over 2.5 Match Goals in their last 8 league matches,Home vs Yunnan Yukun,1.3,2025-10-04 08:35:00,1-1,FALSO
+Super League,Yunnan Yukun have had BTTS in their last 11 league matches,Away vs Shandong Taishan,1.44,2025-10-04 08:35:00,1-1,VERDADEIRO
+Super league,Dinamo Samarqand have had BTTS in their last 8 away league matches,Away vs Surkhon Termez,,2025-10-04 09:00:00,0-2,FALSO
+3. Liga,Ulm have had BTTS in their last 7 league matches,Away vs Ingolstadt,1.5,2025-10-04 09:00:00,4-1,VERDADEIRO
+Tweede Divisie,ACV have Lost their last 6 league matches,Home vs Barendrecht,2.2,2025-10-04 09:30:00,,VERDADEIRO
+Tweede Divisie,HHC have Won their last 7 league matches,Home vs Jong Sparta,1.53,2025-10-04 09:30:00,0-2,FALSO
+Vysshaya Liga,Dinamo Minsk have had BTTS in their last 6 league matches,Away vs Molodechno-DYuSSh 4,,2025-10-04 09:45:00,1-3,FALSO
+Vysshaya Liga,Dinamo Minsk have had Over 2.5 Match Goals in their last 7 league matches,Away vs Molodechno-DYuSSh 4,,2025-10-04 09:45:00,1-3,FALSO
+Serie B,Catanzaro have Drew their last 6 league matches,Away vs Monza,3.5,2025-10-04 10:00:00,0-2,FALSO
+Czech Liga,Karviná have had BTTS in their last 7 league matches,Away vs Pardubice,1.67,2025-10-04 10:00:00,0-2,FALSO
+Czech Liga,Karviná have had Over 2.5 Match Goals in their last 7 league matches,Away vs Pardubice,1.8,2025-10-04 10:00:00,0-2,FALSO
+Iceland Besta Deildin,Afturelding have had BTTS in their last 14 league matches,Away vs KR Reykjavík,1.36,2025-10-04 11:00:00,2-2,VERDADEIRO
+Iceland Besta Deildin,Afturelding have had BTTS in their last 7 away league matches,Away vs KR Reykjavík,1.36,2025-10-04 11:00:00,2-2,VERDADEIRO
+Allsvenskan Women,Alingsås W have Lost their last 6 league matches,Home vs Häcken W,,2025-10-04 11:00:00,0-2,VERDADEIRO
+Scottish League 2,Dumbarton have had BTTS in their last 8 league matches,Away vs Stirling,1.57,2025-10-04 11:00:00,2-2,VERDADEIRO
+Scottish League 1,East Fife have had BTTS in their last 6 league matches,Home vs Cove Rangers,1.73,2025-10-04 11:00:00,2-0,FALSO
+Scottish League 2,Edinburgh City have had BTTS in their last 8 league matches,Away vs Spartans,1.67,2025-10-04 11:00:00,,FALSO
+National League,Halifax have had Over 2.5 Match Goals in their last 6 league matches,Home vs Brackley Town,2.15,2025-10-04 11:00:00,2-0,FALSO
+Allsvenskan Women,Häcken W have Won their last 7 away league matches,Away vs Alingsås W,,2025-10-04 11:00:00,0-2,VERDADEIRO
+Allsvenskan Women,Häcken W have had Over 2.5 Match Goals in their last 6 away league matches,Away vs Alingsås W,,2025-10-04 11:00:00,0-2,FALSO
+Norwegian 1. Division,Hødd have had BTTS in their last 8 away league matches,Away vs Lillestrøm,2.0,2025-10-04 11:00:00,0-4,FALSO
+Norwegian 1. Division,Kongsvinger have had BTTS in their last 9 league matches,Home vs Skeid,1.62,2025-10-04 11:00:00,3-0,FALSO
+Northern Ireland Premiership,Larne have Won their last 6 league matches,Away vs Dungannon Swifts,1.9,2025-10-04 11:00:00,,FALSO
+Norwegian 1. Division,Lillestrøm have Won their last 11 league matches,Home vs Hødd,1.17,2025-10-04 11:00:00,0-4,VERDADEIRO
+Norwegian 1. Division,Lillestrøm have had Over 2.5 Match Goals in their last 7 league matches,Home vs Hødd,1.36,2025-10-04 11:00:00,0-4,VERDADEIRO
