@@ -385,33 +385,140 @@ class AnalisadorApostasEvolutivo:
     
     def _preparar_dados_futuros(self, df_futuros):
         """Preparar dados futuros"""
-        def corrigir_data(date_str):
-            try:
-                # CORREÇÃO: Usar mesmo formato da base de treino
-                return pd.to_datetime(date_str, format='%Y-%m-%d %H:%M:%S', errors='coerce')
-            except:
-                try:
-                    return pd.to_datetime(date_str, errors='coerce')
-                except:
-                    return pd.NaT
+        print("📊 Preparando dados futuros...")
         
-        # Processar colunas seguindo mesmo padrão do treino
+        # Processar Date - converter do formato inglês
         if 'Date' in df_futuros.columns:
-            df_futuros['Date'] = df_futuros['Date'].apply(corrigir_data)
+            df_futuros['Date'] = df_futuros['Date'].apply(self._converter_data_ingles_para_brasil)
+            print(f"✅ Datas processadas: {df_futuros['Date'].notna().sum()} válidas")
+        else:
+            print("⚠️  Coluna 'Date' não encontrada")
+            df_futuros['Date'] = "DATA_INDISPONIVEL"
         
+        # Processar Odds - converter para numérico
         if 'Odds' in df_futuros.columns:
             df_futuros['Odds'] = pd.to_numeric(df_futuros['Odds'], errors='coerce')
+            print(f"✅ Odds processadas: {df_futuros['Odds'].notna().sum()} válidas")
+        else:
+            print("⚠️  Coluna 'Odds' não encontrada")
+            df_futuros['Odds'] = np.nan
         
+        # Processar Stat - extrair informações
         if 'Stat' in df_futuros.columns:
             df_futuros['Tipo_Estatistica'] = df_futuros['Stat'].apply(self._classificar_estatistica)
             df_futuros['Tamanho_Streak'] = df_futuros['Stat'].apply(self._extrair_streak)
             df_futuros['Time'] = df_futuros['Stat'].apply(lambda x: x.split(' have ')[0] if ' have ' in str(x) else 'TIME_DESCONHECIDO')
+            print(f"✅ Stats processados: {len(df_futuros)} registros")
+        else:
+            print("❌ Coluna 'Stat' não encontrada - ESSENCIAL")
+            df_futuros['Tipo_Estatistica'] = 'OUTRO'
+            df_futuros['Tamanho_Streak'] = 1
+            df_futuros['Time'] = 'TIME_DESCONHECIDO'
         
+        # Processar Next Match - extrair local e formatar
         if 'Next Match' in df_futuros.columns:
             df_futuros['Local_Jogo'] = df_futuros['Next Match'].apply(self._extrair_local)
+            # Aplicar formatação diretamente na coluna Next Match existente
+            df_futuros['Next Match'] = df_futuros.apply(self._formatar_next_match, axis=1)
+            print("✅ Next Match processado e formatado")
+        else:
+            print("⚠️  Coluna 'Next Match' não encontrada")
+            df_futuros['Local_Jogo'] = 'NEUTRO'
         
+        # Processar League - classificar categoria
         if 'League' in df_futuros.columns:
             df_futuros['Liga_Categoria'] = df_futuros['League'].apply(self._classificar_liga)
+            print("✅ Liga categorizada")
+        else:
+            print("⚠️  Coluna 'League' não encontrada")
+            df_futuros['Liga_Categoria'] = 'MEDIA_CONFIABILIDADE'
+        
+        # Adicionar coluna Situacao vazia para consistência
+        if 'Situacao' not in df_futuros.columns:
+            df_futuros['Situacao'] = ''
+            print("✅ Coluna Situacao adicionada (vazia para jogos futuros)")
+        
+        print(f"📊 Dados futuros preparados: {len(df_futuros)} registros")
+        print(f"📋 Colunas disponíveis: {list(df_futuros.columns)}")
+        
+        return df_futuros
+    def _formatar_next_match(self, row):
+        """Formatar Next Match para mostrar time principal em maiúsculas"""
+        next_match = str(row.get('Next Match', ''))
+        time_principal = str(row.get('Time', ''))
+        
+        if not time_principal or time_principal == 'TIME_DESCONHECIDO':
+            return next_match.upper()
+        
+        # Substituir "home" ou "away" pelo nome do time em maiúsculas
+        next_match_lower = next_match.lower()
+        if 'home' in next_match_lower:
+            resultado = next_match_lower.replace('home', time_principal.upper())
+            print(f"🏠 Next Match formatado: '{next_match}' -> '{resultado}'")
+            return resultado
+        elif 'away' in next_match_lower:
+            resultado = next_match_lower.replace('away', time_principal.upper())
+            print(f"✈️  Next Match formatado: '{next_match}' -> '{resultado}'")
+            return resultado
+        else:
+            return next_match.upper()
+        
+
+    def _classificar_estatistica(self, stat):
+        """Classificar tipo de estatística"""
+        stat_str = str(stat).lower()
+        if 'won' in stat_str:
+            return 'VITORIA'
+        elif 'lost' in stat_str:
+            return 'DERROTA'
+        elif 'drew' in stat_str:
+            return 'EMPATE'
+        elif 'btts' in stat_str:
+            return 'BTTS'
+        elif 'over 2.5' in stat_str:
+            return 'OVER_2.5'
+        else:
+            return 'OUTRO'
+
+    def _extrair_streak(self, stat):
+        """Extrair tamanho do streak"""
+        matches = re.findall(r'last (\d+)', str(stat))
+        return int(matches[0]) if matches else 1
+
+    def _extrair_local(self, next_match):
+        """Extrair local do jogo"""
+        match_str = str(next_match).lower()
+        if 'home' in match_str:
+            return 'CASA'
+        elif 'away' in match_str:
+            return 'FORA'
+        else:
+            return 'NEUTRO'
+
+    def _classificar_liga(self, league):
+        """Classificar liga por confiabilidade"""
+        league_str = str(league).lower()
+        if any(x in league_str for x in ['nwsl', 'women', 'norway', 'denmark']):
+            return 'ALTA_CONFIABILIDADE'
+        elif any(x in league_str for x in ['brasil', 'sweden', 'iceland']):
+            return 'MEDIA_CONFIABILIDADE'
+        else:
+            return 'BAIXA_CONFIABILIDADE'
+    def _formatar_next_match(self, row):
+        """Formatar Next Match para mostrar time principal em maiúsculas"""
+        next_match = str(row.get('Next Match', ''))
+        time_principal = str(row.get('Time', ''))
+        
+        if not time_principal or time_principal == 'TIME_DESCONHECIDO':
+            return next_match.upper()
+        
+        # Substituir "home" ou "away" pelo nome do time em maiúsculas
+        if 'home' in next_match.lower():
+            return next_match.lower().replace('home', time_principal.upper())
+        elif 'away' in next_match.lower():
+            return next_match.lower().replace('away', time_principal.upper())
+        else:
+            return next_match.upper()
     
     def _analise_basica_futuro(self, row):
         """Análise básica para fallback"""
@@ -449,7 +556,7 @@ class AnalisadorApostasEvolutivo:
         }
         joblib.dump(dados_modelo, self.modelo_path)
     
-    def gerar_previsoes_futuras(self, output_path='previsoes_inteligentes.csv'):
+    def gerar_previsoes_futuras(self, output_path='previsoes_evolutivas.csv'):
         """Gerar previsões para jogos futuros com recomendações"""
         if self.model is None:
             print("❌ Modelo não carregado. Execute treinamento primeiro.")
@@ -476,13 +583,33 @@ class AnalisadorApostasEvolutivo:
                 print(f"⚠️ Erro ao analisar jogo {idx}: {e}")
                 previsoes_detalhadas.append(self._analise_basica_futuro(row))
         
-        # Adicionar previsões ao DataFrame
-        for col in ['Probabilidade_Sucesso', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 'Bonus_Total']:
+        # Adicionar previsões ao DataFrame - APENAS AS COLUNAS EXISTENTES
+        colunas_previsao = ['Probabilidade_Sucesso', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 'Bonus_Total']
+        for col in colunas_previsao:
             df_futuros[col] = [p[col] for p in previsoes_detalhadas]
+        
+        # Formatar Date no formato brasileiro
+        if 'Date' in df_futuros.columns:
+            df_futuros['Date'] = df_futuros['Date'].apply(self._formatar_data_saida)
         
         # Ordenar por probabilidade e recomendação
         df_futuros['Score_Prioridade'] = df_futuros['Probabilidade_Sucesso'] * df_futuros['Odds']
         df_futuros = df_futuros.sort_values(['Recomendacao', 'Score_Prioridade'], ascending=[False, False])
+        
+        # REMOVER COLUNAS TEMPORÁRIAS QUE NÃO DEVEM APARECER NO CSV FINAL
+        colunas_para_manter = [
+            'League', 'Stat', 'Next Match', 'Odds', 'Date', 'Situação',
+            'Tipo_Estatistica', 'Liga_Categoria',
+            'Probabilidade_Sucesso', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 
+        ]
+        # ficam de fora
+        # 'Tamanho_Streak',  'Time', 'Local_Jogo',         'Bonus_Total'	'Score_Prioridade', 
+
+
+
+        # Manter apenas as colunas que existem no DataFrame
+        colunas_existentes = [col for col in colunas_para_manter if col in df_futuros.columns]
+        df_futuros = df_futuros[colunas_existentes]
         
         # Gerar múltiplas recomendadas
         self._gerar_multiplas_recomendadas(df_futuros)
@@ -495,6 +622,89 @@ class AnalisadorApostasEvolutivo:
         print(f"👍 Jogos BONS: {len(df_futuros[df_futuros['Recomendacao'] == 'BOA'])}")
         
         return df_futuros
+        
+    def _converter_data_ingles_para_brasil(self, date_str):
+        
+        """Converter data do formato 'Sunday, 12 October 12:00' para '12/10/2025 12:00'"""
+        if pd.isna(date_str) or date_str == '' or date_str == 'DATA_INDISPONIVEL':
+            return "DATA_INDISPONIVEL"
+        
+        try:
+            date_str_clean = str(date_str).strip()
+            
+            # Mapeamento dos meses em inglês para números
+            meses_ingles = {
+                'january': '01', 'february': '02', 'march': '03', 'april': '04',
+                'may': '05', 'june': '06', 'july': '07', 'august': '08',
+                'september': '09', 'october': '10', 'november': '11', 'december': '12'
+            }
+            
+            # Remove o dia da semana e espaços extras
+            date_clean = date_str_clean.replace(',', '').strip()
+            
+            # Divide a string: "Sunday 12 October 12:00"
+            partes = date_clean.split()
+            
+            if len(partes) >= 4:
+                # Pega dia, mês e hora
+                dia = partes[1].zfill(2)  # "12" -> "12"
+                mes_ingles = partes[2].lower()  # "October" -> "october"
+                hora = partes[3]  # "12:00"
+                
+                # Converte mês inglês para número
+                mes_numero = meses_ingles.get(mes_ingles, '01')
+                
+                # Assume ano atual (ou próximo se estivermos no final do ano)
+                ano_atual = datetime.now().year
+                data_obj = datetime(ano_atual, int(mes_numero), int(dia))
+                
+                # Se a data já passou neste ano, usa próximo ano
+                if data_obj < datetime.now():
+                    data_obj = datetime(ano_atual + 1, int(mes_numero), int(dia))
+                
+                # Formata para "dd/mm/aaaa hh:mm"
+                data_formatada = data_obj.strftime('%d/%m/%Y') + f' {hora}'
+                print(f"📅 Data convertida: '{date_str}' -> '{data_formatada}'")
+                return data_formatada
+            else:
+                print(f"⚠️  Formato de data não reconhecido: {date_str}")
+                return "DATA_INDISPONIVEL"
+                
+        except Exception as e:
+            print(f"❌ Erro ao converter data '{date_str}': {e}")
+            return "DATA_INDISPONIVEL"
+
+    def _formatar_data_saida(self, date_val):
+        """Formatar data para saída no formato dd/mm/aaaa hh:mm"""
+        if pd.isna(date_val) or date_val == '':
+            return "DATA_INDISPONIVEL"
+        
+        try:
+            # Se já for datetime, formatar diretamente
+            if isinstance(date_val, (pd.Timestamp, datetime)):
+                return date_val.strftime('%d/%m/%Y %H:%M')
+            
+            # Se for string, tentar converter do formato "Wednesday, 15 October 19:00"
+            date_str = str(date_val).strip()
+            
+            # Verificar se está no formato inglês com dia da semana
+            if ',' in date_str and any(day in date_str.lower() for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']):
+                return self._converter_data_ingles_para_brasil(date_str)
+            
+            # Tentar outros formatos conhecidos
+            for fmt in ['%Y-%m-%d %H:%M:%S', '%d/%m/%Y %H:%M', '%m/%d/%Y %H:%M', '%d-%m-%Y %H:%M']:
+                try:
+                    dt = datetime.strptime(date_str, fmt)
+                    return dt.strftime('%d/%m/%Y %H:%M')
+                except:
+                    continue
+            
+            # Se não conseguir converter, retorna original
+            return date_str
+            
+        except Exception as e:
+            print(f"⚠️  Erro ao formatar data '{date_val}': {e}")
+            return str(date_val)
     
     def _analisar_jogo_avancado(self, row):
         """Análise avançada com modelo ML"""
@@ -863,7 +1073,7 @@ if __name__ == "__main__":
     # CONFIGURAÇÃO - AJUSTE ESTES CAMINHOS
     config = {
         'base_treino': 'todos_ate_05-10-25.csv',      # Base completa COM históricos
-        'base_futuros': 'adam choi_dados_20251014_212441.csv',          # Apenas jogos futuros # poder ser o arquivo jogos_futuros.csv
+        'base_futuros': 'adam choi_dados_20251017_001451.csv',          # Apenas jogos futuros # poder ser o arquivo jogos_futuros.csv
         'modelo_salvo': 'modelo_apostas_evolutivo.joblib'
     }
     
