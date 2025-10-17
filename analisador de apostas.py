@@ -462,20 +462,7 @@ class AnalisadorApostasEvolutivo:
             return resultado
         else:
             return next_match.upper()
-        """Formatar Next Match para mostrar time principal em maiúsculas"""
-        next_match = str(row.get('Next Match', ''))
-        time_principal = str(row.get('Time', ''))
         
-        if not time_principal or time_principal == 'TIME_DESCONHECIDO':
-            return next_match.upper()
-        
-        # Substituir "home" ou "away" pelo nome do time em maiúsculas
-        if 'home' in next_match.lower():
-            return next_match.lower().replace('home', time_principal.upper())
-        elif 'away' in next_match.lower():
-            return next_match.lower().replace('away', time_principal.upper())
-        else:
-            return next_match.upper()
 
     def _classificar_estatistica(self, stat):
         """Classificar tipo de estatística"""
@@ -611,11 +598,15 @@ class AnalisadorApostasEvolutivo:
         
         # REMOVER COLUNAS TEMPORÁRIAS QUE NÃO DEVEM APARECER NO CSV FINAL
         colunas_para_manter = [
-            'League', 'Stat', 'Next Match', 'Odds', 'Date', 'Situacao',
-            'Tipo_Estatistica', 'Tamanho_Streak', 'Time', 'Local_Jogo', 'Liga_Categoria',
-            'Probabilidade_Sucesso', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 'Bonus_Total', 'Score_Prioridade'
+            'League', 'Stat', 'Next Match', 'Odds', 'Date', 'Situação',
+            'Tipo_Estatistica', 'Liga_Categoria',
+            'Probabilidade_Sucesso', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 
         ]
-        
+        # ficam de fora
+        # 'Tamanho_Streak',  'Time', 'Local_Jogo',         'Bonus_Total'	'Score_Prioridade', 
+
+
+
         # Manter apenas as colunas que existem no DataFrame
         colunas_existentes = [col for col in colunas_para_manter if col in df_futuros.columns]
         df_futuros = df_futuros[colunas_existentes]
@@ -631,60 +622,7 @@ class AnalisadorApostasEvolutivo:
         print(f"👍 Jogos BONS: {len(df_futuros[df_futuros['Recomendacao'] == 'BOA'])}")
         
         return df_futuros
-        """Gerar previsões para jogos futuros com recomendações"""
-        if self.model is None:
-            print("❌ Modelo não carregado. Execute treinamento primeiro.")
-            return
         
-        if self.base_futuros_path is None:
-            print("❌ Caminho da base de futuros não especificado")
-            return
-            
-        print("🎯 GERANDO PREVISÕES INTELIGENTES...")
-        
-        # Carregar dados futuros
-        df_futuros = self.carregar_dados(self.base_futuros_path)
-        self._preparar_dados_futuros(df_futuros)
-        
-        # Gerar previsões
-        previsoes_detalhadas = []
-        
-        for idx, row in df_futuros.iterrows():
-            try:
-                previsao = self._analisar_jogo_avancado(row)
-                previsoes_detalhadas.append(previsao)
-            except Exception as e:
-                print(f"⚠️ Erro ao analisar jogo {idx}: {e}")
-                previsoes_detalhadas.append(self._analise_basica_futuro(row))
-        
-        # Adicionar previsões ao DataFrame
-        for col in ['Probabilidade_Sucesso', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 'Bonus_Total']:
-            df_futuros[col] = [p[col] for p in previsoes_detalhadas]
-        
-        # NOVA FUNCIONALIDADE: Garantir que Date está formatada corretamente
-        if 'Date' in df_futuros.columns:
-            df_futuros['Date'] = df_futuros['Date'].apply(self._formatar_data_saida)
-        
-        # NOVA FUNCIONALIDADE: Substituir Next Match pelo formatado
-        if 'Next_Match_Formatado' in df_futuros.columns:
-            df_futuros['Next Match'] = df_futuros['Next_Match_Formatado']
-            df_futuros = df_futuros.drop('Next_Match_Formatado', axis=1)
-        
-        # Ordenar por probabilidade e recomendação
-        df_futuros['Score_Prioridade'] = df_futuros['Probabilidade_Sucesso'] * df_futuros['Odds']
-        df_futuros = df_futuros.sort_values(['Recomendacao', 'Score_Prioridade'], ascending=[False, False])
-        
-        # Gerar múltiplas recomendadas
-        self._gerar_multiplas_recomendadas(df_futuros)
-        
-        # Salvar resultados
-        df_futuros.to_csv(output_path, index=False, sep=';', encoding='utf-8-sig')
-        print(f"✅ Previsões salvas em: {output_path}")
-        print(f"📊 Total de jogos analisados: {len(df_futuros)}")
-        print(f"🎯 Jogos EXCELENTES: {len(df_futuros[df_futuros['Recomendacao'] == 'EXCELENTE'])}")
-        print(f"👍 Jogos BONS: {len(df_futuros[df_futuros['Recomendacao'] == 'BOA'])}")
-        
-        return df_futuros
     def _converter_data_ingles_para_brasil(self, date_str):
         
         """Converter data do formato 'Sunday, 12 October 12:00' para '12/10/2025 12:00'"""
@@ -1135,7 +1073,7 @@ if __name__ == "__main__":
     # CONFIGURAÇÃO - AJUSTE ESTES CAMINHOS
     config = {
         'base_treino': 'todos_ate_05-10-25.csv',      # Base completa COM históricos
-        'base_futuros': 'adam choi_dados_20251012_002425.csv',          # Apenas jogos futuros # poder ser o arquivo jogos_futuros.csv
+        'base_futuros': 'adam choi_dados_20251017_001451.csv',          # Apenas jogos futuros # poder ser o arquivo jogos_futuros.csv
         'modelo_salvo': 'modelo_apostas_evolutivo.joblib'
     }
     
