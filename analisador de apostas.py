@@ -20,42 +20,149 @@ class AnalisadorApostasEvolutivo:
         self.jogos_complementares = {}
         self.features_para_treino = ['Odds', 'Tamanho_Streak', 'Tipo_Estatistica', 'Local_Jogo', 'Liga_Categoria']
         
+    def _log_detalhado(self, mensagem, nivel="INFO"):
+        """Sistema de logging organizado"""
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        icones = {"INFO": "ℹ️", "ERRO": "❌", "SUCESSO": "✅", "ALERTA": "⚠️"}
+        icone = icones.get(nivel, "🔍")
+        # print(f"{timestamp} {icone} {mensagem}")
+        print(f"{mensagem}")
+    def _fazer_backup_modelo(self):
+        """Criar backup do modelo antes de atualizar"""
+        if os.path.exists(self.modelo_path):
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            backup_path = f"{self.modelo_path}.backup_{timestamp}"
+            import shutil
+            shutil.copy2(self.modelo_path, backup_path)
+            self._log_detalhado(f"Backup criado: {backup_path}", "SUCESSO")
+    
+    def _validar_dados_treino(self):
+        """Validar integridade dos dados de treino"""
+        colunas_essenciais = ['Situacao', 'Odds', 'Stat']
+        for col in colunas_essenciais:
+            if col not in self.df_treino.columns:
+                raise ValueError(f"Coluna essencial '{col}' não encontrada")
+        
+        # Verificar valores nulos
+        nulos = self.df_treino[colunas_essenciais].isnull().sum()
+        if nulos.any():
+            self._log_detalhado(f"Valores nulos encontrados: {nulos}", "ALERTA")
+    
+    def _extrair_time_avancado(self, stat):
+            """Extrair nome do time com múltiplos padrões - VERSÃO MELHORADA"""
+            stat_str = str(stat).strip()
+            
+            # DEBUG: Log para ver o que está sendo processado
+            if 'TIME_DESCONHECIDO' in stat_str:
+                self._log_detalhado(f"🔍 DEBUG Stat problemático: '{stat_str}'", "ALERTA")
+            
+            # Padrões principais em ordem de prioridade
+            padroes = [
+                # Padrão: "Team have/has/had ..."
+                (r'^([A-Za-z\s\-\'\.]+) (?:have|has|had) (?:won|lost|drawn|scored|conceded|played)'),
+                # Padrão: "Team won/lost/drew ..."
+                (r'^([A-Za-z\s\-\'\.]+) (?:won|lost|drew)'),
+                # Padrão: "Team in ..."
+                (r'^([A-Za-z\s\-\'\.]+) in'),
+                # Padrão: "Team ... matches"
+                (r'^([A-Za-z\s\-\'\.]+) (?:last|previous|recent)'),
+                # Padrão: "Team's ..."
+                (r'^([A-Za-z\s\-\'\.]+)\'s'),
+                # Padrão: "Team ... games"
+                (r'^([A-Za-z\s\-\'\.]+) (?:games|matches|fixtures)'),
+            ]
+            
+            for padrao in padroes:
+                match = re.search(padrao, stat_str, re.IGNORECASE)
+                if match:
+                    time = match.group(1).strip()
+                    # Limpeza do nome
+                    time = re.sub(r'\s+', ' ', time)  # Remove espaços múltiplos
+                    time = time.title()  # Primeira letra maiúscula em cada palavra
+                    
+                    # Verificar se é um nome válido (não muito curto e não contém palavras comuns)
+                    palavras_invalidas = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by']
+                    palavras_time = time.split()
+                    if (len(time) >= 3 and 
+                        not any(palavra.lower() in palavras_invalidas for palavra in palavras_time) and
+                        len(palavras_time) <= 4):  # Máximo de 4 palavras
+                        
+                        self._log_detalhado(f"✅ Time extraído: '{time}' do padrão: {padrao}", "SUCESSO")
+                        return time
+            
+            # Se nenhum padrão funcionou, tentar fallback
+            time_fallback = self._extrair_time_fallback(stat_str)
+            if time_fallback != 'TIME_DESCONHECIDO':
+                return time_fallback
+            
+            self._log_detalhado(f"❌ Não foi possível extrair time de: '{stat_str}'", "ALERTA")
+            return 'TIME_DESCONHECIDO'
+    def _extrair_time_fallback(self, stat_str):
+        """Fallback para extração de times - casos especiais"""
+        # Caso 1: Dividir por "have", "has", "had"
+        for separador in [' have ', ' has ', ' had ', ' won ', ' lost ', ' drew ']:
+            if separador in stat_str:
+                partes = stat_str.split(separador)
+                if len(partes) > 1:
+                    time = partes[0].strip()
+                    if len(time) >= 2:
+                        return time.title()
+        
+        # Caso 2: Procurar por nomes de times conhecidos no início
+        times_comuns = [
+            'Crvena Zvezda', 'Den Haag', 'Rosengard', 'Barcelona', 'Real Madrid', 
+            'Manchester', 'Liverpool', 'Chelsea', 'Arsenal', 'Bayern', 'PSG'
+        ]
+        
+        for time_comum in times_comuns:
+            if stat_str.startswith(time_comum):
+                return time_comum
+        
+        # Caso 3: Primeiras 2-3 palavras como fallback
+        palavras = stat_str.split()
+        if len(palavras) >= 2:
+            # Tentar com 2 palavras
+            time_candidato = ' '.join(palavras[:2])
+            if len(time_candidato) >= 4:
+                return time_candidato.title()
+        
+        return 'TIME_DESCONHECIDO'
     def carregar_dados(self, csv_path):
         try:
             # PRIMEIRO: Verificar o formato real do arquivo
-            print(f"📁 Tentando carregar: {csv_path}")
+            self._log_detalhado(f"Tentando carregar: {csv_path}")
             
             # Lê as primeiras linhas para debug
             with open(csv_path, 'r', encoding='utf-8-sig') as f:
                 primeira_linha = f.readline().strip()
                 segunda_linha = f.readline().strip()
-                print(f"🔍 Primeira linha: {primeira_linha}")
-                print(f"🔍 Segunda linha: {segunda_linha}")
+                self._log_detalhado(f"Primeira linha: {primeira_linha}")
+                self._log_detalhado(f"Segunda linha: {segunda_linha}")
             
             # Tenta diferentes delimitadores
             delimitadores = [';', ',', '\t', '|']
             
             for delim in delimitadores:
                 try:
-                    print(f"🔧 Tentando delimitador: '{delim}'")
+                    self._log_detalhado(f"Tentando delimitador: '{delim}'")
                     df = pd.read_csv(csv_path, delimiter=delim, encoding='utf-8-sig')
-                    print(f"✅ Sucesso com delimitador '{delim}': {len(df)} linhas, {len(df.columns)} colunas")
-                    print(f"📋 Colunas: {list(df.columns)}")
+                    self._log_detalhado(f"Sucesso com delimitador '{delim}': {len(df)} linhas, {len(df.columns)} colunas")
+                    self._log_detalhado(f"Colunas: {list(df.columns)}")
                     
                     if len(df.columns) > 1:
                         return df
                 except Exception as e:
-                    print(f"❌ Falha com delimitador '{delim}': {e}")
+                    self._log_detalhado(f"Falha com delimitador '{delim}': {e}", "ALERTA")
                     continue
             
             # Se nenhum delimitador funcionou, tentar carregamento automático
-            print("🔄 Tentando carregamento automático...")
+            self._log_detalhado("Tentando carregamento automático...")
             df = pd.read_csv(csv_path, encoding='utf-8-sig', engine='python')
-            print(f"📊 Carregamento automático: {len(df)} linhas, {len(df.columns)} colunas")
+            self._log_detalhado(f"Carregamento automático: {len(df)} linhas, {len(df.columns)} colunas")
             
             # Se ainda estiver como uma coluna, tentar split manual
             if len(df.columns) == 1:
-                print("🔄 Dividindo coluna única manualmente...")
+                self._log_detalhado("Dividindo coluna única manualmente...")
                 coluna_unica = df.columns[0]
                 # Divide pela vírgula (que parece ser o seu delimitador)
                 dados_divididos = df[coluna_unica].str.split(',', expand=True)
@@ -65,14 +172,14 @@ class AnalisadorApostasEvolutivo:
                 dados_divididos = dados_divididos[1:]  # Remove a linha do cabeçalho
                 dados_divididos.columns = cabecalho
                 
-                print(f"✅ Divisão manual: {len(dados_divididos)} linhas, {len(dados_divididos.columns)} colunas")
+                self._log_detalhado(f"Divisão manual: {len(dados_divididos)} linhas, {len(dados_divididos.columns)} colunas")
                 return dados_divididos
                 
             return df
             
         except pd.errors.ParserError as e:
-            print(f"❌ Erro de parsing detectado: {e}")
-            print("🔧 Tentando corrigir automaticamente...")
+            self._log_detalhado(f"Erro de parsing detectado: {e}", "ERRO")
+            self._log_detalhado("Tentando corrigir automaticamente...")
             
             # Lê o arquivo linha por linha para identificar o problema
             with open(csv_path, 'r', encoding='utf-8-sig') as f:
@@ -81,18 +188,18 @@ class AnalisadorApostasEvolutivo:
             # Identifica a linha problemática
             for i, linha in enumerate(linhas, 1):
                 if len(linha.split(',')) != 7:  # Espera 7 colunas
-                    print(f"📝 Linha {i} problemática: {linha.strip()}")
+                    self._log_detalhado(f"Linha {i} problemática: {linha.strip()}", "ALERTA")
             
             # Tenta carregar com tratamento de erro mais flexível
             try:
                 df = pd.read_csv(csv_path, delimiter=',', encoding='utf-8-sig', 
                             on_bad_lines='skip',  # Pula linhas problemáticas
                             engine='python')
-                print(f"✅ Carregado com {len(df)} linhas após correção automática")
+                self._log_detalhado(f"Carregado com {len(df)} linhas após correção automática", "SUCESSO")
                 return df
             except:
                 # Última tentativa: carrega manualmente
-                print("🔄 Carregando manualmente...")
+                self._log_detalhado("Carregando manualmente...")
                 dados_corrigidos = []
                 cabecalho = linhas[0].strip().split(',')
                 
@@ -101,10 +208,10 @@ class AnalisadorApostasEvolutivo:
                     if len(campos) == len(cabecalho):
                         dados_corrigidos.append(campos)
                     else:
-                        print(f"⚠️  Linha {i} ignorada: número de campos incorreto ({len(campos)} vs {len(cabecalho)})")
+                        self._log_detalhado(f"Linha {i} ignorada: número de campos incorreto ({len(campos)} vs {len(cabecalho)})", "ALERTA")
                 
                 df = pd.DataFrame(dados_corrigidos, columns=cabecalho)
-                print(f"✅ Carregamento manual: {len(df)} linhas processadas")
+                self._log_detalhado(f"Carregamento manual: {len(df)} linhas processadas", "SUCESSO")
                 return df
                 
         except UnicodeDecodeError:
@@ -113,44 +220,54 @@ class AnalisadorApostasEvolutivo:
             except:
                 return pd.read_csv(csv_path, delimiter=',', encoding='iso-8859-1')
         except Exception as e:
-            print(f"❌ Erro crítico ao carregar dados: {e}")
+            self._log_detalhado(f"Erro crítico ao carregar dados: {e}", "ERRO")
             return None
     
     def treinar_modelo_evolutivo(self, forcar_retreino=False):
         """Treinar ou atualizar modelo com dados mais recentes"""
-        print("🔄 INICIANDO TREINAMENTO EVOLUTIVO...")
+        self._log_detalhado("INICIANDO TREINAMENTO EVOLUTIVO...")
         
         # Verificar se modelo existe e se deve atualizar
         if os.path.exists(self.modelo_path) and not forcar_retreino:
-            print("📁 Modelo existente encontrado. Verificando necessidade de atualização...")
+            self._log_detalhado("Modelo existente encontrado. Verificando necessidade de atualização...")
             if not self._verificar_necessidade_atualizacao():
-                print("✅ Modelo atualizado. Carregando modelo existente...")
+                self._log_detalhado("Modelo atualizado. Carregando modelo existente...", "SUCESSO")
                 if self.carregar_modelo():
                     return True
         
         if self.base_treino_path is None:
-            print("❌ Caminho da base de treino não especificado")
+            self._log_detalhado("Caminho da base de treino não especificado", "ERRO")
             return False
             
         # Carregar e preparar dados
-        print("📥 Carregando dados de treino...")
+        self._log_detalhado("Carregando dados de treino...")
         self.df_treino = self.carregar_dados(self.base_treino_path)
         
         if self.df_treino is None or len(self.df_treino) == 0:
-            print("❌ Falha ao carregar dados de treino")
+            self._log_detalhado("Falha ao carregar dados de treino", "ERRO")
             return False
         
-        print(f"📊 Dados carregados: {len(self.df_treino)} registros")
-        print(f"📋 Colunas: {list(self.df_treino.columns)}")
+        self._log_detalhado(f"Dados carregados: {len(self.df_treino)} registros")
+        self._log_detalhado(f"Colunas: {list(self.df_treino.columns)}")
+        
+        # Validar dados antes de processar
+        try:
+            self._validar_dados_treino()
+        except ValueError as e:
+            self._log_detalhado(f"Erro na validação: {e}", "ERRO")
+            return False
         
         self._preparar_dados_treino()
         
         if not hasattr(self, 'df_treino_limpo') or len(self.df_treino_limpo) < 10:
-            print("❌ Dados insuficientes para treinamento")
+            self._log_detalhado("Dados insuficientes para treinamento", "ERRO")
             return False
         
+        # Fazer backup antes de treinar novo modelo
+        self._fazer_backup_modelo()
+        
         # Treinar novo modelo
-        print("🎯 Treinando novo modelo com dados atualizados...")
+        self._log_detalhado("Treinando novo modelo com dados atualizados...")
         try:
             X = self.df_treino_limpo[self.features_para_treino].copy()
             X['Tipo_Estatistica'] = self.encoder.fit_transform(X['Tipo_Estatistica'])
@@ -167,20 +284,37 @@ class AnalisadorApostasEvolutivo:
             accuracy = self.model.score(X_test, y_test)
             self.acuracia_modelo = accuracy
             
+            # Avaliação detalhada
+            self._avaliar_modelo_detalhado(X_test, y_test)
+            
             # Salvar modelo
             self._salvar_modelo()
             
-            print(f"✅ Modelo treinado com sucesso! Acurácia: {accuracy:.2%}")
-            print(f"📊 Total de amostras de treino: {len(self.df_treino_limpo)}")
+            self._log_detalhado(f"Modelo treinado com sucesso! Acurácia: {accuracy:.2%}", "SUCESSO")
+            self._log_detalhado(f"Total de amostras de treino: {len(self.df_treino_limpo)}")
             
             return True
             
         except Exception as e:
-            print(f"❌ Erro no treinamento: {e}")
+            self._log_detalhado(f"Erro no treinamento: {e}", "ERRO")
             return False
 
+    def _avaliar_modelo_detalhado(self, X_test, y_test):
+        """Avaliação mais detalhada do modelo"""
+        from sklearn.metrics import classification_report, confusion_matrix
+        
+        y_pred = self.model.predict(X_test)
+        
+        self._log_detalhado("AVALIAÇÃO DETALHADA DO MODELO:")
+        self._log_detalhado("="*40)
+        self._log_detalhado(f"Acurácia: {self.acuracia_modelo:.2%}")
+        self._log_detalhado("Matriz de Confusão:")
+        self._log_detalhado(str(confusion_matrix(y_test, y_pred)))
+        self._log_detalhado("Relatório de Classificação:")
+        self._log_detalhado(classification_report(y_test, y_pred))
+
     def _verificar_necessidade_atualizacao(self):
-        """Verificar se base de treino tem novos dados"""
+        """Verificar se base de treino tem novos dados E criar backup se necessário"""
         if not os.path.exists(self.modelo_path) or self.base_treino_path is None:
             return True
             
@@ -188,13 +322,13 @@ class AnalisadorApostasEvolutivo:
         df_atual = self.carregar_dados(self.base_treino_path)
         
         if df_atual is None or len(df_atual) == 0:
-            print("❌ Falha ao carregar dados para verificação")
+            self._log_detalhado("Falha ao carregar dados para verificação", "ERRO")
             return True
         
         # CORREÇÃO: Verificar se a coluna existe após carregamento correto
         if 'Situacao' not in df_atual.columns:
-            print("❌ Coluna 'Situacao' não encontrada após carregamento")
-            print(f"📋 Colunas disponíveis: {list(df_atual.columns)}")
+            self._log_detalhado("Coluna 'Situacao' não encontrada após carregamento", "ERRO")
+            self._log_detalhado(f"Colunas disponíveis: {list(df_atual.columns)}")
             return True
         
         # Filtrar dados válidos
@@ -206,28 +340,31 @@ class AnalisadorApostasEvolutivo:
             modelo_data = joblib.load(self.modelo_path)
             amostras_anteriores = modelo_data.get('amostras_treino', 0)
             
-            print(f"📊 Comparação: Modelo atual {amostras_anteriores} vs Dados {len(df_atual_limpo)}")
+            self._log_detalhado(f"Comparação: Modelo atual {amostras_anteriores} vs Dados {len(df_atual_limpo)}")
             
             # Se tem pelo menos 10% mais dados, retreinar
             if len(df_atual_limpo) > amostras_anteriores * 1.1:
-                print(f"📈 Novos dados detectados: {amostras_anteriores} → {len(df_atual_limpo)}")
+                self._log_detalhado(f"Novos dados detectados: {amostras_anteriores} → {len(df_atual_limpo)}", "SUCESSO")
+                
+                # ✅ CORREÇÃO: CRIAR BACKUP ANTES DE QUALQUER ATUALIZAÇÃO
+                self._fazer_backup_modelo()
                 return True
             else:
-                print(f"✅ Modelo já está atualizado")
+                self._log_detalhado(f"Modelo já está atualizado", "SUCESSO")
                 
         except Exception as e:
-            print(f"⚠️  Erro ao verificar modelo: {e}")
+            self._log_detalhado(f"Erro ao verificar modelo: {e}", "ALERTA")
             return True
             
         return False
 
     def _preparar_dados_treino(self):
         """Preparar dados para treino"""
-        print("📊 Preparando dados para treino...")
+        self._log_detalhado("Preparando dados para treino...")
 
         # DEBUG: Mostrar informações dos dados
-        print(f"📋 Colunas disponíveis: {list(self.df_treino.columns)}")
-        print(f"🔍 Primeiras linhas:")
+        self._log_detalhado(f"Colunas disponíveis: {list(self.df_treino.columns)}")
+        self._log_detalhado(f"Primeiras linhas:")
         print(self.df_treino.head(2))
         
         def corrigir_data(date_str):
@@ -244,60 +381,60 @@ class AnalisadorApostasEvolutivo:
         # Processar Date
         if 'Date' in self.df_treino.columns:
             self.df_treino['Date'] = self.df_treino['Date'].apply(corrigir_data)
-            print(f"✅ Datas processadas: {self.df_treino['Date'].notna().sum()} válidas")
+            self._log_detalhado(f"Datas processadas: {self.df_treino['Date'].notna().sum()} válidas")
         else:
-            print("⚠️  Coluna 'Date' não encontrada")
+            self._log_detalhado("Coluna 'Date' não encontrada", "ALERTA")
             self.df_treino['Date'] = pd.NaT
         
         # Processar Odds
         if 'Odds' in self.df_treino.columns:
             self.df_treino['Odds'] = pd.to_numeric(self.df_treino['Odds'], errors='coerce')
-            print(f"✅ Odds processadas: {self.df_treino['Odds'].notna().sum()} válidas")
+            self._log_detalhado(f"Odds processadas: {self.df_treino['Odds'].notna().sum()} válidas")
         else:
-            print("❌ Coluna 'Odds' não encontrada - ESSENCIAL")
+            self._log_detalhado("Coluna 'Odds' não encontrada - ESSENCIAL", "ERRO")
             return
         
         # CORREÇÃO: Usar coluna 'Situacao' que existe na sua base
         if 'Situacao' in self.df_treino.columns:
             situacao_map = {'VERDADEIRO': 1, 'Verdadeiro': 1, 'FALSO': 0, 'Falso': 0, 'GREEN': 1, 'RED': 0, 'WIN': 1, 'LOSS': 0}
             self.df_treino['Target'] = self.df_treino['Situacao'].map(situacao_map).fillna(-1)
-            print(f"✅ Target criado: {len(self.df_treino[self.df_treino['Target'] != -1])} amostras válidas")
+            self._log_detalhado(f"Target criado: {len(self.df_treino[self.df_treino['Target'] != -1])} amostras válidas")
         else:
-            print("❌ Coluna 'Situacao' não encontrada - ESSENCIAL")
+            self._log_detalhado("Coluna 'Situacao' não encontrada - ESSENCIAL", "ERRO")
             return
         
         # Features - verificar colunas essenciais
         if 'Stat' in self.df_treino.columns:
             self.df_treino['Tipo_Estatistica'] = self.df_treino['Stat'].apply(self._classificar_estatistica)
             self.df_treino['Tamanho_Streak'] = self.df_treino['Stat'].apply(self._extrair_streak)
-            print(f"✅ Stats processados: {len(self.df_treino)} registros")
+            self._log_detalhado(f"Stats processados: {len(self.df_treino)} registros")
         else:
-            print("❌ Coluna 'Stat' não encontrada - ESSENCIAL")
+            self._log_detalhado("Coluna 'Stat' não encontrada - ESSENCIAL", "ERRO")
             return
         
         if 'Next Match' in self.df_treino.columns:
             self.df_treino['Local_Jogo'] = self.df_treino['Next Match'].apply(self._extrair_local)
-            print("✅ Local do jogo processado")
+            self._log_detalhado("Local do jogo processado")
         else:
-            print("⚠️  Coluna 'Next Match' não encontrada")
+            self._log_detalhado("Coluna 'Next Match' não encontrada", "ALERTA")
             self.df_treino['Local_Jogo'] = 'NEUTRO'
         
         if 'League' in self.df_treino.columns:
             self.df_treino['Liga_Categoria'] = self.df_treino['League'].apply(self._classificar_liga)
-            print("✅ Liga categorizada")
+            self._log_detalhado("Liga categorizada")
         else:
-            print("⚠️  Coluna 'League' não encontrada")
+            self._log_detalhado("Coluna 'League' não encontrada", "ALERTA")
             self.df_treino['Liga_Categoria'] = 'MEDIA_CONFIABILIDADE'
 
         # Filtrar apenas dados com target válido
         self.df_treino_limpo = self.df_treino[self.df_treino['Target'] != -1].copy()
-        print(f"🎯 Dados finais para treino: {len(self.df_treino_limpo)} registros válidos")
+        self._log_detalhado(f"Dados finais para treino: {len(self.df_treino_limpo)} registros válidos")
         
         # Mostrar distribuição
         if len(self.df_treino_limpo) > 0:
             verd_count = (self.df_treino_limpo['Target'] == 1).sum()
             fals_count = (self.df_treino_limpo['Target'] == 0).sum()
-            print(f"📊 Distribuição: VERDADEIRO={verd_count}, FALSO={fals_count}")
+            self._log_detalhado(f"Distribuição: VERDADEIRO={verd_count}, FALSO={fals_count}")
     
     def _classificar_estatistica(self, stat):
         """Classificar tipo de estatística"""
@@ -382,35 +519,120 @@ class AnalisadorApostasEvolutivo:
             base += f" [BONUS +{bonus:.0%}]"
         base += f" Previsao: {'MANTERA STREAK' if previsao == 1 else 'INTERROMPERA STREAK'}"
         return base
-    
+
+    def _converter_data_ingles_para_brasil(self, date_str):
+        """Converter formato 'Sunday, 13 October 21:30' para '13/10/2024 21:30'"""
+        try:
+            meses_ingles = {
+                'january': '01', 'february': '02', 'march': '03', 'april': '04',
+                'may': '05', 'june': '06', 'july': '07', 'august': '08',
+                'september': '09', 'october': '10', 'november': '11', 'december': '12'
+            }
+            
+            # Remove dia da semana se existir
+            partes = date_str.strip().split(',')
+            if len(partes) > 1:
+                # Formato: "Sunday, 13 October 21:30"
+                data_hora = partes[1].strip()
+            else:
+                # Formato: "13 October 21:30"
+                data_hora = partes[0].strip()
+            
+            # Divide data e hora
+            partes_data_hora = data_hora.split()
+            if len(partes_data_hora) >= 3:
+                dia = partes_data_hora[0].zfill(2)
+                mes_ingles = partes_data_hora[1].lower()
+                hora = partes_data_hora[2]
+                
+                mes_numero = meses_ingles.get(mes_ingles, '01')
+                ano_atual = datetime.now().year
+                
+                return f"{dia}/{mes_numero}/{ano_atual} {hora}"
+            
+            return date_str
+        except Exception as e:
+            self._log_detalhado(f"Erro ao converter data '{date_str}': {e}", "ALERTA")
+            return date_str
+
+    def _converter_data_ingles_simples_para_brasil(self, date_str):
+        """Converter formato '13 October 21:30' para '13/10/2024 21:30'"""
+        try:
+            meses_ingles = {
+                'january': '01', 'february': '02', 'march': '03', 'april': '04',
+                'may': '05', 'june': '06', 'july': '07', 'august': '08',
+                'september': '09', 'october': '10', 'november': '11', 'december': '12'
+            }
+            
+            partes = date_str.strip().split()
+            if len(partes) >= 3:
+                dia = partes[0].zfill(2)
+                mes_ingles = partes[1].lower()
+                hora = partes[2]
+                
+                mes_numero = meses_ingles.get(mes_ingles, '01')
+                ano_atual = datetime.now().year
+                
+                return f"{dia}/{mes_numero}/{ano_atual} {hora}"
+            
+            return date_str
+        except Exception as e:
+            self._log_detalhado(f"Erro ao converter data simples '{date_str}': {e}", "ALERTA")
+            return date_str
+
     def _preparar_dados_futuros(self, df_futuros):
         """Preparar dados futuros"""
-        print("📊 Preparando dados futuros...")
+        self._log_detalhado("Preparando dados futuros...")
         
         # Processar Date - converter do formato inglês
         if 'Date' in df_futuros.columns:
-            df_futuros['Date'] = df_futuros['Date'].apply(self._converter_data_ingles_para_brasil)
-            print(f"✅ Datas processadas: {df_futuros['Date'].notna().sum()} válidas")
+            df_futuros['Date'] = df_futuros['Date'].apply(self._formatar_data_saida)
+            self._log_detalhado(f"Datas processadas: {df_futuros['Date'].notna().sum()} válidas")
         else:
-            print("⚠️  Coluna 'Date' não encontrada")
+            self._log_detalhado("Coluna 'Date' não encontrada", "ALERTA")
             df_futuros['Date'] = "DATA_INDISPONIVEL"
         
         # Processar Odds - converter para numérico
         if 'Odds' in df_futuros.columns:
             df_futuros['Odds'] = pd.to_numeric(df_futuros['Odds'], errors='coerce')
-            print(f"✅ Odds processadas: {df_futuros['Odds'].notna().sum()} válidas")
+            self._log_detalhado(f"Odds processadas: {df_futuros['Odds'].notna().sum()} válidas")
         else:
-            print("⚠️  Coluna 'Odds' não encontrada")
+            self._log_detalhado("Coluna 'Odds' não encontrada", "ALERTA")
             df_futuros['Odds'] = np.nan
         
+        # ✅ CORREÇÃO: REMOVER INDENTAÇÃO EXTRA AQUI
         # Processar Stat - extrair informações
         if 'Stat' in df_futuros.columns:
             df_futuros['Tipo_Estatistica'] = df_futuros['Stat'].apply(self._classificar_estatistica)
             df_futuros['Tamanho_Streak'] = df_futuros['Stat'].apply(self._extrair_streak)
-            df_futuros['Time'] = df_futuros['Stat'].apply(lambda x: x.split(' have ')[0] if ' have ' in str(x) else 'TIME_DESCONHECIDO')
-            print(f"✅ Stats processados: {len(df_futuros)} registros")
+            
+            # EXTRAIR TIME PRINCIPAL CORRETAMENTE - VERSÃO MELHORADA
+            def extrair_time_melhorado(stat):
+                stat_str = str(stat)
+                time = self._extrair_time_avancado(stat_str)
+                
+                # DEBUG: Logar casos problemáticos
+                if time == 'TIME_DESCONHECIDO':
+                    self._log_detalhado(f"⚠️  Time não extraído - Stat: '{stat_str[:80]}...'", "ALERTA")
+                else:
+                    self._log_detalhado(f"✅ Time extraído: '{time}'", "SUCESSO")
+                    
+                return time
+            
+            df_futuros['Time'] = df_futuros['Stat'].apply(extrair_time_melhorado)
+            
+            # Contar estatísticas de extração
+            times_unicos = df_futuros['Time'].nunique()
+            times_desconhecidos = (df_futuros['Time'] == 'TIME_DESCONHECIDO').sum()
+            
+            self._log_detalhado(f"📊 Estatísticas de extração: {times_unicos} times únicos, {times_desconhecidos} desconhecidos")
+            
+            # DEBUG: Ver alguns times extraídos
+            self._log_detalhado("DEBUG - Primeiros 5 times extraídos:")
+            for i, (stat, time) in enumerate(zip(df_futuros['Stat'].head(), df_futuros['Time'].head())):
+                self._log_detalhado(f"   {i+1}. Stat: '{stat}' → Time: '{time}'")
         else:
-            print("❌ Coluna 'Stat' não encontrada - ESSENCIAL")
+            self._log_detalhado("Coluna 'Stat' não encontrada - ESSENCIAL", "ERRO")
             df_futuros['Tipo_Estatistica'] = 'OUTRO'
             df_futuros['Tamanho_Streak'] = 1
             df_futuros['Time'] = 'TIME_DESCONHECIDO'
@@ -420,28 +642,29 @@ class AnalisadorApostasEvolutivo:
             df_futuros['Local_Jogo'] = df_futuros['Next Match'].apply(self._extrair_local)
             # Aplicar formatação diretamente na coluna Next Match existente
             df_futuros['Next Match'] = df_futuros.apply(self._formatar_next_match, axis=1)
-            print("✅ Next Match processado e formatado")
+            self._log_detalhado("Next Match processado e formatado")
         else:
-            print("⚠️  Coluna 'Next Match' não encontrada")
+            self._log_detalhado("Coluna 'Next Match' não encontrada", "ALERTA")
             df_futuros['Local_Jogo'] = 'NEUTRO'
         
         # Processar League - classificar categoria
         if 'League' in df_futuros.columns:
             df_futuros['Liga_Categoria'] = df_futuros['League'].apply(self._classificar_liga)
-            print("✅ Liga categorizada")
+            self._log_detalhado("Liga categorizada")
         else:
-            print("⚠️  Coluna 'League' não encontrada")
+            self._log_detalhado("Coluna 'League' não encontrada", "ALERTA")
             df_futuros['Liga_Categoria'] = 'MEDIA_CONFIABILIDADE'
         
         # Adicionar coluna Situacao vazia para consistência
         if 'Situacao' not in df_futuros.columns:
             df_futuros['Situacao'] = ''
-            print("✅ Coluna Situacao adicionada (vazia para jogos futuros)")
+            self._log_detalhado("Coluna Situacao adicionada (vazia para jogos futuros)")
         
-        print(f"📊 Dados futuros preparados: {len(df_futuros)} registros")
-        print(f"📋 Colunas disponíveis: {list(df_futuros.columns)}")
+        self._log_detalhado(f"Dados futuros preparados: {len(df_futuros)} registros")
+        self._log_detalhado(f"Colunas disponíveis: {list(df_futuros.columns)}")
         
         return df_futuros
+
     def _formatar_next_match(self, row):
         """Formatar Next Match para mostrar time principal em maiúsculas"""
         next_match = str(row.get('Next Match', ''))
@@ -454,72 +677,73 @@ class AnalisadorApostasEvolutivo:
         next_match_lower = next_match.lower()
         if 'home' in next_match_lower:
             resultado = next_match_lower.replace('home', time_principal.upper())
-            print(f"🏠 Next Match formatado: '{next_match}' -> '{resultado}'")
+            self._log_detalhado(f"Next Match formatado: '{next_match}' -> '{resultado}'")
             return resultado
         elif 'away' in next_match_lower:
             resultado = next_match_lower.replace('away', time_principal.upper())
-            print(f"✈️  Next Match formatado: '{next_match}' -> '{resultado}'")
+            self._log_detalhado(f"Next Match formatado: '{next_match}' -> '{resultado}'")
             return resultado
         else:
             return next_match.upper()
+
+    def _formatar_data_saida(self, date_val):
+        """Formatar data para saída no formato dd/mm/aaaa hh:mm - VERSÃO CORRIGIDA"""
+        if pd.isna(date_val) or date_val == '' or date_val == 'DATA_INDISPONIVEL':
+            return "DATA_INDISPONIVEL"
         
+        try:
+            # Se já for datetime, formatar diretamente
+            if isinstance(date_val, (pd.Timestamp, datetime)):
+                return date_val.strftime('%d/%m/%Y %H:%M')
+            
+            # Se for string, verificar diferentes formatos
+            date_str = str(date_val).strip()
+            
+            # FORMATO 1: Já está no formato desejado "20/10/2025 14:10"
+            if re.match(r'\d{2}/\d{2}/\d{4} \d{1,2}:\d{2}', date_str):
+                # Já está no formato correto, apenas garantir que está padronizado
+                try:
+                    # Converter para datetime e depois formatar para garantir padrão
+                    dt = datetime.strptime(date_str, '%d/%m/%Y %H:%M')
+                    return dt.strftime('%d/%m/%Y %H:%M')
+                except:
+                    return date_str  # Retornar original se não conseguir converter
+            
+            # FORMATO 2: Formato inglês "Sunday, 19 October 18:00"
+            if ',' in date_str and any(day in date_str.lower() for day in 
+                ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']):
+                return self._converter_data_ingles_para_brasil(date_str)
+            
+            # FORMATO 3: "13 October 21:30" (sem dia da semana)
+            if any(mes in date_str.lower() for mes in 
+                ['january', 'february', 'march', 'april', 'may', 'june', 
+                'july', 'august', 'september', 'october', 'november', 'december']):
+                return self._converter_data_ingles_simples_para_brasil(date_str)
+            
+            # Tentar outros formatos conhecidos
+            formatos_tentativos = [
+                '%Y-%m-%d %H:%M:%S', 
+                '%d/%m/%Y %H:%M', 
+                '%m/%d/%Y %H:%M', 
+                '%d-%m-%Y %H:%M',
+                '%d/%m/%Y %H:%M:%S',
+                '%Y-%m-%d %H:%M'
+            ]
+            
+            for fmt in formatos_tentativos:
+                try:
+                    dt = datetime.strptime(date_str, fmt)
+                    return dt.strftime('%d/%m/%Y %H:%M')
+                except:
+                    continue
+            
+            self._log_detalhado(f"Formato de data não reconhecido: {date_str}", "ALERTA")
+            return date_str  # Retornar original se não conseguir converter
+                
+        except Exception as e:
+            self._log_detalhado(f"Erro ao formatar data '{date_val}': {e}", "ALERTA")
+            return str(date_val)
 
-    def _classificar_estatistica(self, stat):
-        """Classificar tipo de estatística"""
-        stat_str = str(stat).lower()
-        if 'won' in stat_str:
-            return 'VITORIA'
-        elif 'lost' in stat_str:
-            return 'DERROTA'
-        elif 'drew' in stat_str:
-            return 'EMPATE'
-        elif 'btts' in stat_str:
-            return 'BTTS'
-        elif 'over 2.5' in stat_str:
-            return 'OVER_2.5'
-        else:
-            return 'OUTRO'
-
-    def _extrair_streak(self, stat):
-        """Extrair tamanho do streak"""
-        matches = re.findall(r'last (\d+)', str(stat))
-        return int(matches[0]) if matches else 1
-
-    def _extrair_local(self, next_match):
-        """Extrair local do jogo"""
-        match_str = str(next_match).lower()
-        if 'home' in match_str:
-            return 'CASA'
-        elif 'away' in match_str:
-            return 'FORA'
-        else:
-            return 'NEUTRO'
-
-    def _classificar_liga(self, league):
-        """Classificar liga por confiabilidade"""
-        league_str = str(league).lower()
-        if any(x in league_str for x in ['nwsl', 'women', 'norway', 'denmark']):
-            return 'ALTA_CONFIABILIDADE'
-        elif any(x in league_str for x in ['brasil', 'sweden', 'iceland']):
-            return 'MEDIA_CONFIABILIDADE'
-        else:
-            return 'BAIXA_CONFIABILIDADE'
-    def _formatar_next_match(self, row):
-        """Formatar Next Match para mostrar time principal em maiúsculas"""
-        next_match = str(row.get('Next Match', ''))
-        time_principal = str(row.get('Time', ''))
-        
-        if not time_principal or time_principal == 'TIME_DESCONHECIDO':
-            return next_match.upper()
-        
-        # Substituir "home" ou "away" pelo nome do time em maiúsculas
-        if 'home' in next_match.lower():
-            return next_match.lower().replace('home', time_principal.upper())
-        elif 'away' in next_match.lower():
-            return next_match.lower().replace('away', time_principal.upper())
-        else:
-            return next_match.upper()
-    
     def _analise_basica_futuro(self, row):
         """Análise básica para fallback"""
         return {
@@ -538,10 +762,10 @@ class AnalisadorApostasEvolutivo:
             self.model = dados_modelo['modelo']
             self.encoder = dados_modelo['encoder']
             self.acuracia_modelo = dados_modelo['acuracia']
-            print(f"✅ Modelo carregado - Acurácia: {self.acuracia_modelo:.2%}")
+            self._log_detalhado(f"Modelo carregado - Acurácia: {self.acuracia_modelo:.2%}", "SUCESSO")
             return True
         except Exception as e:
-            print(f"❌ Erro ao carregar modelo: {e}")
+            self._log_detalhado(f"Erro ao carregar modelo: {e}", "ERRO")
             return False
     
     def _salvar_modelo(self):
@@ -555,157 +779,59 @@ class AnalisadorApostasEvolutivo:
             'data_treinamento': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         joblib.dump(dados_modelo, self.modelo_path)
+        self._log_detalhado("Modelo salvo com sucesso", "SUCESSO")
     
-    def gerar_previsoes_futuras(self, output_path='previsoes_evolutivas.csv'):
-        """Gerar previsões para jogos futuros com recomendações"""
-        if self.model is None:
-            print("❌ Modelo não carregado. Execute treinamento primeiro.")
-            return
+    def _mostrar_ordenacao_aplicada(self, df_ordenado):
+        """Mostrar exemplos da ordenação aplicada"""
+        self._log_detalhado("📊 ORDENAÇÃO APLICADA NO ARQUIVO FINAL:")
+        self._log_detalhado("   1️⃣  Data mais recente primeiro")
+        self._log_detalhado("   2️⃣  Recomendação (EXCELENTE > BOA > REGULAR)") 
+        self._log_detalhado("   3️⃣  Confiabilidade da Liga (ALTA > MEDIA > BAIXA)")
+        self._log_detalhado("   4️⃣  Probabilidade de Sucesso (maior primeiro)")
         
-        if self.base_futuros_path is None:
-            print("❌ Caminho da base de futuros não especificado")
-            return
-            
-        print("🎯 GERANDO PREVISÕES INTELIGENTES...")
-        
-        # Carregar dados futuros
-        df_futuros = self.carregar_dados(self.base_futuros_path)
-        self._preparar_dados_futuros(df_futuros)
-        
-        # Gerar previsões
-        previsoes_detalhadas = []
-        
-        for idx, row in df_futuros.iterrows():
-            try:
-                previsao = self._analisar_jogo_avancado(row)
-                previsoes_detalhadas.append(previsao)
-            except Exception as e:
-                print(f"⚠️ Erro ao analisar jogo {idx}: {e}")
-                previsoes_detalhadas.append(self._analise_basica_futuro(row))
-        
-        # Adicionar previsões ao DataFrame - APENAS AS COLUNAS EXISTENTES
-        colunas_previsao = ['Probabilidade_Sucesso', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 'Bonus_Total']
-        for col in colunas_previsao:
-            df_futuros[col] = [p[col] for p in previsoes_detalhadas]
-        
-        # Formatar Date no formato brasileiro
-        if 'Date' in df_futuros.columns:
-            df_futuros['Date'] = df_futuros['Date'].apply(self._formatar_data_saida)
-        
-        # Ordenar por probabilidade e recomendação
-        df_futuros['Score_Prioridade'] = df_futuros['Probabilidade_Sucesso'] * df_futuros['Odds']
-        df_futuros = df_futuros.sort_values(['Recomendacao', 'Score_Prioridade'], ascending=[False, False])
-        
-        # REMOVER COLUNAS TEMPORÁRIAS QUE NÃO DEVEM APARECER NO CSV FINAL
-        colunas_para_manter = [
-            'League', 'Stat', 'Next Match', 'Odds', 'Date', 'Situação',
-            'Tipo_Estatistica', 'Liga_Categoria',
-            'Probabilidade_Sucesso', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 
-        ]
-        # ficam de fora
-        # 'Tamanho_Streak',  'Time', 'Local_Jogo',         'Bonus_Total'	'Score_Prioridade', 
-
-
-
-        # Manter apenas as colunas que existem no DataFrame
-        colunas_existentes = [col for col in colunas_para_manter if col in df_futuros.columns]
-        df_futuros = df_futuros[colunas_existentes]
-        
-        # Gerar múltiplas recomendadas
-        self._gerar_multiplas_recomendadas(df_futuros)
-        
-        # Salvar resultados
-        df_futuros.to_csv(output_path, index=False, sep=';', encoding='utf-8-sig')
-        print(f"✅ Previsões salvas em: {output_path}")
-        print(f"📊 Total de jogos analisados: {len(df_futuros)}")
-        print(f"🎯 Jogos EXCELENTES: {len(df_futuros[df_futuros['Recomendacao'] == 'EXCELENTE'])}")
-        print(f"👍 Jogos BONS: {len(df_futuros[df_futuros['Recomendacao'] == 'BOA'])}")
-        
-        return df_futuros
-        
-    def _converter_data_ingles_para_brasil(self, date_str):
-        
-        """Converter data do formato 'Sunday, 12 October 12:00' para '12/10/2025 12:00'"""
-        if pd.isna(date_str) or date_str == '' or date_str == 'DATA_INDISPONIVEL':
-            return "DATA_INDISPONIVEL"
+        # Mostrar primeiras linhas para verificar ordenação
+        if len(df_ordenado) > 0:
+            self._log_detalhado("🔍 PRIMEIRAS 5 LINHAS DO ARQUIVO ORDENADO:")
+            for i in range(min(5, len(df_ordenado))):
+                row = df_ordenado.iloc[i]
+                self._log_detalhado(f"   {i+1}. {row['Date']} | {row['Recomendacao']} | {row['Liga_Categoria']} | {row['Probabilidade_Sucesso']:.1%} | {row['League']}")
+    def _converter_para_datetime_ordenacao(self, date_str):
+        """Converter string de data para datetime para ordenação - VERSÃO ROBUSTA"""
+        if pd.isna(date_str) or date_str in ['', 'DATA_INDISPONIVEL', 'NaT', None]:
+            return pd.Timestamp.min  # Data mínima para ficar no final
         
         try:
+            # Se já for datetime
+            if isinstance(date_str, (pd.Timestamp, datetime)):
+                return date_str
+            
             date_str_clean = str(date_str).strip()
             
-            # Mapeamento dos meses em inglês para números
-            meses_ingles = {
-                'january': '01', 'february': '02', 'march': '03', 'april': '04',
-                'may': '05', 'june': '06', 'july': '07', 'august': '08',
-                'september': '09', 'october': '10', 'november': '11', 'december': '12'
-            }
+            # Formato brasileiro dd/mm/yyyy HH:MM
+            if re.match(r'\d{2}/\d{2}/\d{4} \d{1,2}:\d{2}', date_str_clean):
+                return datetime.strptime(date_str_clean, '%d/%m/%Y %H:%M')
             
-            # Remove o dia da semana e espaços extras
-            date_clean = date_str_clean.replace(',', '').strip()
+            # Tentar conversão automática
+            parsed_date = pd.to_datetime(date_str_clean, errors='coerce')
+            if pd.isna(parsed_date):
+                return pd.Timestamp.min
+            return parsed_date
             
-            # Divide a string: "Sunday 12 October 12:00"
-            partes = date_clean.split()
-            
-            if len(partes) >= 4:
-                # Pega dia, mês e hora
-                dia = partes[1].zfill(2)  # "12" -> "12"
-                mes_ingles = partes[2].lower()  # "October" -> "october"
-                hora = partes[3]  # "12:00"
-                
-                # Converte mês inglês para número
-                mes_numero = meses_ingles.get(mes_ingles, '01')
-                
-                # Assume ano atual (ou próximo se estivermos no final do ano)
-                ano_atual = datetime.now().year
-                data_obj = datetime(ano_atual, int(mes_numero), int(dia))
-                
-                # Se a data já passou neste ano, usa próximo ano
-                if data_obj < datetime.now():
-                    data_obj = datetime(ano_atual + 1, int(mes_numero), int(dia))
-                
-                # Formata para "dd/mm/aaaa hh:mm"
-                data_formatada = data_obj.strftime('%d/%m/%Y') + f' {hora}'
-                print(f"📅 Data convertida: '{date_str}' -> '{data_formatada}'")
-                return data_formatada
-            else:
-                print(f"⚠️  Formato de data não reconhecido: {date_str}")
-                return "DATA_INDISPONIVEL"
-                
-        except Exception as e:
-            print(f"❌ Erro ao converter data '{date_str}': {e}")
-            return "DATA_INDISPONIVEL"
-
-    def _formatar_data_saida(self, date_val):
-        """Formatar data para saída no formato dd/mm/aaaa hh:mm"""
-        if pd.isna(date_val) or date_val == '':
-            return "DATA_INDISPONIVEL"
+        except Exception:
+            return pd.Timestamp.min
+    def _converter_para_datetime(self, date_str):
+        """Converter string de data para datetime para ordenação correta"""
+        if pd.isna(date_str) or date_str in ['', 'DATA_INDISPONIVEL']:
+            return pd.NaT
         
         try:
-            # Se já for datetime, formatar diretamente
-            if isinstance(date_val, (pd.Timestamp, datetime)):
-                return date_val.strftime('%d/%m/%Y %H:%M')
-            
-            # Se for string, tentar converter do formato "Wednesday, 15 October 19:00"
-            date_str = str(date_val).strip()
-            
-            # Verificar se está no formato inglês com dia da semana
-            if ',' in date_str and any(day in date_str.lower() for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']):
-                return self._converter_data_ingles_para_brasil(date_str)
-            
-            # Tentar outros formatos conhecidos
-            for fmt in ['%Y-%m-%d %H:%M:%S', '%d/%m/%Y %H:%M', '%m/%d/%Y %H:%M', '%d-%m-%Y %H:%M']:
-                try:
-                    dt = datetime.strptime(date_str, fmt)
-                    return dt.strftime('%d/%m/%Y %H:%M')
-                except:
-                    continue
-            
-            # Se não conseguir converter, retorna original
-            return date_str
-            
-        except Exception as e:
-            print(f"⚠️  Erro ao formatar data '{date_val}': {e}")
-            return str(date_val)
-    
+            # Tenta converter do formato brasileiro dd/mm/yyyy HH:MM
+            if isinstance(date_str, str) and '/' in date_str:
+                return datetime.strptime(date_str, '%d/%m/%Y %H:%M')
+            # Tenta outros formatos
+            return pd.to_datetime(date_str, errors='coerce')
+        except:
+            return pd.NaT
     def _analisar_jogo_avancado(self, row):
         """Análise avançada com modelo ML"""
         tipo_estatistica = self._classificar_estatistica(row['Stat'])
@@ -754,14 +880,14 @@ class AnalisadorApostasEvolutivo:
             'Analise_Detalhada': analise,
             'Bonus_Total': bonus_total
         }
-    
+
     def _gerar_multiplas_recomendadas(self, df_futuros, num_multiplas=7):
-        """Gerar múltiplas de 2, 3 ou 4 times APENAS com confiança > 75%"""
-        print("\n🎲 GERANDO MÚLTIPLAS DE ALTA CONFIANÇA (>75%):")
-        print("="*50)
-        
+        """Gerar múltiplas de 2, 3 ou 4 times APENAS com confiança > 75% - VERSÃO CORRIGIDA"""
+        self._log_detalhado("GERANDO MÚLTIPLAS DE ALTA CONFIANÇA (>75%):")
+        self._log_detalhado("="*50)
+            
         if df_futuros is None or len(df_futuros) == 0:
-            print("❌ Dados futuros não disponíveis para gerar múltiplas")
+            self._log_detalhado("Dados futuros não disponíveis para gerar múltiplas", "ERRO")
             return []
         
         jogos_excelentes = df_futuros[df_futuros['Recomendacao'] == 'EXCELENTE']
@@ -771,31 +897,51 @@ class AnalisadorApostasEvolutivo:
         todos_jogos = pd.concat([jogos_excelentes, jogos_bons])
         todos_jogos = todos_jogos.sort_values('Probabilidade_Sucesso', ascending=False)
         
-        print(f"📊 Jogos excelentes: {len(jogos_excelentes)}, Jogos bons: {len(jogos_bons)}")
+        self._log_detalhado(f"Jogos excelentes: {len(jogos_excelentes)}, Jogos bons: {len(jogos_bons)}")
         
         if len(todos_jogos) < 2:
-            print("❌ Número insuficiente de jogos para gerar múltiplas")
+            self._log_detalhado("Número insuficiente de jogos para gerar múltiplas", "ERRO")
             return []
         
-        # Criar lista de jogos com ID da partida
+        # DEBUG: Verificar se a coluna Time existe e tem valores
+        self._log_detalhado("DEBUG - Verificando coluna 'Time' no DataFrame:")
+        if 'Time' in todos_jogos.columns:
+            self._log_detalhado(f"   Coluna 'Time' encontrada")
+            self._log_detalhado(f"   Valores únicos: {todos_jogos['Time'].nunique()} times")
+            self._log_detalhado(f"   Primeiros 5 valores: {todos_jogos['Time'].head().tolist()}")
+        else:
+            self._log_detalhado("   COLUNA 'TIME' NÃO ENCONTRADA - PROBLEMA CRÍTICO", "ERRO")
+            return []
+        
+        # Criar lista de jogos com ID da partida - VERSÃO CORRIGIDA
         jogos_lista = []
         
         for idx, row in todos_jogos.iterrows():
-            time = row.get('Time', 'TIME_DESCONHECIDO')
-            mercado = row.get('Tipo_Estatistica', 'MERCADO_DESCONHECIDO')
+            # CORREÇÃO: Garantir que estamos pegando o time CORRETAMENTE
+            time = str(row.get('Time', 'TIME_DESCONHECIDO')).strip()
+            mercado = str(row.get('Tipo_Estatistica', 'MERCADO_DESCONHECIDO')).strip()
             
-            # Extrair ID único da partida do Next Match
+            # DEBUG: Verificar cada jogo sendo processado
+            if time == 'TIME_DESCONHECIDO':
+                self._log_detalhado(f"ALERTA: Time desconhecido encontrado - Stat: '{row.get('Stat', '')[:50]}...'", "ALERTA")
+            
+            # Extrair ID único da partida
             id_partida = self._extrair_id_partida(row)
             
             jogos_lista.append({
-                'id': f"{time}_{mercado}",
-                'time': time,
+                'id': f"{time}_{mercado}",  # ID único para evitar duplicatas
+                'time': time,  # Nome real do time - GARANTIDO
                 'mercado': mercado,
-                'odds': row.get('Odds', 1.0),
-                'confianca': row.get('Probabilidade_Sucesso', 0),
-                'analise': row.get('Analise_Detalhada', ''),
-                'id_partida': id_partida  # ID único da partida
+                'odds': float(row.get('Odds', 1.0)) if pd.notna(row.get('Odds')) else 1.0,
+                'confianca': float(row.get('Probabilidade_Sucesso', 0)),
+                'analise': str(row.get('Analise_Detalhada', '')),
+                'id_partida': id_partida
             })
+        
+        # DEBUG: Mostrar alguns jogos extraídos (FORA DO LOOP)
+        self._log_detalhado(f"Primeiros 10 jogos extraídos:")
+        for i, jogo in enumerate(jogos_lista[:10]):
+            self._log_detalhado(f"   {i+1}. {jogo['time']} - {jogo['mercado']} (Conf: {jogo['confianca']:.1%})")
         
         # Remover duplicatas
         jogos_unicos = []
@@ -805,7 +951,11 @@ class AnalisadorApostasEvolutivo:
                 ids_vistos.add(jogo['id'])
                 jogos_unicos.append(jogo)
         
-        print(f"🎯 Jogos únicos disponíveis: {len(jogos_unicos)}")
+        self._log_detalhado(f"Jogos únicos disponíveis: {len(jogos_unicos)}")
+        
+        if len(jogos_unicos) < 2:
+            self._log_detalhado("Número insuficiente de jogos únicos para gerar múltiplas", "ERRO")
+            return []
         
         # 🔥 NOVA LÓGICA: IDENTIFICAR JOGOS COM CONFLITO MAS CRIAR MÚLTIPLAS SEPARADAS
         jogos_para_multiplas = []
@@ -818,11 +968,11 @@ class AnalisadorApostasEvolutivo:
                     grupos_conflito[jogo['id_partida']] = []
                 grupos_conflito[jogo['id_partida']].append(jogo)
         
-        print("🔍 Grupos de conflito identificados:")
+        self._log_detalhado("Grupos de conflito identificados:")
         for partida_id, jogos in grupos_conflito.items():
             if len(jogos) > 1:
                 times = [f"{j['time']}({j['confianca']:.1%})" for j in jogos]
-                print(f"   🎯 {partida_id}: {', '.join(times)}")
+                self._log_detalhado(f"   {partida_id}: {', '.join(times)}")
         
         # MANTER TODOS OS JOGOS, mas marcar os que têm conflito
         for jogo in jogos_unicos:
@@ -831,10 +981,10 @@ class AnalisadorApostasEvolutivo:
                 jogo['tem_conflito'] = True
             jogos_para_multiplas.append(jogo)
         
-        print(f"🎯 Jogos para múltiplas: {len(jogos_para_multiplas)} (incluindo opções de conflito)")
+        self._log_detalhado(f"Jogos para múltiplas: {len(jogos_para_multiplas)} (incluindo opções de conflito)")
         
         if len(jogos_para_multiplas) < 2:
-            print("❌ Número insuficiente de jogos para gerar múltiplas")
+            self._log_detalhado("Número insuficiente de jogos para gerar múltiplas", "ERRO")
             return []
         
         # GERAR MÚLTIPLAS EVITANDO CONFLITOS DIRETOS
@@ -842,7 +992,7 @@ class AnalisadorApostasEvolutivo:
         from itertools import combinations
         
         # 1. Múltiplas de 2 jogos
-        print("🔄 Gerando múltiplas de 2 jogos (evitando conflitos diretos)...")
+        self._log_detalhado("Gerando múltiplas de 2 jogos (evitando conflitos diretos)...")
         comb_2_jogos = list(combinations(jogos_para_multiplas, 2))
         
         multiplas_validas_2 = 0
@@ -858,12 +1008,12 @@ class AnalisadorApostasEvolutivo:
                 todas_multiplas.append(multipla)
                 multiplas_validas_2 += 1
         
-        print(f"   ✅ Múltiplas de 2 válidas: {multiplas_validas_2}")
+        self._log_detalhado(f"   Múltiplas de 2 válidas: {multiplas_validas_2}")
         
         # 2. Múltiplas de 3 jogos
         multiplas_validas_3 = 0
         if len(jogos_para_multiplas) >= 3:
-            print("🔄 Gerando múltiplas de 3 jogos (evitando conflitos diretos)...")
+            self._log_detalhado("Gerando múltiplas de 3 jogos (evitando conflitos diretos)...")
             comb_3_jogos = list(combinations(jogos_para_multiplas, 3))
             
             for combo in comb_3_jogos:
@@ -891,12 +1041,12 @@ class AnalisadorApostasEvolutivo:
                     todas_multiplas.append(multipla)
                     multiplas_validas_3 += 1
             
-            print(f"   ✅ Múltiplas de 3 válidas: {multiplas_validas_3}")
+            self._log_detalhado(f"   Múltiplas de 3 válidas: {multiplas_validas_3}")
         
         # 3. Múltiplas de 4 jogos
         multiplas_validas_4 = 0
         if len(jogos_para_multiplas) >= 4:
-            print("🔄 Gerando múltiplas de 4 jogos (evitando conflitos diretos)...")
+            self._log_detalhado("Gerando múltiplas de 4 jogos (evitando conflitos diretos)...")
             comb_4_jogos = list(combinations(jogos_para_multiplas, 4))
             
             for combo in comb_4_jogos:
@@ -924,12 +1074,12 @@ class AnalisadorApostasEvolutivo:
                     todas_multiplas.append(multipla)
                     multiplas_validas_4 += 1
             
-            print(f"   ✅ Múltiplas de 4 válidas: {multiplas_validas_4}")
+            self._log_detalhado(f"   Múltiplas de 4 válidas: {multiplas_validas_4}")
         
-        print(f"📊 Múltiplas geradas com confiança > 75%: {len(todas_multiplas)}")
+        self._log_detalhado(f"Múltiplas geradas com confiança > 75%: {len(todas_multiplas)}")
         
         if len(todas_multiplas) == 0:
-            print("❌ Nenhuma múltipla atingiu o mínimo de 75% de confiança")
+            self._log_detalhado("Nenhuma múltipla atingiu o mínimo de 75% de confiança", "ALERTA")
             return []
         
         # ORDENAR POR CONFIANÇA (melhores primeiro)
@@ -949,60 +1099,80 @@ class AnalisadorApostasEvolutivo:
         multiplas_altissima = [m for m in multiplas_unicas if m['confianca_media'] > 0.85]
         multiplas_alta = [m for m in multiplas_unicas if m['confianca_media'] > 0.75]
         
-        print(f"\n🎯 CLASSIFICAÇÃO DAS MÚLTIPLAS (>75%):")
-        print(f"   ⭐⭐⭐ ALTÍSSIMA (>85%): {len(multiplas_altissima)} múltiplas")
-        print(f"   ⭐⭐ ALTA (>75%): {len(multiplas_alta)} múltiplas")
-        print(f"   📊 Distribuição: 2-jogos={multiplas_validas_2}, 3-jogos={multiplas_validas_3}, 4-jogos={multiplas_validas_4}")
+        self._log_detalhado("CLASSIFICAÇÃO DAS MÚLTIPLAS (>75%):")
+        self._log_detalhado(f"   ⭐⭐⭐ ALTÍSSIMA (>85%): {len(multiplas_altissima)} múltiplas")
+        self._log_detalhado(f"   ⭐⭐ ALTA (>75%): {len(multiplas_alta)} múltiplas")
+        self._log_detalhado(f"   Distribuição: 2-jogos={multiplas_validas_2}, 3-jogos={multiplas_validas_3}, 4-jogos={multiplas_validas_4}")
         
         # EXIBIR POR CATEGORIA
         self._exibir_multiplas_por_categoria(multiplas_altissima, "ALTÍSSIMA CONFIANÇA", "⭐⭐⭐", min(10, len(multiplas_altissima)))
         self._exibir_multiplas_por_categoria(multiplas_alta, "ALTA CONFIANÇA", "⭐⭐", min(10, len(multiplas_alta)))
         
         return multiplas_unicas
-    
+
     def _tem_conflito_logico(self, jogo1, jogo2):
         """Verificar se há conflito lógico entre dois jogos - VERSÃO RIGOROSA"""
         # Se são da mesma partida, NÃO PERMITIR NENHUMA COMBINAÇÃO
         if jogo1['id_partida'] == jogo2['id_partida'] and jogo1['id_partida'] != 'DESCONHECIDO':
-            print(f"❌ CONFLITO: {jogo1['time']} e {jogo2['time']} são do mesmo jogo {jogo1['id_partida']}")
+            self._log_detalhado(f"CONFLITO: {jogo1['time']} e {jogo2['time']} são do mesmo jogo {jogo1['id_partida']}", "ALERTA")
             return True
         
         return False
-        
+
     def _extrair_id_partida(self, row):
-        """Extrair ID único da partida usando Stat + Next Match"""
+        """Extrair ID único da partida - VERSÃO DEFINITIVA CORRIGIDA"""
         stat = str(row.get('Stat', ''))
         next_match = str(row.get('Next Match', ''))
         
-        # Extrair time principal da coluna Stat (ex: "Brann have won their last 5 matches")
-        time_principal = stat.split(' have ')[0] if ' have ' in stat else 'TIME_DESCONHECIDO'
+        # EXTRAIR TIME PRINCIPAL DA COLUNA STAT
+        time_principal = 'TIME_DESCONHECIDO'
         
-        # Extrair time adversário e local da coluna Next Match
+        # Padrão: "Nome do Time have/has/had ..."
+        if ' have ' in stat:
+            time_principal = stat.split(' have ')[0].strip()
+        elif ' has ' in stat:
+            time_principal = stat.split(' has ')[0].strip()
+        elif ' had ' in stat:
+            time_principal = stat.split(' had ')[0].strip()
+        
+        # DEBUG: Mostrar o que foi extraído
+        self._log_detalhado(f"Extraindo: Stat='{stat[:50]}...' → Time='{time_principal}'")
+        
+        # EXTRAIR INFORMAÇÕES DO NEXT MATCH
         if ' vs ' in next_match.lower():
-            # Formato: "Home vs Atlante" ou "Away vs Atlante"
             partes = next_match.lower().split(' vs ')
             if len(partes) == 2:
                 local = partes[0].strip()  # "home" ou "away"
-                adversario = partes[1].strip().title()
+                adversario = partes[1].strip()
+                
+                # Formatar adversário (primeira letra maiúscula em cada palavra)
+                adversario = ' '.join(word.capitalize() for word in adversario.split())
+                
+                self._log_detalhado(f"Next Match: '{next_match}' → Local='{local}', Adversário='{adversario}'")
                 
                 # Determinar times baseado no local
-                if local == 'home':
-                    time_casa = time_principal
-                    time_visitante = adversario
-                elif local == 'away':
-                    time_casa = adversario
-                    time_visitante = time_principal
-                else:
-                    return 'DESCONHECIDO'
-                
-                # Criar ID único ordenando os times
-                times_ordenados = sorted([time_casa, time_visitante])
-                id_partida = f"{times_ordenados[0]}_vs_{times_ordenados[1]}"
-                
-                return id_partida
+                if time_principal != 'TIME_DESCONHECIDO':
+                    if local == 'home':
+                        time_casa = time_principal
+                        time_visitante = adversario
+                    elif local == 'away':
+                        time_casa = adversario
+                        time_visitante = time_principal
+                    else:
+                        # Se não é home/away claro, assumir que time_principal é o primeiro
+                        time_casa = time_principal
+                        time_visitante = adversario
+                    
+                    # Criar ID único ordenando os times alfabeticamente
+                    times_ordenados = sorted([time_casa, time_visitante])
+                    id_partida = f"{times_ordenados[0]}_vs_{times_ordenados[1]}"
+                    
+                    self._log_detalhado(f"ID Partida criado: {id_partida}")
+                    return id_partida
         
+        self._log_detalhado("Não foi possível extrair ID da partida", "ALERTA")
         return 'DESCONHECIDO'
-    
+
     def _calcular_metricas_multipla(self, combinacao_jogos):
         """Calcular métricas para uma múltipla de qualquer tamanho"""
         jogos_ordenados = sorted(combinacao_jogos, key=lambda x: x['id'])
@@ -1040,12 +1210,13 @@ class AnalisadorApostasEvolutivo:
         }
 
     def _exibir_multiplas_por_categoria(self, multiplas, categoria, icone, max_exibir):
-        """Exibir múltiplas por categoria de confiança"""
+        """Exibir múltiplas por categoria de confiança - VERSÃO CORRIGIDA"""
+        
         if not multiplas:
             return
         
-        print(f"\n{icone} {categoria} {icone}")
-        print("=" * 50)
+        self._log_detalhado(f"{icone} {categoria} {icone}")
+        self._log_detalhado("=" * 50)
         
         for i, multipla in enumerate(multiplas[:max_exibir], 1):
             tamanho_str = {
@@ -1054,54 +1225,191 @@ class AnalisadorApostasEvolutivo:
                 4: "QUÁDRUPLA"
             }.get(multipla['tamanho'], f"{multipla['tamanho']} JOGOS")
             
-            print(f"\n🔮 {tamanho_str} {i}:")
-            print(f"   Odd Total: {multipla['odd_total']:.2f}")
-            print(f"   Confiança Média: {multipla['confianca_media']:.1%} ⭐")
-            print(f"   Nº de Seleções: {multipla['tamanho']}")
+            self._log_detalhado(f"🔮 {tamanho_str} {i}:")
+            self._log_detalhado(f"   Odd Total: {multipla['odd_total']:.2f}")
+            self._log_detalhado(f"   Confiança Média: {multipla['confianca_media']:.1%} ⭐")
+            self._log_detalhado(f"   Nº de Seleções: {multipla['tamanho']}")
             
             for jogo in multipla['jogos']:
+                # CORREÇÃO: Usar 'time' em vez de 'id' para mostrar o nome real
+                time_nome = jogo.get('time', 'TIME_DESCONHECIDO')
+                mercado = jogo.get('mercado', 'MERCADO_DESCONHECIDO')
                 odd_str = f"@{jogo['odds']:.2f}" if pd.notna(jogo['odds']) and jogo['odds'] > 0 else "@nan"
                 conf_individual = f"({jogo['confianca']:.1%})"
-                print(f"   ✅ {jogo['time']} - {jogo['mercado']} {odd_str} {conf_individual}")
-            print("-" * 40)
+                self._log_detalhado(f"   ✅ {time_nome} - {mercado} {odd_str} {conf_individual}")
+            self._log_detalhado("-" * 40)
+    def criar_backup_manual(self):
+        """Criar backup manual do modelo atual"""
+        if not os.path.exists(self.modelo_path):
+            self._log_detalhado("Nenhum modelo encontrado para backup", "ALERTA")
+            return False
         
-    # EXECUÇÃO PRINCIPAL INTELIGENTE
+        self._fazer_backup_modelo()
+        self._log_detalhado("Backup manual criado com sucesso", "SUCESSO")
+        return True
+    def _aplicar_ordenacao_final(self, df):
+        """Aplicar ordenação final ao DataFrame"""
+        # Criar colunas temporárias para ordenação
+        df_ordenacao = df.copy()
+        
+        # 1. Converter datas para datetime
+        df_ordenacao['Data_Ordenacao'] = df_ordenacao['Date'].apply(self._converter_para_datetime_ordenacao)
+        
+        # 2. Criar ordem customizada para Recomendacao
+        ordem_recomendacao = {'EXCELENTE': 1, 'BOA': 2, 'REGULAR': 3}
+        df_ordenacao['Ordem_Recomendacao'] = df_ordenacao['Recomendacao'].map(ordem_recomendacao).fillna(4)
+        
+        # 3. Criar ordem customizada para Liga_Categoria
+        ordem_liga = {'ALTA_CONFIABILIDADE': 1, 'MEDIA_CONFIABILIDADE': 2, 'BAIXA_CONFIABILIDADE': 3}
+        df_ordenacao['Ordem_Liga'] = df_ordenacao['Liga_Categoria'].map(ordem_liga).fillna(4)
+        
+        # 4. Ordenação FINAL conforme solicitado
+        df_ordenado = df_ordenacao.sort_values([
+            'Data_Ordenacao',           # 1º: Data mais recente primeiro
+            'Ordem_Recomendacao',       # 2º: Melhor recomendação
+            'Ordem_Liga',               # 3º: Alta confiabilidade primeiro
+            'Probabilidade_Sucesso'     # 4º: Maior probabilidade
+        ], ascending=[
+            False,  # Data: mais recente primeiro
+            True,   # Recomendacao: Excelente(1) antes de Boa(2)
+            True,   # Liga: Alta(1) antes de Media(2)
+            False   # Probabilidade: maior primeiro
+        ])
+        
+        # Remover colunas temporárias de ordenação
+        colunas_finais = [col for col in df_ordenado.columns if not col.startswith('Ordem_') and col != 'Data_Ordenacao']
+        return df_ordenado[colunas_finais]
+# EXECUÇÃO PRINCIPAL INTELIGENTE
+    def verificar_arquivos_config(self,config):
+        """Verificar se arquivos de configuração existem"""
+        arquivos_ok = True
+        
+        for nome, caminho in config.items():
+            if 'base' in nome and not os.path.exists(caminho):
+                print(f"❌ Arquivo não encontrado: {caminho}")
+                arquivos_ok = False
+            else:
+                print(f"✅ {nome}: {caminho}")
+        
+        return arquivos_ok
+    def gerar_previsoes_futuras(self, output_path='previsoes_evolutivas.csv'):
+        """Gerar previsões para jogos futuros com recomendações"""
+        if self.model is None:
+            self._log_detalhado("Modelo não carregado. Execute treinamento primeiro.", "ERRO")
+            return
+        
+        if self.base_futuros_path is None:
+            self._log_detalhado("Caminho da base de futuros não especificado", "ERRO")
+            return
+            
+        self._log_detalhado("GERANDO PREVISÕES INTELIGENTES...")
+        
+        # Carregar dados futuros
+        df_futuros = self.carregar_dados(self.base_futuros_path)
+        if df_futuros is None or len(df_futuros) == 0:
+            self._log_detalhado("Falha ao carregar dados futuros", "ERRO")
+            return
+        
+        df_futuros = self._preparar_dados_futuros(df_futuros)
+        
+        # Gerar previsões
+        previsoes_detalhadas = []
+        
+        for idx, row in df_futuros.iterrows():
+            try:
+                previsao = self._analisar_jogo_avancado(row)
+                previsoes_detalhadas.append(previsao)
+            except Exception as e:
+                self._log_detalhado(f"Erro ao analisar jogo {idx}: {e}", "ALERTA")
+                previsoes_detalhadas.append(self._analise_basica_futuro(row))
+        
+        # Adicionar previsões ao DataFrame - APENAS AS COLUNAS EXISTENTES
+        colunas_previsao = ['Probabilidade_Sucesso', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 'Bonus_Total']
+        for col in colunas_previsao:
+            df_futuros[col] = [p[col] for p in previsoes_detalhadas]
+        
+        # ✅ CORREÇÃO: ORDENAÇÃO FINAL ANTES DE SALVAR
+        self._log_detalhado("Aplicando ordenação personalizada...")
+        
+        # 1. Converter datas para datetime para ordenação correta
+        df_futuros = self._aplicar_ordenacao_final(df_futuros)
+        
+        # REMOVER COLUNAS TEMPORÁRIAS QUE NÃO DEVEM APARECER NO CSV FINAL
+        colunas_para_manter = [
+            'League', 'Stat', 'Next Match', 'Odds', 'Date', 'Situacao',
+            'Tipo_Estatistica', 'Liga_Categoria',
+            'Probabilidade_Sucesso', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 
+        ]
+
+        # Manter apenas as colunas que existem no DataFrame
+        colunas_existentes = [col for col in colunas_para_manter if col in df_futuros.columns]
+        df_futuros_ordenado = df_futuros[colunas_existentes].copy()
+        
+        # ✅ CORREÇÃO: GARANTIR que a ordenação está aplicada no DataFrame final
+        df_futuros_ordenado = self._aplicar_ordenacao_final(df_futuros_ordenado)
+        
+        # Gerar múltiplas recomendadas (usando o DataFrame original para evitar perda de colunas)
+        self._gerar_multiplas_recomendadas(df_futuros)
+        
+        # ✅ CORREÇÃO: SALVAR O DATAFRAME ORDENADO
+        df_futuros_ordenado.to_csv(output_path, index=False, sep=';', encoding='utf-8-sig')
+        self._log_detalhado(f"Previsões salvas em: {output_path}", "SUCESSO")
+        self._log_detalhado(f"Total de jogos analisados: {len(df_futuros_ordenado)}")
+        self._log_detalhado(f"Jogos EXCELENTES: {len(df_futuros_ordenado[df_futuros_ordenado['Recomendacao'] == 'EXCELENTE'])}")
+        self._log_detalhado(f"Jogos BONS: {len(df_futuros_ordenado[df_futuros_ordenado['Recomendacao'] == 'BOA'])}")
+        
+        # Mostrar ordenação aplicada
+        self._mostrar_ordenacao_aplicada(df_futuros_ordenado)
+        
+        return df_futuros_ordenado
+
 if __name__ == "__main__":
     print("🤖 SISTEMA DE ANÁLISE EVOLUTIVA DE APOSTAS")
     print("="*50)
     
     # CONFIGURAÇÃO - AJUSTE ESTES CAMINHOS
     config = {
-        'base_treino': 'todos_ate_05-10-25.csv',      # Base completa COM históricos
-        'base_futuros': 'adam choi_dados_20251017_001451.csv',          # Apenas jogos futuros # poder ser o arquivo jogos_futuros.csv
+        'base_treino': 'todos_ate_05-10-25.csv',
+        'base_futuros': 'adam choi_dados_20251018_173038.csv',
         'modelo_salvo': 'modelo_apostas_evolutivo.joblib'
     }
     
-    # Inicializar analisador
-    analisador = AnalisadorApostasEvolutivo(
-        base_treino_path=config['base_treino'],
-        base_futuros_path=config['base_futuros'],
-        modelo_path=config['modelo_salvo']
-    )
-    
-    # OPÇÃO 1: Treinar/Atualizar modelo
-    print("\n1. 🎯 Treinando modelo com dados atualizados...")
-    sucesso_treino = analisador.treinar_modelo_evolutivo()
-    
-    if sucesso_treino:
-        # OPÇÃO 2: Gerar previsões
-        print("\n2. 🔮 Gerando previsões inteligentes...")
-        previsoes = analisador.gerar_previsoes_futuras('previsoes_evolutivas.csv')
+    try:
+        # 1. Primeiro criar o analisador
+        analisador = AnalisadorApostasEvolutivo(
+            base_treino_path=config['base_treino'],
+            base_futuros_path=config['base_futuros'],
+            modelo_path=config['modelo_salvo']
+        )
         
-        print("\n" + "="*50)
-        print("✅ PROCESSO CONCLUÍDO!")
-        print("="*50)
-        print("📁 Arquivos gerados:")
-        print("   - modelo_apostas_evolutivo.joblib (modelo treinado)")
-        print("   - previsoes_evolutivas.csv (previsões + múltiplas)")
-        print("\n🎯 Próximos passos:")
-        print("   - Adicione novos resultados à base de treino")
-        print("   - Execute novamente para modelo mais inteligente")
-        print("   - Use as múltiplas recomendadas para apostas")
-    else:
-        print("❌ Falha no processo. Verifique os arquivos de dados.")
+        # 2. ✅ CORREÇÃO: Agora chamar o método DA INSTÂNCIA
+        if analisador.verificar_arquivos_config(config):
+            
+            # 3. Backup manual
+            print("\n💾 Criando backup manual do modelo atual...")
+            analisador.criar_backup_manual()
+            
+            # 4. Treinar/Atualizar modelo
+            print("\n1. 🎯 Treinando modelo com dados atualizados...")
+            sucesso_treino = analisador.treinar_modelo_evolutivo()
+            
+            if sucesso_treino:
+                # 5. Gerar previsões
+                print("\n2. 🔮 Gerando previsões inteligentes...")
+                previsoes = analisador.gerar_previsoes_futuras('previsoes_evolutivas.csv')
+                
+                print("\n" + "="*50)
+                print("✅ PROCESSO CONCLUÍDO!")
+                print("="*50)
+                print("📁 Arquivos gerados:")
+                print("   - modelo_apostas_evolutivo.joblib (modelo treinado)")
+                print("   - previsoes_evolutivas.csv (previsões + múltiplas)")
+            else:
+                print("❌ Falha no treinamento do modelo")
+        else:
+            print("❌ Verifique os caminhos dos arquivos de configuração")
+            
+    except Exception as e:
+        print(f"💥 Erro crítico: {e}")
+        import traceback
+        traceback.print_exc()
