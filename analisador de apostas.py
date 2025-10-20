@@ -684,7 +684,7 @@ class AnalisadorApostasEvolutivo:
             self._log_detalhado(f"Next Match formatado: '{next_match}' -> '{resultado}'")
             return resultado
         else:
-            return next_match.upper()
+            return next_match
 
     def _formatar_data_saida(self, date_val):
         """Formatar data para saída no formato dd/mm/aaaa hh:mm - VERSÃO CORRIGIDA"""
@@ -1370,7 +1370,7 @@ if __name__ == "__main__":
     # CONFIGURAÇÃO - AJUSTE ESTES CAMINHOS
     config = {
         'base_treino': 'todos_ate_05-10-25.csv',
-        'base_futuros': 'adam choi_dados_20251018_173038.csv',
+        'base_futuros': 'dia 19-10-25.csv',
         'modelo_salvo': 'modelo_apostas_evolutivo.joblib'
     }
     
