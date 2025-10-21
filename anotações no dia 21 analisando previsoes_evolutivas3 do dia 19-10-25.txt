@@ -1,0 +1,4 @@
+anotações no dia 21 analisando o modelo que previu para dia 19 na planilha previsões_evolutivas3:
+  •filtrar e ordenar os jogos por data do mais recente para o mais antigo
+  • filtrar coluna recomendação por excelente e boa retirando a regular
+  • depois filtrar por stats de z->a para ficar os mesmos jogos em sequencia

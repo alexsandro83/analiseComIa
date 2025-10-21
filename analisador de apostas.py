@@ -1370,7 +1370,7 @@ if __name__ == "__main__":
     # CONFIGURAÇÃO - AJUSTE ESTES CAMINHOS
     config = {
         'base_treino': 'todos_ate_05-10-25.csv',
-        'base_futuros': 'dia 19-10-25.csv',
+        'base_futuros': r'D:\Downloads\scraping_futebol\scraping\adam choi_dados_20251021_034054.csv',
         'modelo_salvo': 'modelo_apostas_evolutivo.joblib'
     }
     
