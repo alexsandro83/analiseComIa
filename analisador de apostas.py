@@ -4,7 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 import joblib
 import os
 import warnings
@@ -12,6 +12,7 @@ warnings.filterwarnings('ignore')
 
 class AnalisadorApostasEvolutivo:
     def __init__(self, base_treino_path=None, base_futuros_path=None, modelo_path='modelo_apostas.joblib'):
+        self._instalar_dependencias()
         self.base_treino_path = base_treino_path
         self.base_futuros_path = base_futuros_path
         self.modelo_path = modelo_path
@@ -19,7 +20,101 @@ class AnalisadorApostasEvolutivo:
         self.encoder = LabelEncoder()
         self.jogos_complementares = {}
         self.features_para_treino = ['Odds', 'Tamanho_Streak', 'Tipo_Estatistica', 'Local_Jogo', 'Liga_Categoria']
+    def _instalar_dependencias(self):
+        """Instalar psutil automaticamente se necessário"""
+        try:
+            import psutil
+            return True
+        except ImportError:
+            self._log_detalhado("📦 Instalando psutil...", "INFO")
+            try:
+                import subprocess
+                import sys
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "psutil"])
+                self._log_detalhado("✅ psutil instalado com sucesso", "SUCESSO")
+                return True
+            except Exception as e:
+                self._log_detalhado(f"❌ Falha ao instalar psutil: {e}", "ERRO")
+                return False
+    def _calcular_efetividade(self, situacao, previsao, date_str):
+        """Calcular efetividade considerando data do jogo + 2 horas de margem"""
         
+        
+        situacao_clean = str(situacao).strip()
+        previsao_clean = str(previsao).strip()
+        date_clean = str(date_str).strip()
+        
+        # Verificar se é data inválida
+        if date_clean in ['', 'nan', 'None', 'DATA_INDISPONIVEL', 'NaT']:
+            return 'DATA_INVALIDA'
+        
+        # Verificar se o jogo já aconteceu (data + 2 horas)
+        try:
+            # Converter data do formato "25/10/2025 20:30"
+            data_jogo = datetime.strptime(date_clean, '%d/%m/%Y %H:%M')
+            agora = datetime.now()
+            
+            # Adicionar 2 horas de margem (jogo já terminou)
+            limite_verificacao = data_jogo + timedelta(hours=2)
+            #breakpoint()
+            # Se ainda não passou 2 horas do início do jogo
+            if agora < limite_verificacao:
+                return 'JOGO_FUTURO'
+            elif ((limite_verificacao - data_jogo) < timedelta(hours=2) and agora > data_jogo):
+                return 'JOGO_EM_ANDAMENTO'
+            else:
+                # Jogo já terminou (passou mais de 2 horas do início)
+                if situacao_clean == '':
+                    return 'AGUARDANDO_RESULTADO'
+                elif previsao_clean == '':
+                    return 'SEM_PREVISAO'
+                elif situacao_clean.upper() == previsao_clean.upper():
+                    return 'ACERTO'
+                else:
+                    return 'ERRO'
+                    
+        except Exception as e:
+            self._log_detalhado(f"Erro ao processar data '{date_clean}': {e}", "ALERTA")
+            return 'ERRO_DATA'
+    def _adicionar_coluna_efetividade(self, df):
+        """Adicionar coluna de efetividade ao DataFrame - VERSÃO CORRIGIDA"""
+        if 'Situacao' in df.columns and 'Previsao' in df.columns and 'Date' in df.columns:
+            df['Efetividade'] = df.apply(
+                lambda row: self._calcular_efetividade(
+                    row['Situacao'], 
+                    row['Previsao'],
+                    row['Date']  # ⬅️ AGORA COM O date_str!
+                ), 
+                axis=1
+            )
+            
+            # Estatísticas detalhadas
+            stats = df['Efetividade'].value_counts()
+            self._log_detalhado("📊 ESTATÍSTICAS DE EFETIVIDADE:")
+            for status, count in stats.items():
+                percentual = (count / len(df)) * 100
+                self._log_detalhado(f"   {status}: {count} jogos ({percentual:.1f}%)")
+                
+        else:
+            df['Efetividade'] = 'COLUNAS_INCOMPLETAS'
+            self._log_detalhado("Colunas Situacao, Previsao ou Date não encontradas", "ALERTA")
+        
+        return df
+    def _calcular_estatisticas_efetividade(self, df):
+        """Calcular estatísticas de efetividade"""
+        if 'Efetividade' not in df.columns:
+            return "Estatísticas não disponíveis"
+        
+        stats = df['Efetividade'].value_counts()
+        total = len(df)
+        acertos = stats.get('ACERTO', 0)
+        erros = stats.get('ERRO', 0)
+        
+        if total > 0:
+            taxa_acerto = (acertos / total) * 100
+            return f"Acertos: {acertos}/{total} ({taxa_acerto:.1f}%)"
+        else:
+            return "Nenhum dado para análise"    
     def _log_detalhado(self, mensagem, nivel="INFO"):
         """Sistema de logging organizado"""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -27,15 +122,45 @@ class AnalisadorApostasEvolutivo:
         icone = icones.get(nivel, "🔍")
         # print(f"{timestamp} {icone} {mensagem}")
         print(f"{mensagem}")
-    def _fazer_backup_modelo(self):
-        """Criar backup do modelo antes de atualizar"""
-        if os.path.exists(self.modelo_path):
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            backup_path = f"{self.modelo_path}.backup_{timestamp}"
-            import shutil
-            shutil.copy2(self.modelo_path, backup_path)
-            self._log_detalhado(f"Backup criado: {backup_path}", "SUCESSO")
-    
+    def _fazer_backup_modelo(self, nova_acuracia=None):
+        """Criar backup do modelo apenas se a acurácia melhorar"""
+        if not os.path.exists(self.modelo_path):
+            self._log_detalhado("Nenhum modelo existente para backup", "ALERTA")
+            return False
+        
+        try:
+            # Carregar modelo atual para comparar acurácia
+            modelo_atual = joblib.load(self.modelo_path)
+            acuracia_atual = modelo_atual.get('acuracia', 0)
+            
+            # Se nova acurácia não foi fornecida, verificar se temos no objeto
+            if nova_acuracia is None:
+                if hasattr(self, 'acuracia_modelo'):
+                    nova_acuracia = self.acuracia_modelo
+                else:
+                    # Se não tem acurácia nova, faz backup padrão (para backup manual)
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    backup_path = f"{self.modelo_path}.backup_{timestamp}"
+                    import shutil
+                    shutil.copy2(self.modelo_path, backup_path)
+                    self._log_detalhado(f"✅ Backup manual criado: {backup_path}", "SUCESSO")
+                    return True
+            
+            # Só faz backup se a acurácia melhorou (para treinamento automático)
+            if nova_acuracia > acuracia_atual:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                backup_path = f"{self.modelo_path}.backup_{timestamp}_acc{nova_acuracia:.3f}"
+                import shutil
+                shutil.copy2(self.modelo_path, backup_path)
+                self._log_detalhado(f"✅ Backup criado (melhoria: {acuracia_atual:.2%} → {nova_acuracia:.2%}): {backup_path}", "SUCESSO")
+                return True
+            else:
+                self._log_detalhado(f"⚠️  Backup não necessário (acurácia: {acuracia_atual:.2%} → {nova_acuracia:.2%})", "ALERTA")
+                return False
+                
+        except Exception as e:
+            self._log_detalhado(f"❌ Erro ao verificar acurácia para backup: {e}", "ERRO")
+            return False
     def _validar_dados_treino(self):
         """Validar integridade dos dados de treino"""
         colunas_essenciais = ['Situacao', 'Odds', 'Stat']
@@ -77,7 +202,9 @@ class AnalisadorApostasEvolutivo:
                 if match:
                     time = match.group(1).strip()
                     # Limpeza do nome
-                    time = re.sub(r'\s+', ' ', time)  # Remove espaços múltiplos
+                    time = re.sub(r'\s+', ' ', time)
+                    time=re.split(r' have', time, flags=re.IGNORECASE)[0]
+                    # Remove espaços múltiplos
                     time = time.title()  # Primeira letra maiúscula em cada palavra
                     
                     # Verificar se é um nome válido (não muito curto e não contém palavras comuns)
@@ -86,7 +213,6 @@ class AnalisadorApostasEvolutivo:
                     if (len(time) >= 3 and 
                         not any(palavra.lower() in palavras_invalidas for palavra in palavras_time) and
                         len(palavras_time) <= 4):  # Máximo de 4 palavras
-                        
                         self._log_detalhado(f"✅ Time extraído: '{time}' do padrão: {padrao}", "SUCESSO")
                         return time
             
@@ -127,8 +253,53 @@ class AnalisadorApostasEvolutivo:
                 return time_candidato.title()
         
         return 'TIME_DESCONHECIDO'
+    def corrigir_caracteres_especiais_csv(self,camiho_arquivo,df):
+        # Mapeamento completo de correção de caracteres especiais
+        correcoes = {
+            'Ã¡': 'á', 'Ã©': 'é', 'Ã­': 'í', 'Ã³': 'ó', 'Ãº': 'ú', 'Ã±': 'ñ',
+            'Ã£': 'ã', 'Ãµ': 'õ', 'Ã§': 'ç', 'Ã¼': 'ü', 'Ã¶': 'ö', 'Ã¤': 'ä',
+            'Ã¸': 'ø', 'Ã¦': 'æ', 'Ã…': 'Å', 'Ã€': 'À', 'Ã‚': 'Â', 'Ãƒ': 'Ã',
+            'Ã„': 'Ä', 'Ã‡': 'Ç', 'Ãˆ': 'È', 'Ã‰': 'É', 'ÃŠ': 'Ê', 'Ã‹': 'Ë',
+            'ÃŒ': 'Ì', 'Ã': 'Í', 'ÃŽ': 'Î', 'Ã‘': 'Ñ', 'Ã’': 'Ò', 'Ã“': 'Ó',
+            'Ã”': 'Ô', 'Ã•': 'Õ', 'Ã–': 'Ö', 'Ã—': '×', 'Ã˜': 'Ø', 'Ã™': 'Ù',
+            'Ãš': 'Ú', 'Ã›': 'Û', 'Ãœ': 'Ü', 'Ã': 'Ý', 'Ãž': 'Þ', 'ÃŸ': 'ß',
+            'Â': '', 'â': '', '€': '', '': '', '': '', '': '', '': '',
+            '': '', '': '', '': '', '': '', '': '', '': '', '': '',
+            '': '', '': '', '': '', '': '', '': '', '': '', '': '',
+            '': '', '': '', '¡': '', '¢': '', '£': '', '¤': '', '¥': '',
+            '¦': '', '§': '', '¨': '', '©': '', 'ª': '', '«': '', '¬': '',
+            '­': '', '®': '', '¯': '', '°': '', '±': '', '²': '', '³': '',
+            '´': '', 'µ': '', '¶': '', '·': '', '¸': '', '¹': '', 'º': '',
+            '»': '', '¼': '', '½': '', '¾': '', '¿': '', 'À': 'A', 'Á': 'A',
+            'Â': 'A', 'Ã': 'A', 'Ä': 'A', 'Å': 'A', 'Æ': 'AE', 'Ç': 'C',
+            'È': 'E', 'É': 'E', 'Ê': 'E', 'Ë': 'E', 'Ì': 'I', 'Í': 'I',
+            'Î': 'I', 'Ï': 'I', 'Ð': 'D', 'Ñ': 'N', 'Ò': 'O', 'Ó': 'O',
+            'Ô': 'O', 'Õ': 'O', 'Ö': 'O', 'Ø': 'O', 'Ù': 'U', 'Ú': 'U',
+            'Û': 'U', 'Ü': 'U', 'Ý': 'Y', 'Þ': 'TH', 'ß': 'ss', 'à': 'a',
+            'á': 'a', 'â': 'a', 'ã': 'a', 'ä': 'a', 'å': 'a', 'æ': 'ae',
+            'ç': 'c', 'è': 'e', 'é': 'e', 'ê': 'e', 'ë': 'e', 'ì': 'i',
+            'í': 'i', 'î': 'i', 'ï': 'i', 'ð': 'd', 'ñ': 'n', 'ò': 'o',
+            'ó': 'o', 'ô': 'o', 'õ': 'o', 'ö': 'o', 'ø': 'o', 'ù': 'u',
+            'ú': 'u', 'û': 'u', 'ü': 'u', 'ý': 'y', 'þ': 'th', 'ÿ': 'y'
+        }
+
+        # Aplicar correções em todas as colunas de texto
+        for coluna in df.columns:
+            if df[coluna].dtype == 'object':
+                for errado, correto in correcoes.items():
+                    df[coluna] = df[coluna].str.replace(errado, correto, regex=False)
+
+        # Salvar o DataFrame corrigido
+        df.to_csv(f'{camiho_arquivo}', index=False, encoding='utf-8')
+        df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+        df = df.drop_duplicates(subset=['League', 'Stat', 'Next Match', 'Date', 'Resultado', 'Situacao'], keep='first')
+        df = df.sort_values(['Date', 'Stat'], ascending=[True, False], inplace=True)
+        print("Caracteres especiais corrigidos e arquivo salvo!")
+        return df
+    
     def carregar_dados(self, csv_path):
         try:
+            
             # PRIMEIRO: Verificar o formato real do arquivo
             self._log_detalhado(f"Tentando carregar: {csv_path}")
             
@@ -146,6 +317,8 @@ class AnalisadorApostasEvolutivo:
                 try:
                     self._log_detalhado(f"Tentando delimitador: '{delim}'")
                     df = pd.read_csv(csv_path, delimiter=delim, encoding='utf-8-sig')
+                    # Limpar espaços em todas as colunas de texto antes de remover duplicatas
+                    
                     self._log_detalhado(f"Sucesso com delimitador '{delim}': {len(df)} linhas, {len(df.columns)} colunas")
                     self._log_detalhado(f"Colunas: {list(df.columns)}")
                     
@@ -154,6 +327,7 @@ class AnalisadorApostasEvolutivo:
                 except Exception as e:
                     self._log_detalhado(f"Falha com delimitador '{delim}': {e}", "ALERTA")
                     continue
+            
             
             # Se nenhum delimitador funcionou, tentar carregamento automático
             self._log_detalhado("Tentando carregamento automático...")
@@ -174,7 +348,7 @@ class AnalisadorApostasEvolutivo:
                 
                 self._log_detalhado(f"Divisão manual: {len(dados_divididos)} linhas, {len(dados_divididos.columns)} colunas")
                 return dados_divididos
-                
+            df = self.corrigir_caracteres_especiais_csv(csv_path, df)      
             return df
             
         except pd.errors.ParserError as e:
@@ -222,7 +396,6 @@ class AnalisadorApostasEvolutivo:
         except Exception as e:
             self._log_detalhado(f"Erro crítico ao carregar dados: {e}", "ERRO")
             return None
-    
     def treinar_modelo_evolutivo(self, forcar_retreino=False):
         """Treinar ou atualizar modelo com dados mais recentes"""
         self._log_detalhado("INICIANDO TREINAMENTO EVOLUTIVO...")
@@ -248,7 +421,6 @@ class AnalisadorApostasEvolutivo:
             return False
         
         self._log_detalhado(f"Dados carregados: {len(self.df_treino)} registros")
-        self._log_detalhado(f"Colunas: {list(self.df_treino.columns)}")
         
         # Validar dados antes de processar
         try:
@@ -259,12 +431,10 @@ class AnalisadorApostasEvolutivo:
         
         self._preparar_dados_treino()
         
+        # ✅ CORREÇÃO: Verificar se df_treino_limpo foi criado
         if not hasattr(self, 'df_treino_limpo') or len(self.df_treino_limpo) < 10:
             self._log_detalhado("Dados insuficientes para treinamento", "ERRO")
             return False
-        
-        # Fazer backup antes de treinar novo modelo
-        self._fazer_backup_modelo()
         
         # Treinar novo modelo
         self._log_detalhado("Treinando novo modelo com dados atualizados...")
@@ -287,10 +457,16 @@ class AnalisadorApostasEvolutivo:
             # Avaliação detalhada
             self._avaliar_modelo_detalhado(X_test, y_test)
             
-            # Salvar modelo
+            # ✅ MODIFICAÇÃO: Fazer backup apenas se acurácia melhorar
+            backup_feito = self._fazer_backup_modelo(self.acuracia_modelo)
+            
+            # Salvar modelo (sempre salva o novo, mas só faz backup se melhorou)
             self._salvar_modelo()
             
             self._log_detalhado(f"Modelo treinado com sucesso! Acurácia: {accuracy:.2%}", "SUCESSO")
+            if backup_feito:
+                self._log_detalhado("✅ Backup automático criado (acurácia melhorou)", "SUCESSO")
+            
             self._log_detalhado(f"Total de amostras de treino: {len(self.df_treino_limpo)}")
             
             return True
@@ -298,7 +474,22 @@ class AnalisadorApostasEvolutivo:
         except Exception as e:
             self._log_detalhado(f"Erro no treinamento: {e}", "ERRO")
             return False
-
+    """ def criar_backup_manual(self): 
+        Criar backup manual do modelo atual SEM verificar acurácia
+        if not os.path.exists(self.modelo_path):
+            self._log_detalhado("Nenhum modelo encontrado para backup", "ALERTA")
+            return False
+        
+        try:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            backup_path = f"{self.modelo_path}.backup_manual_{timestamp}"
+            import shutil
+            shutil.copy2(self.modelo_path, backup_path)
+            self._log_detalhado(f"✅ Backup MANUAL criado: {backup_path}", "SUCESSO")
+            return True
+        except Exception as e:
+            self._log_detalhado(f"❌ Erro ao criar backup manual: {e}", "ERRO")
+            return False   """
     def _avaliar_modelo_detalhado(self, X_test, y_test):
         """Avaliação mais detalhada do modelo"""
         from sklearn.metrics import classification_report, confusion_matrix
@@ -314,7 +505,7 @@ class AnalisadorApostasEvolutivo:
         self._log_detalhado(classification_report(y_test, y_pred))
 
     def _verificar_necessidade_atualizacao(self):
-        """Verificar se base de treino tem novos dados E criar backup se necessário"""
+        """Verificar se base de treino tem novos dados SEM fazer backup automático"""
         if not os.path.exists(self.modelo_path) or self.base_treino_path is None:
             return True
             
@@ -344,13 +535,11 @@ class AnalisadorApostasEvolutivo:
             
             # Se tem pelo menos 10% mais dados, retreinar
             if len(df_atual_limpo) > amostras_anteriores * 1.1:
-                self._log_detalhado(f"Novos dados detectados: {amostras_anteriores} → {len(df_atual_limpo)}", "SUCESSO")
-                
-                # ✅ CORREÇÃO: CRIAR BACKUP ANTES DE QUALQUER ATUALIZAÇÃO
-                self._fazer_backup_modelo()
+                self._log_detalhado(f"📈 Novos dados detectados: {amostras_anteriores} → {len(df_atual_limpo)}", "SUCESSO")
+                # ✅ REMOVIDO: Não faz mais backup automático aqui
                 return True
             else:
-                self._log_detalhado(f"Modelo já está atualizado", "SUCESSO")
+                self._log_detalhado(f"📊 Modelo já está atualizado", "SUCESSO")
                 
         except Exception as e:
             self._log_detalhado(f"Erro ao verificar modelo: {e}", "ALERTA")
@@ -435,7 +624,10 @@ class AnalisadorApostasEvolutivo:
             verd_count = (self.df_treino_limpo['Target'] == 1).sum()
             fals_count = (self.df_treino_limpo['Target'] == 0).sum()
             self._log_detalhado(f"Distribuição: VERDADEIRO={verd_count}, FALSO={fals_count}")
-    
+        
+            # ✅ ADICIONAR APÓS CRIAR A COLUNA TARGET:
+            # Adicionar coluna de efetividade para dados de treino
+        self.df_treino = self._adicionar_coluna_efetividade(self.df_treino)
     def _classificar_estatistica(self, stat):
         """Classificar tipo de estatística"""
         stat_str = str(stat).lower()
@@ -788,7 +980,8 @@ class AnalisadorApostasEvolutivo:
         self._log_detalhado("   2️⃣  Recomendação (EXCELENTE > BOA > REGULAR)") 
         self._log_detalhado("   3️⃣  Confiabilidade da Liga (ALTA > MEDIA > BAIXA)")
         self._log_detalhado("   4️⃣  Probabilidade de Sucesso (maior primeiro)")
-        
+        estatisticas = self._calcular_estatisticas_efetividade(df_ordenado)
+        self._log_detalhado(f"📈 ESTATÍSTICAS DE EFETIVIDADE: {estatisticas}")
         # Mostrar primeiras linhas para verificar ordenação
         if len(df_ordenado) > 0:
             self._log_detalhado("🔍 PRIMEIRAS 5 LINHAS DO ARQUIVO ORDENADO:")
@@ -931,17 +1124,21 @@ class AnalisadorApostasEvolutivo:
             jogos_lista.append({
                 'id': f"{time}_{mercado}",  # ID único para evitar duplicatas
                 'time': time,  # Nome real do time - GARANTIDO
+                'time_adversario':str(row.get('Next Match', 'ADVERSARIO_DESCONHECIDO')).strip(),
+                'data':str(row.get('Date','DATA DESCONHECIDA')).strip(),
                 'mercado': mercado,
                 'odds': float(row.get('Odds', 1.0)) if pd.notna(row.get('Odds')) else 1.0,
                 'confianca': float(row.get('Probabilidade_Sucesso', 0)),
                 'analise': str(row.get('Analise_Detalhada', '')),
                 'id_partida': id_partida
             })
-        
+                # Extrai tudo antes de "have"
+            
         # DEBUG: Mostrar alguns jogos extraídos (FORA DO LOOP)
         self._log_detalhado(f"Primeiros 10 jogos extraídos:")
         for i, jogo in enumerate(jogos_lista[:10]):
-            self._log_detalhado(f"   {i+1}. {jogo['time']} - {jogo['mercado']} (Conf: {jogo['confianca']:.1%})")
+            jogo['time'] = re.split(r' have', jogo['time'], flags=re.IGNORECASE)[0]
+            self._log_detalhado(f"   {i+1}. {jogo['data']} {jogo['time']} - {jogo['time_adversario']} {jogo['mercado']} {jogo['odds']} (Conf: {jogo['confianca']:.1%})")
         
         # Remover duplicatas
         jogos_unicos = []
@@ -972,7 +1169,7 @@ class AnalisadorApostasEvolutivo:
         for partida_id, jogos in grupos_conflito.items():
             if len(jogos) > 1:
                 times = [f"{j['time']}({j['confianca']:.1%})" for j in jogos]
-                self._log_detalhado(f"   {partida_id}: {', '.join(times)}")
+                self._log_detalhado(f"   {partida_id} {jogo['mercado']}: {', '.join(times)}")
         
         # MANTER TODOS OS JOGOS, mas marcar os que têm conflito
         for jogo in jogos_unicos:
@@ -1121,8 +1318,10 @@ class AnalisadorApostasEvolutivo:
 
     def _extrair_id_partida(self, row):
         """Extrair ID único da partida - VERSÃO DEFINITIVA CORRIGIDA"""
+        import re
         stat = str(row.get('Stat', ''))
         next_match = str(row.get('Next Match', ''))
+        local = re.search(r'\b(home|away)\b', next_match, re.IGNORECASE)
         
         # EXTRAIR TIME PRINCIPAL DA COLUNA STAT
         time_principal = 'TIME_DESCONHECIDO'
@@ -1141,8 +1340,9 @@ class AnalisadorApostasEvolutivo:
         # EXTRAIR INFORMAÇÕES DO NEXT MATCH
         if ' vs ' in next_match.lower():
             partes = next_match.lower().split(' vs ')
+            
             if len(partes) == 2:
-                local = partes[0].strip()  # "home" ou "away"
+                local = next_match.lower().split(' vs ')[0].strip() # "home" ou "away"
                 adversario = partes[1].strip()
                 
                 # Formatar adversário (primeira letra maiúscula em cada palavra)
@@ -1330,7 +1530,7 @@ class AnalisadorApostasEvolutivo:
         
         # ✅ CORREÇÃO: ORDENAÇÃO FINAL ANTES DE SALVAR
         self._log_detalhado("Aplicando ordenação personalizada...")
-        
+        df_futuros = self._adicionar_coluna_efetividade(df_futuros)
         # 1. Converter datas para datetime para ordenação correta
         df_futuros = self._aplicar_ordenacao_final(df_futuros)
         
@@ -1338,7 +1538,7 @@ class AnalisadorApostasEvolutivo:
         colunas_para_manter = [
             'League', 'Stat', 'Next Match', 'Odds', 'Date', 'Situacao',
             'Tipo_Estatistica', 'Liga_Categoria',
-            'Probabilidade_Sucesso', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 
+            'Probabilidade_Sucesso','Efetividade', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 
         ]
 
         # Manter apenas as colunas que existem no DataFrame
@@ -1362,7 +1562,6 @@ class AnalisadorApostasEvolutivo:
         self._mostrar_ordenacao_aplicada(df_futuros_ordenado)
         
         return df_futuros_ordenado
-
 if __name__ == "__main__":
     print("🤖 SISTEMA DE ANÁLISE EVOLUTIVA DE APOSTAS")
     print("="*50)
@@ -1370,7 +1569,7 @@ if __name__ == "__main__":
     # CONFIGURAÇÃO - AJUSTE ESTES CAMINHOS
     config = {
         'base_treino': r'D:\Downloads\scraping_futebol\base_dados_total.csv',
-        'base_futuros': r'd:\Downloads\scraping_futebol\scraping\adam choi_dados_20251023_015001.csv',
+        'base_futuros': r'd:\Downloads\scraping_futebol\scraping\adam choi_dados_20251027_221137.csv',
         'modelo_salvo': 'modelo_apostas_evolutivo.joblib'
     }
     
