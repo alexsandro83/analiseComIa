@@ -20,6 +20,7 @@ class AnalisadorApostasEvolutivo:
         self.encoder = LabelEncoder()
         self.jogos_complementares = {}
         self.features_para_treino = ['Odds', 'Tamanho_Streak', 'Tipo_Estatistica', 'Local_Jogo', 'Liga_Categoria']
+    
     def _instalar_dependencias(self):
         """Instalar psutil automaticamente se necessário"""
         try:
@@ -36,6 +37,13 @@ class AnalisadorApostasEvolutivo:
             except Exception as e:
                 self._log_detalhado(f"❌ Falha ao instalar psutil: {e}", "ERRO")
                 return False
+
+    def _log_detalhado(self, mensagem, nivel="INFO"):
+        """Sistema de logging organizado"""
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        icones = {"INFO": "ℹ️", "ERRO": "❌", "SUCESSO": "✅", "ALERTA": "⚠️"}
+        icone = icones.get(nivel, "🔍")
+        print(f"{mensagem}")
     def _calcular_efetividade(self, situacao, previsao, date_str):
         """Calcular efetividade considerando data do jogo + 2 horas de margem"""
         
@@ -78,10 +86,10 @@ class AnalisadorApostasEvolutivo:
             return 'ERRO_DATA'
     def _adicionar_coluna_efetividade(self, df):
         """Adicionar coluna de efetividade ao DataFrame - VERSÃO CORRIGIDA"""
-        if 'Situacao' in df.columns and 'Previsao' in df.columns and 'Date' in df.columns:
+        if 'Situação' in df.columns and 'Previsao' in df.columns and 'Date' in df.columns:
             df['Efetividade'] = df.apply(
                 lambda row: self._calcular_efetividade(
-                    row['Situacao'], 
+                    row['Situação'], 
                     row['Previsao'],
                     row['Date']  # ⬅️ AGORA COM O date_str!
                 ), 
@@ -97,7 +105,7 @@ class AnalisadorApostasEvolutivo:
                 
         else:
             df['Efetividade'] = 'COLUNAS_INCOMPLETAS'
-            self._log_detalhado("Colunas Situacao, Previsao ou Date não encontradas", "ALERTA")
+            self._log_detalhado("Colunas Situação, Previsao ou Date não encontradas", "ALERTA")
         
         return df
     def _calcular_estatisticas_efetividade(self, df):
@@ -163,7 +171,7 @@ class AnalisadorApostasEvolutivo:
             return False
     def _validar_dados_treino(self):
         """Validar integridade dos dados de treino"""
-        colunas_essenciais = ['Situacao', 'Odds', 'Stat']
+        colunas_essenciais = ['Situação', 'Odds', 'Stat']
         for col in colunas_essenciais:
             if col not in self.df_treino.columns:
                 raise ValueError(f"Coluna essencial '{col}' não encontrada")
@@ -253,7 +261,8 @@ class AnalisadorApostasEvolutivo:
                 return time_candidato.title()
         
         return 'TIME_DESCONHECIDO'
-    def corrigir_caracteres_especiais_csv(self,camiho_arquivo,df):
+    def corrigir_caracteres_especiais_csv(self, caminho_arquivo, df):
+        """Corrigir caracteres especiais - VERSÃO CORRIGIDA"""
         # Mapeamento completo de correção de caracteres especiais
         correcoes = {
             'Ã¡': 'á', 'Ã©': 'é', 'Ã­': 'í', 'Ã³': 'ó', 'Ãº': 'ú', 'Ã±': 'ñ',
@@ -283,20 +292,40 @@ class AnalisadorApostasEvolutivo:
             'ú': 'u', 'û': 'u', 'ü': 'u', 'ý': 'y', 'þ': 'th', 'ÿ': 'y'
         }
 
-        # Aplicar correções em todas as colunas de texto
+        # ✅ 1. PRIMEIRO: Aplicar correções em todas as colunas de texto
         for coluna in df.columns:
             if df[coluna].dtype == 'object':
                 for errado, correto in correcoes.items():
                     df[coluna] = df[coluna].str.replace(errado, correto, regex=False)
 
-        # Salvar o DataFrame corrigido
-        df.to_csv(f'{camiho_arquivo}', index=False, encoding='utf-8')
+        # ✅ 2. SEGUNDO: Limpar espaços e remover duplicatas
         df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
-        df = df.drop_duplicates(subset=['League', 'Stat', 'Next Match', 'Date', 'Resultado', 'Situacao'], keep='first')
-        df = df.sort_values(['Date', 'Stat'], ascending=[True, False], inplace=True)
-        print("Caracteres especiais corrigidos e arquivo salvo!")
+        
+        # Verificar se as colunas existem antes de remover duplicatas
+        colunas_subset = ['League', 'Stat', 'Next Match', 'Date', 'Situação']
+        colunas_existentes = [col for col in colunas_subset if col in df.columns]
+        
+        if len(colunas_existentes) >= 3:  # Mínimo de colunas para considerar únicas
+            df = df.drop_duplicates(subset=colunas_existentes, keep='first')
+        
+        # ✅ 3. TERCEIRO: Ordenar os dados
+        colunas_ordenacao = []
+        if 'Date' in df.columns:
+            colunas_ordenacao.append('Date')
+        if 'Stat' in df.columns:
+            colunas_ordenacao.append('Stat')
+        
+        if colunas_ordenacao:
+            df = df.sort_values(colunas_ordenacao, ascending=[True, False])
+
+        # ✅ 4. QUARTO: SALVAR APÓS todas as transformações
+        df.to_csv(caminho_arquivo, index=False, encoding='utf-8')
+        
+        self._log_detalhado(f"✅ Arquivo corrigido e salvo: {caminho_arquivo}", "SUCESSO")
+        self._log_detalhado(f"   - Registros processados: {len(df)}")
+        self._log_detalhado(f"   - Colunas: {list(df.columns)}")
+        
         return df
-    
     def carregar_dados(self, csv_path):
         try:
             
@@ -397,7 +426,7 @@ class AnalisadorApostasEvolutivo:
             self._log_detalhado(f"Erro crítico ao carregar dados: {e}", "ERRO")
             return None
     def treinar_modelo_evolutivo(self, forcar_retreino=False):
-        """Treinar ou atualizar modelo com dados mais recentes"""
+        """Treinar ou atualizar modelo com dados mais recentes - VERSÃO CORRIGIDA"""
         self._log_detalhado("INICIANDO TREINAMENTO EVOLUTIVO...")
         
         # Verificar se modelo existe e se deve atualizar
@@ -448,8 +477,104 @@ class AnalisadorApostasEvolutivo:
             
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
             
-            self.model = RandomForestClassifier(n_estimators=200, random_state=42, max_depth=12, min_samples_split=5)
+            # ✅ CORREÇÃO: Balanceamento de classes AGORA com y_train definido
+            from sklearn.utils import class_weight
+            classes = np.unique(y_train)
+            pesos = class_weight.compute_class_weight(
+                'balanced', 
+                classes=classes, 
+                y=y_train
+            )
+            class_weights = dict(zip(classes, pesos))
+            
+            # ✅ CORREÇÃO: Criar modelo APÓS definir class_weights
+            self.model = RandomForestClassifier(
+                n_estimators=300,
+                max_depth=15,
+                min_samples_split=3,
+                min_samples_leaf=2,
+                max_features='sqrt',
+                class_weight=class_weights,
+                random_state=42,
+                n_jobs=-1
+            )
+            
+            # ✅ CORREÇÃO: Remover chamadas a funções não definidas
+            # X_train = self._aplicar_feature_engineering(X_train)  # REMOVIDO
+            # X_test = self._aplicar_feature_engineering(X_test)    # REMOVIDO
+            
+            # Treinar modelo
             self.model.fit(X_train, y_train)
+            
+            # Avaliação
+            accuracy = self.model.score(X_test, y_test)
+            self.acuracia_modelo = accuracy
+            
+            self._avaliar_modelo_detalhado(X_test, y_test)
+            
+            # ✅ MODIFICAÇÃO: Fazer backup apenas se acurácia melhorar
+            backup_feito = self._fazer_backup_modelo(self.acuracia_modelo)
+            
+            # Salvar modelo
+            self._salvar_modelo()
+            
+            self._log_detalhado(f"Modelo treinado com sucesso! Acurácia: {accuracy:.2%}", "SUCESSO")
+            if backup_feito:
+                self._log_detalhado("✅ Backup automático criado (acurácia melhorou)", "SUCESSO")
+            
+            self._log_detalhado(f"Total de amostras de treino: {len(self.df_treino_limpo)}")
+            
+            return True
+            
+        except Exception as e:
+            self._log_detalhado(f"Erro no treinamento: {e}", "ERRO")
+            import traceback
+            self._log_detalhado(f"Detalhes do erro: {traceback.format_exc()}", "ERRO")
+            return False
+        
+        self._preparar_dados_treino()
+        
+        # ✅ CORREÇÃO: Verificar se df_treino_limpo foi criado
+        if not hasattr(self, 'df_treino_limpo') or len(self.df_treino_limpo) < 10:
+            self._log_detalhado("Dados insuficientes para treinamento", "ERRO")
+            return False
+        
+        # Treinar novo modelo
+        self._log_detalhado("Treinando novo modelo com dados atualizados...")
+        try:
+            X = self.df_treino_limpo[self.features_para_treino].copy()
+            X['Tipo_Estatistica'] = self.encoder.fit_transform(X['Tipo_Estatistica'])
+            X['Local_Jogo'] = LabelEncoder().fit_transform(X['Local_Jogo'])
+            X['Liga_Categoria'] = LabelEncoder().fit_transform(X['Liga_Categoria'])
+            
+            y = self.df_treino_limpo['Target']
+            
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+            # ✅ 1. Feature Engineering Avançado
+            X_train = self._aplicar_feature_engineering(X_train)
+            X_test = self._aplicar_feature_engineering(X_test)
+            
+            # ✅ 2. Otimizar Hyperparâmetros
+            self.model = self._otimizar_hyperparametros(X_train, y_train)
+            
+            # ✅ 3. Treinar com Validação Cruzada
+            self.model.fit(X_train, y_train)
+            
+            # ✅ 4. Avaliação Completa
+            accuracy = self.model.score(X_test, y_test)
+            self.acuracia_modelo = accuracy
+            
+            self._avaliar_modelo_detalhado(X_test, y_test)
+            self.model = RandomForestClassifier(
+                n_estimators=300,           # Mais árvores
+                max_depth=15,               # Profundidade maior
+                min_samples_split=3,        # Split mais cedo
+                min_samples_leaf=2,         # Folhas menores
+                max_features='sqrt',        # Features por split
+                bootstrap=True,
+                random_state=42,
+                n_jobs=-1                   # Usar todos os cores
+            )
             
             accuracy = self.model.score(X_test, y_test)
             self.acuracia_modelo = accuracy
@@ -474,6 +599,44 @@ class AnalisadorApostasEvolutivo:
         except Exception as e:
             self._log_detalhado(f"Erro no treinamento: {e}", "ERRO")
             return False
+    def _criar_modelo_ensemble(self):
+        """Criar ensemble para melhor performance"""
+        from sklearn.ensemble import VotingClassifier
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.svm import SVC
+        
+        models = [
+            ('rf', RandomForestClassifier(n_estimators=300, random_state=42)),
+            ('lr', LogisticRegression(random_state=42, max_iter=1000)),
+            ('svc', SVC(probability=True, random_state=42))
+        ]
+        
+        return VotingClassifier(estimators=models, voting='soft')
+    def _otimizar_hyperparametros(self, X_train, y_train):
+        """Otimizar hyperparâmetros automaticamente"""
+        from sklearn.model_selection import GridSearchCV
+        
+        param_grid = {
+            'n_estimators': [200, 300, 400],
+            'max_depth': [10, 15, 20],
+            'min_samples_split': [2, 3, 5],
+            'min_samples_leaf': [1, 2, 3]
+        }
+        
+        grid_search = GridSearchCV(
+            RandomForestClassifier(random_state=42),
+            param_grid,
+            cv=3,
+            scoring='accuracy',
+            n_jobs=-1
+        )
+        
+        grid_search.fit(X_train, y_train)
+        
+        self._log_detalhado(f"✅ Melhores parâmetros: {grid_search.best_params_}")
+        self._log_detalhado(f"✅ Melhor score: {grid_search.best_score_:.3f}")
+        
+        return grid_search.best_estimator_
     """ def criar_backup_manual(self): 
         Criar backup manual do modelo atual SEM verificar acurácia
         if not os.path.exists(self.modelo_path):
@@ -493,6 +656,13 @@ class AnalisadorApostasEvolutivo:
     def _avaliar_modelo_detalhado(self, X_test, y_test):
         """Avaliação mais detalhada do modelo"""
         from sklearn.metrics import classification_report, confusion_matrix
+        from sklearn.model_selection import cross_val_score
+        # ✅ ADICIONAR validação cruzada
+        cv_scores = cross_val_score(self.model, X_test, y_test, cv=5, scoring='accuracy')
+        
+        self._log_detalhado("VALIDAÇÃO CRUZADA (5-fold):")
+        self._log_detalhado(f"  Acurácia média: {cv_scores.mean():.3f} (+/- {cv_scores.std() * 2:.3f})")
+        self._log_detalhado(f"  Scores individuais: {cv_scores}")
         
         y_pred = self.model.predict(X_test)
         
@@ -517,14 +687,14 @@ class AnalisadorApostasEvolutivo:
             return True
         
         # CORREÇÃO: Verificar se a coluna existe após carregamento correto
-        if 'Situacao' not in df_atual.columns:
-            self._log_detalhado("Coluna 'Situacao' não encontrada após carregamento", "ERRO")
+        if 'Situação' not in df_atual.columns:
+            self._log_detalhado("Coluna 'Situação' não encontrada após carregamento", "ERRO")
             self._log_detalhado(f"Colunas disponíveis: {list(df_atual.columns)}")
             return True
         
         # Filtrar dados válidos
-        df_atual_limpo = df_atual[df_atual['Situacao'].notna() & 
-                                (df_atual['Situacao'] != '')]
+        df_atual_limpo = df_atual[df_atual['Situação'].notna() & 
+                                (df_atual['Situação'] != '')]
         
         # Carregar info do modelo salvo
         try:
@@ -555,7 +725,32 @@ class AnalisadorApostasEvolutivo:
         self._log_detalhado(f"Colunas disponíveis: {list(self.df_treino.columns)}")
         self._log_detalhado(f"Primeiras linhas:")
         print(self.df_treino.head(2))
+        # 1. Interação entre Odds e Streak
+        self.df_treino_limpo['Odds_Streak_Interaction'] = (
+            self.df_treino_limpo['Odds'] * self.df_treino_limpo['Tamanho_Streak']
+        )
         
+        # 2. Probabilidade implícita das Odds
+        self.df_treino_limpo['Prob_Implicita'] = 1 / self.df_treino_limpo['Odds']
+        
+        # 3. Categorizar streaks
+        self.df_treino_limpo['Streak_Categoria'] = pd.cut(
+            self.df_treino_limpo['Tamanho_Streak'],
+            bins=[0, 3, 6, 10, 100],
+            labels=['Curto', 'Medio', 'Longo', 'Muito_Longo']
+        )
+        
+        # 4. Dia da semana (padrões temporais)
+        if 'Date' in self.df_treino_limpo.columns:
+            self.df_treino_limpo['Dia_Semana'] = self.df_treino_limpo['Date'].dt.dayofweek
+        
+        # Atualizar lista de features
+        self.features_para_treino.extend([
+            'Odds_Streak_Interaction', 
+            'Prob_Implicita',
+            'Streak_Categoria',
+            'Dia_Semana'
+        ])
         def corrigir_data(date_str):
             try:
                 # Sua base já tem data no formato correto: "2025-09-22 21:15:00"
@@ -566,7 +761,10 @@ class AnalisadorApostasEvolutivo:
                     return pd.to_datetime(date_str, errors='coerce')
                 except:
                     return pd.NaT
-        
+        # ✅ REMOVER coluna Resultado para evitar confusão
+        if 'Resultado' in self.df_treino.columns:
+            self.df_treino = self.df_treino.drop('Resultado', axis=1)
+            self._log_detalhado("✅ Coluna 'Resultado' removida - não usada no modelo")
         # Processar Date
         if 'Date' in self.df_treino.columns:
             self.df_treino['Date'] = self.df_treino['Date'].apply(corrigir_data)
@@ -583,13 +781,13 @@ class AnalisadorApostasEvolutivo:
             self._log_detalhado("Coluna 'Odds' não encontrada - ESSENCIAL", "ERRO")
             return
         
-        # CORREÇÃO: Usar coluna 'Situacao' que existe na sua base
-        if 'Situacao' in self.df_treino.columns:
+        # CORREÇÃO: Usar coluna 'Situação' que existe na sua base
+        if 'Situação' in self.df_treino.columns:
             situacao_map = {'VERDADEIRO': 1, 'Verdadeiro': 1, 'FALSO': 0, 'Falso': 0, 'GREEN': 1, 'RED': 0, 'WIN': 1, 'LOSS': 0}
-            self.df_treino['Target'] = self.df_treino['Situacao'].map(situacao_map).fillna(-1)
+            self.df_treino['Target'] = self.df_treino['Situação'].map(situacao_map).fillna(-1)
             self._log_detalhado(f"Target criado: {len(self.df_treino[self.df_treino['Target'] != -1])} amostras válidas")
         else:
-            self._log_detalhado("Coluna 'Situacao' não encontrada - ESSENCIAL", "ERRO")
+            self._log_detalhado("Coluna 'Situação' não encontrada - ESSENCIAL", "ERRO")
             return
         
         # Features - verificar colunas essenciais
@@ -629,25 +827,46 @@ class AnalisadorApostasEvolutivo:
             # Adicionar coluna de efetividade para dados de treino
         self.df_treino = self._adicionar_coluna_efetividade(self.df_treino)
     def _classificar_estatistica(self, stat):
-        """Classificar tipo de estatística"""
+        """🔥 CLASSIFICAÇÃO DINÂMICA DE ESTATÍSTICAS"""
         stat_str = str(stat).lower()
-        if 'won' in stat_str:
-            return 'VITORIA'
-        elif 'lost' in stat_str:
-            return 'DERROTA'
-        elif 'drew' in stat_str:
-            return 'EMPATE'
-        elif 'btts' in stat_str:
-            return 'BTTS'
-        elif 'over 2.5' in stat_str:
-            return 'OVER_2.5'
-        else:
-            return 'OUTRO'
-    
+        
+        # Padrões dinâmicos baseados em performance real
+        padroes = {
+            'VITORIA': ['won', 'win', 'victory', 'wins', 'winning'],
+            'DERROTA': ['lost', 'loss', 'defeat', 'losing'], 
+            'EMPATE': ['drew', 'draw', 'tie', 'drawing'],
+            'BTTS': ['btts', 'both teams score', 'ambos marcam'],
+            'OVER_2.5': ['over 2.5', 'over 3.5', '+2.5', '+3.5'],
+            'UNDER_2.5': ['under 2.5', 'under 3.5', '-2.5', '-3.5']
+        }
+        
+        for tipo, palavras in padroes.items():
+            if any(palavra in stat_str for palavra in palavras):
+                return tipo
+        
+        return 'OUTRO'
     def _extrair_streak(self, stat):
-        """Extrair tamanho do streak"""
-        matches = re.findall(r'last (\d+)', str(stat))
-        return int(matches[0]) if matches else 1
+        """Extrair tamanho do streak com múltiplos padrões"""
+        stat_str = str(stat).lower()
+        
+        # Múltiplos padrões de extração
+        padroes = [
+            r'last (\d+)',
+            r'(\d+) consecutive',
+            r'(\d+) straight', 
+            r'(\d+) in a row',
+            r'(\d+) games',
+            r'(\d+) matches'
+        ]
+        
+        for padrao in padroes:
+            matches = re.findall(padrao, stat_str)
+            if matches:
+                streak = int(matches[0])
+                # Limitar streak máximo para evitar outliers
+                return min(streak, 20)
+        
+        return 1  # Padrão se não encontrar
     
     def _extrair_local(self, next_match):
         """Extrair local do jogo"""
@@ -660,14 +879,18 @@ class AnalisadorApostasEvolutivo:
             return 'NEUTRO'
     
     def _classificar_liga(self, league):
-        """Classificar liga por confiabilidade"""
-        league_str = str(league).lower()
-        if any(x in league_str for x in ['nwsl', 'women', 'norway', 'denmark']):
-            return 'ALTA_CONFIABILIDADE'
-        elif any(x in league_str for x in ['brasil', 'sweden', 'iceland']):
+        """🔥 CLASSIFICAÇÃO DINÂMICA BASEADA EM DESEMPENHO REAL"""
+        if pd.isna(league) or league == '':
             return 'MEDIA_CONFIABILIDADE'
+        
+        league_str = str(league).strip()
+        
+        # Se temos dados de treino, calcular confiabilidade baseada em desempenho real
+        if hasattr(self, 'df_treino_limpo'):
+            return self._calcular_confiabilidade_por_desempenho(league_str)
         else:
-            return 'BAIXA_CONFIABILIDADE'
+            # Fallback para primeira execução
+            return self._classificar_liga_fallback(league_str)
     
     def _calcular_bonus_complementar(self, league, next_match, date):
         """Calcular bônus para jogos complementares"""
@@ -847,10 +1070,10 @@ class AnalisadorApostasEvolutivo:
             self._log_detalhado("Coluna 'League' não encontrada", "ALERTA")
             df_futuros['Liga_Categoria'] = 'MEDIA_CONFIABILIDADE'
         
-        # Adicionar coluna Situacao vazia para consistência
-        if 'Situacao' not in df_futuros.columns:
-            df_futuros['Situacao'] = ''
-            self._log_detalhado("Coluna Situacao adicionada (vazia para jogos futuros)")
+        # Adicionar coluna Situação vazia para consistência
+        if 'Situação' not in df_futuros.columns:
+            df_futuros['Situação'] = ''
+            self._log_detalhado("Coluna Situação adicionada (vazia para jogos futuros)")
         
         self._log_detalhado(f"Dados futuros preparados: {len(df_futuros)} registros")
         self._log_detalhado(f"Colunas disponíveis: {list(df_futuros.columns)}")
@@ -988,6 +1211,67 @@ class AnalisadorApostasEvolutivo:
             for i in range(min(5, len(df_ordenado))):
                 row = df_ordenado.iloc[i]
                 self._log_detalhado(f"   {i+1}. {row['Date']} | {row['Recomendacao']} | {row['Liga_Categoria']} | {row['Probabilidade_Sucesso']:.1%} | {row['League']}")
+    def _calcular_confiabilidade_por_desempenho(self, league_str):
+        """Calcular confiabilidade baseada em streaks e consistência real"""
+        
+        # Filtrar jogos desta liga
+        jogos_liga = self.df_treino_limpo[
+            self.df_treino_limpo['League'].str.lower() == league_str.lower()
+        ]
+        
+        if len(jogos_liga) < 5:  # Mínimo de amostras
+            return 'MEDIA_CONFIABILIDADE'
+        
+        # 🔥 MÉTRICA 1: Taxa de acerto da liga
+        taxa_acerto = (jogos_liga['Target'] == 1).mean()
+        
+        # 🔥 MÉTRICA 2: Consistência de streaks
+        streaks_liga = jogos_liga.groupby('Time').agg({
+            'Tamanho_Streak': ['mean', 'max'],
+            'Target': 'mean'
+        }).round(3)
+        
+        # 🔥 MÉTRICA 3: Variabilidade do desempenho
+        consistencia = jogos_liga.groupby('Time')['Target'].std().mean()
+        if pd.isna(consistencia):
+            consistencia = 0.5  # Valor padrão se não houver variabilidade
+        
+        # 🔥 CLASSIFICAÇÃO BASEADA EM DESEMPENHO REAL
+        if taxa_acerto > 0.65 and consistencia < 0.3:
+            return 'ALTA_CONFIABILIDADE'
+        elif taxa_acerto > 0.55 or (taxa_acerto > 0.5 and consistencia < 0.25):
+            return 'MEDIA_CONFIABILIDADE'
+        else:
+            return 'BAIXA_CONFIABILIDADE'
+    def _classificar_liga_fallback(self, league_str):
+        """Fallback apenas para primeira execução sem dados"""
+        # Lógica simples baseada em termos gerais
+        if 'women' in league_str or 'nwsl' in league_str:
+            return 'ALTA_CONFIABILIDADE'
+        elif any(termo in league_str for termo in ['friendly', 'cup', 'test']):
+            return 'BAIXA_CONFIABILIDADE'
+        else:
+            return 'MEDIA_CONFIABILIDADE'
+    def _calcular_estatisticas_ligas(self):
+        """Calcular estatísticas reais das ligas para debug"""
+        if not hasattr(self, 'df_treino_limpo'):
+            return
+        
+        stats_ligas = self.df_treino_limpo.groupby('League').agg({
+            'Target': ['count', 'mean', 'std'],
+            'Tamanho_Streak': ['mean', 'max'],
+            'Odds': 'mean'
+        }).round(3)
+        
+        self._log_detalhado("📊 ESTATÍSTICAS REAIS DAS LIGAS:")
+        for liga in stats_ligas.index[:10]:  # Top 10 ligas
+            dados = stats_ligas.loc[liga]
+            total_jogos = dados[('Target', 'count')]
+            taxa_acerto = dados[('Target', 'mean')]
+            streak_medio = dados[('Tamanho_Streak', 'mean')]
+            
+            classificacao = self._classificar_liga(liga)
+            self._log_detalhado(f"   {liga}: {total_jogos} jogos, {taxa_acerto:.1%} acertos, streak {streak_medio:.1f} → {classificacao}")
     def _converter_para_datetime_ordenacao(self, date_str):
         """Converter string de data para datetime para ordenação - VERSÃO ROBUSTA"""
         if pd.isna(date_str) or date_str in ['', 'DATA_INDISPONIVEL', 'NaT', None]:
@@ -1536,7 +1820,7 @@ class AnalisadorApostasEvolutivo:
         
         # REMOVER COLUNAS TEMPORÁRIAS QUE NÃO DEVEM APARECER NO CSV FINAL
         colunas_para_manter = [
-            'League', 'Stat', 'Next Match', 'Odds', 'Date', 'Situacao',
+            'League', 'Stat', 'Next Match', 'Odds', 'Date', 'Situação',
             'Tipo_Estatistica', 'Liga_Categoria',
             'Probabilidade_Sucesso','Efetividade', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 
         ]
@@ -1563,10 +1847,10 @@ class AnalisadorApostasEvolutivo:
         
         return df_futuros_ordenado
 if __name__ == "__main__":
-    print("🤖 SISTEMA DE ANÁLISE EVOLUTIVA DE APOSTAS")
+    print("🤖 SISTEMA DE ANÁLISE EVOLUTIVA DE APOSTAS - VERSÃO CORRIGIDA")
     print("="*50)
     
-    # CONFIGURAÇÃO - AJUSTE ESTES CAMINHOS
+    # CONFIGURAÇÃO
     config = {
         'base_treino': r'D:\Downloads\scraping_futebol\base_dados_total.csv',
         'base_futuros': r'd:\Downloads\scraping_futebol\scraping\adam choi_dados_20251027_221137.csv',
@@ -1574,39 +1858,29 @@ if __name__ == "__main__":
     }
     
     try:
-        # 1. Primeiro criar o analisador
         analisador = AnalisadorApostasEvolutivo(
             base_treino_path=config['base_treino'],
             base_futuros_path=config['base_futuros'],
             modelo_path=config['modelo_salvo']
         )
         
-        # 2. ✅ CORREÇÃO: Agora chamar o método DA INSTÂNCIA
         if analisador.verificar_arquivos_config(config):
-            
-            # 3. Backup manual
-            print("\n💾 Criando backup manual do modelo atual...")
+            print("\n💾 Criando backup manual...")
             analisador.criar_backup_manual()
             
-            # 4. Treinar/Atualizar modelo
-            print("\n1. 🎯 Treinando modelo com dados atualizados...")
+            print("\n1. 🎯 Treinando modelo...")
             sucesso_treino = analisador.treinar_modelo_evolutivo()
             
             if sucesso_treino:
-                # 5. Gerar previsões
-                print("\n2. 🔮 Gerando previsões inteligentes...")
+                print("\n2. 🔮 Gerando previsões...")
                 previsoes = analisador.gerar_previsoes_futuras('previsoes_evolutivas.csv')
                 
                 print("\n" + "="*50)
                 print("✅ PROCESSO CONCLUÍDO!")
-                print("="*50)
-                print("📁 Arquivos gerados:")
-                print("   - modelo_apostas_evolutivo.joblib (modelo treinado)")
-                print("   - previsoes_evolutivas.csv (previsões + múltiplas)")
             else:
                 print("❌ Falha no treinamento do modelo")
         else:
-            print("❌ Verifique os caminhos dos arquivos de configuração")
+            print("❌ Verifique os caminhos dos arquivos")
             
     except Exception as e:
         print(f"💥 Erro crítico: {e}")
