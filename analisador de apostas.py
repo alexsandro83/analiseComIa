@@ -316,9 +316,20 @@ class AnalisadorApostasEvolutivo:
             colunas_ordenacao.append('Stat')
         
         if colunas_ordenacao:
-            df = df.sort_values(colunas_ordenacao, ascending=[True, False])
+            df = df.sort_values(colunas_ordenacao, ascending=[False, False])
 
         # ✅ 4. QUARTO: SALVAR APÓS todas as transformações
+            df = df.sort_values('Odds', ascending=False).drop_duplicates(
+            subset=['League', 'Stat', 'Next Match', 'Date'], 
+            keep='first'
+        ).sort_values('Date', ascending=False).reset_index(drop=True)
+        text_columns = ['League', 'Stat', 'Next Match', 'Odds', 'Situação',
+       'Tipo_Estatistica', 'Liga_Categoria', 'Probabilidade_Sucesso',
+       'Efetividade', 'Previsao', 'Padrao', 'Recomendacao',
+       'Analise_Detalhada']
+        for col in text_columns:
+            df[col] = df[col].apply(lambda x: x.strip() if isinstance(x, str) else x)
+
         df.to_csv(caminho_arquivo, index=False, encoding='utf-8')
         
         self._log_detalhado(f"✅ Arquivo corrigido e salvo: {caminho_arquivo}", "SUCESSO")
@@ -1853,8 +1864,8 @@ if __name__ == "__main__":
     # CONFIGURAÇÃO
     config = {
         'base_treino': r'D:\Downloads\scraping_futebol\base_dados_total.csv',
-        'base_futuros': r'd:\Downloads\scraping_futebol\scraping\adam choi_dados_20251027_221137.csv',
-        'modelo_salvo': 'modelo_apostas_evolutivo.joblib'
+        'base_futuros': r'd:\Downloads\scraping_futebol\scraping\adam choi_dados_20251102_231143.csv',
+        'modelo_salvo': 'modelo_apostas_evolutivo.joblib.backup_20251103_000344.backup_20251103_000907'
     }
     
     try:
