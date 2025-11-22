@@ -20,7 +20,18 @@ class AnalisadorApostasEvolutivo:
         self.encoder = LabelEncoder()
         self.jogos_complementares = {}
         self.features_para_treino = ['Odds', 'Tamanho_Streak', 'Tipo_Estatistica', 'Local_Jogo', 'Liga_Categoria']
-    
+    def verificar_arquivos_config(self, config):
+        """Verificar se arquivos de configuração existem"""
+        arquivos_ok = True
+        
+        for nome, caminho in config.items():
+            if 'base' in nome and not os.path.exists(caminho):
+                print(f"❌ Arquivo não encontrado: {caminho}")
+                arquivos_ok = False
+            else:
+                print(f"✅ {nome}: {caminho}")
+        
+        return arquivos_ok
     def _instalar_dependencias(self):
         """Instalar psutil automaticamente se necessário"""
         try:
@@ -1370,7 +1381,7 @@ class AnalisadorApostasEvolutivo:
         }
 
     def _gerar_multiplas_recomendadas(self, df_futuros, num_multiplas=7):
-        """Gerar múltiplas de 2, 3 ou 4 times APENAS com confiança > 75% - VERSÃO CORRIGIDA"""
+        """Gerar múltiplas de 2, 3 ou 4 times APENAS com confiança > 75% - VERSÃO OTIMIZADA"""
         self._log_detalhado("GERANDO MÚLTIPLAS DE ALTA CONFIANÇA (>75%):")
         self._log_detalhado("="*50)
             
@@ -1378,8 +1389,14 @@ class AnalisadorApostasEvolutivo:
             self._log_detalhado("Dados futuros não disponíveis para gerar múltiplas", "ERRO")
             return []
         
+        # FILTRAR APENAS OS MELHORES JOGOS PARA EVITAR COMBINAÇÕES EXCESSIVAS
         jogos_excelentes = df_futuros[df_futuros['Recomendacao'] == 'EXCELENTE']
         jogos_bons = df_futuros[df_futuros['Recomendacao'] == 'BOA']
+        
+        # LIMITAR O NÚMERO DE JOGOS CONSIDERADOS
+        max_jogos_considerar = 15  # Reduzir drasticamente para evitar combinações excessivas
+        jogos_excelentes = jogos_excelentes.head(max_jogos_considerar)
+        jogos_bons = jogos_bons.head(max_jogos_considerar)
         
         # Combinar e ordenar por confiança
         todos_jogos = pd.concat([jogos_excelentes, jogos_bons])
@@ -1391,49 +1408,33 @@ class AnalisadorApostasEvolutivo:
             self._log_detalhado("Número insuficiente de jogos para gerar múltiplas", "ERRO")
             return []
         
-        # DEBUG: Verificar se a coluna Time existe e tem valores
-        self._log_detalhado("DEBUG - Verificando coluna 'Time' no DataFrame:")
-        if 'Time' in todos_jogos.columns:
-            self._log_detalhado(f"   Coluna 'Time' encontrada")
-            self._log_detalhado(f"   Valores únicos: {todos_jogos['Time'].nunique()} times")
-            self._log_detalhado(f"   Primeiros 5 valores: {todos_jogos['Time'].head().tolist()}")
-        else:
-            self._log_detalhado("   COLUNA 'TIME' NÃO ENCONTRADA - PROBLEMA CRÍTICO", "ERRO")
-            return []
-        
-        # Criar lista de jogos com ID da partida - VERSÃO CORRIGIDA
+        # Criar lista de jogos com ID da partida - VERSÃO OTIMIZADA
         jogos_lista = []
         
         for idx, row in todos_jogos.iterrows():
-            # CORREÇÃO: Garantir que estamos pegando o time CORRETAMENTE
             time = str(row.get('Time', 'TIME_DESCONHECIDO')).strip()
             mercado = str(row.get('Tipo_Estatistica', 'MERCADO_DESCONHECIDO')).strip()
             
-            # DEBUG: Verificar cada jogo sendo processado
+            # Pular times desconhecidos
             if time == 'TIME_DESCONHECIDO':
-                self._log_detalhado(f"ALERTA: Time desconhecido encontrado - Stat: '{row.get('Stat', '')[:50]}...'", "ALERTA")
+                continue
+                
+            time = re.split(r' have', time, flags=re.IGNORECASE)[0]
             
             # Extrair ID único da partida
             id_partida = self._extrair_id_partida(row)
             
             jogos_lista.append({
-                'id': f"{time}_{mercado}",  # ID único para evitar duplicatas
-                'time': time,  # Nome real do time - GARANTIDO
-                'time_adversario':str(row.get('Next Match', 'ADVERSARIO_DESCONHECIDO')).strip(),
-                'data':str(row.get('Date','DATA DESCONHECIDA')).strip(),
+                'id': f"{time}_{mercado}",
+                'time': time,
+                'time_adversario': str(row.get('Next Match', 'ADVERSARIO_DESCONHECIDO')).strip(),
+                'data': str(row.get('Date','DATA DESCONHECIDA')).strip(),
                 'mercado': mercado,
                 'odds': float(row.get('Odds', 1.0)) if pd.notna(row.get('Odds')) else 1.0,
                 'confianca': float(row.get('Probabilidade_Sucesso', 0)),
                 'analise': str(row.get('Analise_Detalhada', '')),
                 'id_partida': id_partida
             })
-                # Extrai tudo antes de "have"
-            
-        # DEBUG: Mostrar alguns jogos extraídos (FORA DO LOOP)
-        self._log_detalhado(f"Primeiros 10 jogos extraídos:")
-        for i, jogo in enumerate(jogos_lista[:10]):
-            jogo['time'] = re.split(r' have', jogo['time'], flags=re.IGNORECASE)[0]
-            self._log_detalhado(f"   {i+1}. {jogo['data']} {jogo['time']} - {jogo['time_adversario']} {jogo['mercado']} {jogo['odds']} (Conf: {jogo['confianca']:.1%})")
         
         # Remover duplicatas
         jogos_unicos = []
@@ -1443,236 +1444,105 @@ class AnalisadorApostasEvolutivo:
                 ids_vistos.add(jogo['id'])
                 jogos_unicos.append(jogo)
         
-        self._log_detalhado(f"Jogos únicos disponíveis: {len(jogos_unicos)}")
+        # LIMITAR AINDA MAIS PARA EVITAR COMBINAÇÕES
+        jogos_unicos = jogos_unicos[:12]  # Máximo 12 jogos para combinar
+        
+        self._log_detalhado(f"Jogos únicos para múltiplas: {len(jogos_unicos)}")
         
         if len(jogos_unicos) < 2:
             self._log_detalhado("Número insuficiente de jogos únicos para gerar múltiplas", "ERRO")
             return []
         
-        # 🔥 NOVA LÓGICA: IDENTIFICAR JOGOS COM CONFLITO MAS CRIAR MÚLTIPLAS SEPARADAS
-        jogos_para_multiplas = []
-        grupos_conflito = {}
-        
-        # Identificar grupos de conflito (times do mesmo jogo)
-        for jogo in jogos_unicos:
-            if jogo['id_partida'] != 'DESCONHECIDO':
-                if jogo['id_partida'] not in grupos_conflito:
-                    grupos_conflito[jogo['id_partida']] = []
-                grupos_conflito[jogo['id_partida']].append(jogo)
-        
-        self._log_detalhado("Grupos de conflito identificados:")
-        for partida_id, jogos in grupos_conflito.items():
-            if len(jogos) > 1:
-                times = [f"{j['time']}({j['confianca']:.1%})" for j in jogos]
-                self._log_detalhado(f"   {partida_id} {jogo['mercado']}: {', '.join(times)}")
-        
-        # MANTER TODOS OS JOGOS, mas marcar os que têm conflito
-        for jogo in jogos_unicos:
-            jogo['tem_conflito'] = False
-            if jogo['id_partida'] in grupos_conflito and len(grupos_conflito[jogo['id_partida']]) > 1:
-                jogo['tem_conflito'] = True
-            jogos_para_multiplas.append(jogo)
-        
-        self._log_detalhado(f"Jogos para múltiplas: {len(jogos_para_multiplas)} (incluindo opções de conflito)")
-        
-        if len(jogos_para_multiplas) < 2:
-            self._log_detalhado("Número insuficiente de jogos para gerar múltiplas", "ERRO")
-            return []
-        
-        # GERAR MÚLTIPLAS EVITANDO CONFLITOS DIRETOS
+        # GERAR MÚLTIPLAS COM LIMITAÇÃO
         todas_multiplas = []
-        from itertools import combinations
         
-        # 1. Múltiplas de 2 jogos
-        self._log_detalhado("Gerando múltiplas de 2 jogos (evitando conflitos diretos)...")
-        comb_2_jogos = list(combinations(jogos_para_multiplas, 2))
+        # 1. Múltiplas de 2 jogos (mais eficiente)
+        self._log_detalhado("Gerando múltiplas de 2 jogos...")
+        multiplas_2 = self._gerar_multiplas_tamanho_fixo(jogos_unicos, 2, 20)  # Limitar a 20 combinações
+        todas_multiplas.extend(multiplas_2)
         
-        multiplas_validas_2 = 0
-        for combo in comb_2_jogos:
-            jogo1, jogo2 = combo
-            
-            # EVITAR: dois times do mesmo jogo na mesma múltipla
-            if jogo1['id_partida'] == jogo2['id_partida'] and jogo1['id_partida'] != 'DESCONHECIDO':
-                continue
-            
-            multipla = self._calcular_metricas_multipla([jogo1, jogo2])
-            if multipla['confianca_media'] > 0.75:
-                todas_multiplas.append(multipla)
-                multiplas_validas_2 += 1
+        # 2. Múltiplas de 3 jogos (se houver jogos suficientes)
+        if len(jogos_unicos) >= 3:
+            self._log_detalhado("Gerando múltiplas de 3 jogos...")
+            multiplas_3 = self._gerar_multiplas_tamanho_fixo(jogos_unicos, 3, 15)  # Limitar a 15 combinações
+            todas_multiplas.extend(multiplas_3)
         
-        self._log_detalhado(f"   Múltiplas de 2 válidas: {multiplas_validas_2}")
+        # 3. Múltiplas de 4 jogos (apenas se muitos jogos bons)
+        if len(jogos_unicos) >= 4 and len(multiplas_2) > 5:
+            self._log_detalhado("Gerando múltiplas de 4 jogos...")
+            multiplas_4 = self._gerar_multiplas_tamanho_fixo(jogos_unicos, 4, 10)  # Limitar a 10 combinações
+            todas_multiplas.extend(multiplas_4)
         
-        # 2. Múltiplas de 3 jogos
-        multiplas_validas_3 = 0
-        if len(jogos_para_multiplas) >= 3:
-            self._log_detalhado("Gerando múltiplas de 3 jogos (evitando conflitos diretos)...")
-            comb_3_jogos = list(combinations(jogos_para_multiplas, 3))
-            
-            for combo in comb_3_jogos:
-                # Verificar se há times do mesmo jogo no combo
-                tem_conflito = False
-                partidas_no_combo = {}
-                
-                for jogo in combo:
-                    if jogo['id_partida'] != 'DESCONHECIDO':
-                        if jogo['id_partida'] not in partidas_no_combo:
-                            partidas_no_combo[jogo['id_partida']] = []
-                        partidas_no_combo[jogo['id_partida']].append(jogo['time'])
-                
-                # Se alguma partida tem mais de 1 time, há conflito
-                for partida, times in partidas_no_combo.items():
-                    if len(times) > 1:
-                        tem_conflito = True
-                        break
-                
-                if tem_conflito:
-                    continue
-                
-                multipla = self._calcular_metricas_multipla(combo)
-                if multipla['confianca_media'] > 0.75:
-                    todas_multiplas.append(multipla)
-                    multiplas_validas_3 += 1
-            
-            self._log_detalhado(f"   Múltiplas de 3 válidas: {multiplas_validas_3}")
+        # FILTRAR POR CONFIANÇA MÍNIMA
+        multiplas_validas = [m for m in todas_multiplas if m['confianca_media'] > 0.75]
         
-        # 3. Múltiplas de 4 jogos
-        multiplas_validas_4 = 0
-        if len(jogos_para_multiplas) >= 4:
-            self._log_detalhado("Gerando múltiplas de 4 jogos (evitando conflitos diretos)...")
-            comb_4_jogos = list(combinations(jogos_para_multiplas, 4))
-            
-            for combo in comb_4_jogos:
-                # Verificar se há times do mesmo jogo no combo
-                tem_conflito = False
-                partidas_no_combo = {}
-                
-                for jogo in combo:
-                    if jogo['id_partida'] != 'DESCONHECIDO':
-                        if jogo['id_partida'] not in partidas_no_combo:
-                            partidas_no_combo[jogo['id_partida']] = []
-                        partidas_no_combo[jogo['id_partida']].append(jogo['time'])
-                
-                # Se alguma partida tem mais de 1 time, há conflito
-                for partida, times in partidas_no_combo.items():
-                    if len(times) > 1:
-                        tem_conflito = True
-                        break
-                
-                if tem_conflito:
-                    continue
-                
-                multipla = self._calcular_metricas_multipla(combo)
-                if multipla['confianca_media'] > 0.75:
-                    todas_multiplas.append(multipla)
-                    multiplas_validas_4 += 1
-            
-            self._log_detalhado(f"   Múltiplas de 4 válidas: {multiplas_validas_4}")
+        self._log_detalhado(f"Múltiplas válidas (>75%): {len(multiplas_validas)}")
         
-        self._log_detalhado(f"Múltiplas geradas com confiança > 75%: {len(todas_multiplas)}")
-        
-        if len(todas_multiplas) == 0:
+        if len(multiplas_validas) == 0:
             self._log_detalhado("Nenhuma múltipla atingiu o mínimo de 75% de confiança", "ALERTA")
             return []
         
-        # ORDENAR POR CONFIANÇA (melhores primeiro)
-        todas_multiplas.sort(key=lambda x: (x['confianca_media'], x['score']), reverse=True)
+        # ORDENAR E LIMITAR RESULTADOS
+        multiplas_validas.sort(key=lambda x: (x['confianca_media'], x['score']), reverse=True)
+        multiplas_finais = multiplas_validas[:10]  # Máximo 10 múltiplas no resultado
         
-        # Remover duplicatas
-        multiplas_unicas = []
-        combinacoes_vistas = set()
-        
-        for multipla in todas_multiplas:
-            chave = tuple(jogo['id'] for jogo in multipla['jogos'])
-            if chave not in combinacoes_vistas:
-                combinacoes_vistas.add(chave)
-                multiplas_unicas.append(multipla)
-        
-        # CLASSIFICAR POR NÍVEL DE CONFIANÇA
-        multiplas_altissima = [m for m in multiplas_unicas if m['confianca_media'] > 0.85]
-        multiplas_alta = [m for m in multiplas_unicas if m['confianca_media'] > 0.75]
+        # CLASSIFICAR E EXIBIR
+        multiplas_altissima = [m for m in multiplas_finais if m['confianca_media'] > 0.85]
+        multiplas_alta = [m for m in multiplas_finais if m['confianca_media'] > 0.75]
         
         self._log_detalhado("CLASSIFICAÇÃO DAS MÚLTIPLAS (>75%):")
         self._log_detalhado(f"   ⭐⭐⭐ ALTÍSSIMA (>85%): {len(multiplas_altissima)} múltiplas")
         self._log_detalhado(f"   ⭐⭐ ALTA (>75%): {len(multiplas_alta)} múltiplas")
-        self._log_detalhado(f"   Distribuição: 2-jogos={multiplas_validas_2}, 3-jogos={multiplas_validas_3}, 4-jogos={multiplas_validas_4}")
         
-        # EXIBIR POR CATEGORIA
-        self._exibir_multiplas_por_categoria(multiplas_altissima, "ALTÍSSIMA CONFIANÇA", "⭐⭐⭐", min(10, len(multiplas_altissima)))
-        self._exibir_multiplas_por_categoria(multiplas_alta, "ALTA CONFIANÇA", "⭐⭐", min(10, len(multiplas_alta)))
+        # EXIBIR APENAS AS MELHORES
+        self._exibir_multiplas_por_categoria(multiplas_altissima, "ALTÍSSIMA CONFIANÇA", "⭐⭐⭐", min(5, len(multiplas_altissima)))
+        self._exibir_multiplas_por_categoria(multiplas_alta, "ALTA CONFIANÇA", "⭐⭐", min(5, len(multiplas_alta)))
         
-        return multiplas_unicas
+        return multiplas_finais
 
-    def _tem_conflito_logico(self, jogo1, jogo2):
-        """Verificar se há conflito lógico entre dois jogos - VERSÃO RIGOROSA"""
-        # Se são da mesma partida, NÃO PERMITIR NENHUMA COMBINAÇÃO
-        if jogo1['id_partida'] == jogo2['id_partida'] and jogo1['id_partida'] != 'DESCONHECIDO':
-            self._log_detalhado(f"CONFLITO: {jogo1['time']} e {jogo2['time']} são do mesmo jogo {jogo1['id_partida']}", "ALERTA")
-            return True
+    def _gerar_multiplas_tamanho_fixo(self, jogos, tamanho, max_combinacoes):
+        """Gerar múltiplas de tamanho fixo com limite máximo - VERSÃO OTIMIZADA"""
+        from itertools import combinations, islice
         
-        return False
-
-    def _extrair_id_partida(self, row):
-        """Extrair ID único da partida - VERSÃO DEFINITIVA CORRIGIDA"""
-        import re
-        stat = str(row.get('Stat', ''))
-        next_match = str(row.get('Next Match', ''))
-        local = re.search(r'\b(home|away)\b', next_match, re.IGNORECASE)
+        multiplas = []
+        combinacoes_geradas = 0
         
-        # EXTRAIR TIME PRINCIPAL DA COLUNA STAT
-        time_principal = 'TIME_DESCONHECIDO'
-        
-        # Padrão: "Nome do Time have/has/had ..."
-        if ' have ' in stat:
-            time_principal = stat.split(' have ')[0].strip()
-        elif ' has ' in stat:
-            time_principal = stat.split(' has ')[0].strip()
-        elif ' had ' in stat:
-            time_principal = stat.split(' had ')[0].strip()
-        
-        # DEBUG: Mostrar o que foi extraído
-        self._log_detalhado(f"Extraindo: Stat='{stat[:50]}...' → Time='{time_principal}'")
-        
-        # EXTRAIR INFORMAÇÕES DO NEXT MATCH
-        if ' vs ' in next_match.lower():
-            partes = next_match.lower().split(' vs ')
+        # Usar islice para limitar o número de combinações geradas
+        for combo in islice(combinations(jogos, tamanho), max_combinacoes):
+            combinacoes_geradas += 1
             
-            if len(partes) == 2:
-                local = next_match.lower().split(' vs ')[0].strip() # "home" ou "away"
-                adversario = partes[1].strip()
-                
-                # Formatar adversário (primeira letra maiúscula em cada palavra)
-                adversario = ' '.join(word.capitalize() for word in adversario.split())
-                
-                self._log_detalhado(f"Next Match: '{next_match}' → Local='{local}', Adversário='{adversario}'")
-                
-                # Determinar times baseado no local
-                if time_principal != 'TIME_DESCONHECIDO':
-                    if local == 'home':
-                        time_casa = time_principal
-                        time_visitante = adversario
-                    elif local == 'away':
-                        time_casa = adversario
-                        time_visitante = time_principal
-                    else:
-                        # Se não é home/away claro, assumir que time_principal é o primeiro
-                        time_casa = time_principal
-                        time_visitante = adversario
-                    
-                    # Criar ID único ordenando os times alfabeticamente
-                    times_ordenados = sorted([time_casa, time_visitante])
-                    id_partida = f"{times_ordenados[0]}_vs_{times_ordenados[1]}"
-                    
-                    self._log_detalhado(f"ID Partida criado: {id_partida}")
-                    return id_partida
+            # Verificar conflitos
+            tem_conflito = False
+            partidas_no_combo = {}
+            
+            for jogo in combo:
+                if jogo['id_partida'] != 'DESCONHECIDO':
+                    if jogo['id_partida'] not in partidas_no_combo:
+                        partidas_no_combo[jogo['id_partida']] = []
+                    partidas_no_combo[jogo['id_partida']].append(jogo['time'])
+            
+            # Se alguma partida tem mais de 1 time, há conflito
+            for partida, times in partidas_no_combo.items():
+                if len(times) > 1:
+                    tem_conflito = True
+                    break
+            
+            if tem_conflito:
+                continue
+            
+            # Calcular métricas da múltipla
+            multipla = self._calcular_metricas_multipla(combo)
+            if multipla['confianca_media'] > 0.75:  # Filtro mínimo
+                multiplas.append(multipla)
         
-        self._log_detalhado("Não foi possível extrair ID da partida", "ALERTA")
-        return 'DESCONHECIDO'
+        self._log_detalhado(f"   Múltiplas de {tamanho}: {len(multiplas)} válidas de {combinacoes_geradas} combinações testadas")
+        return multiplas
 
     def _calcular_metricas_multipla(self, combinacao_jogos):
-        """Calcular métricas para uma múltipla de qualquer tamanho"""
+        """Calcular métricas para uma múltipla de qualquer tamanho - VERSÃO OTIMIZADA"""
         jogos_ordenados = sorted(combinacao_jogos, key=lambda x: x['id'])
         
-        # Calcular odd total
+        # Calcular odd total e confianças
         odd_total = 1.0
         confiancas = []
         
@@ -1684,17 +1554,8 @@ class AnalisadorApostasEvolutivo:
         # Calcular confiança média
         confianca_media = sum(confiancas) / len(confiancas)
         
-        # Score com peso maior na confiança
-        peso_confianca = 0.8
-        peso_odds = 0.2
-        
-        score_confianca = confianca_media * 100
-        bonus_odds = min((odd_total - 1) * 5, 15)
-        
-        # Penalidade por muitas seleções
-        penalidade_tamanho = (len(combinacao_jogos) - 2) * 5
-        
-        score_final = (score_confianca * peso_confianca) + (bonus_odds * peso_odds) - penalidade_tamanho
+        # Score simplificado para melhor performance
+        score_final = confianca_media * 100
         
         return {
             'jogos': jogos_ordenados,
@@ -1703,160 +1564,226 @@ class AnalisadorApostasEvolutivo:
             'score': score_final,
             'tamanho': len(combinacao_jogos)
         }
-
-    def _exibir_multiplas_por_categoria(self, multiplas, categoria, icone, max_exibir):
-        """Exibir múltiplas por categoria de confiança - VERSÃO CORRIGIDA"""
-        
-        if not multiplas:
-            return
-        
-        self._log_detalhado(f"{icone} {categoria} {icone}")
-        self._log_detalhado("=" * 50)
-        
-        for i, multipla in enumerate(multiplas[:max_exibir], 1):
-            tamanho_str = {
-                2: "DUPLA",
-                3: "TRIPLA", 
-                4: "QUÁDRUPLA"
-            }.get(multipla['tamanho'], f"{multipla['tamanho']} JOGOS")
+    def _tem_conflito_logico(self, jogo1, jogo2):
+            """Verificar se há conflito lógico entre dois jogos - VERSÃO RIGOROSA"""
+            # Se são da mesma partida, NÃO PERMITIR NENHUMA COMBINAÇÃO
+            if jogo1['id_partida'] == jogo2['id_partida'] and jogo1['id_partida'] != 'DESCONHECIDO':
+                self._log_detalhado(f"CONFLITO: {jogo1['time']} e {jogo2['time']} são do mesmo jogo {jogo1['id_partida']}", "ALERTA")
+                return True
             
-            self._log_detalhado(f"🔮 {tamanho_str} {i}:")
-            self._log_detalhado(f"   Odd Total: {multipla['odd_total']:.2f}")
-            self._log_detalhado(f"   Confiança Média: {multipla['confianca_media']:.1%} ⭐")
-            self._log_detalhado(f"   Nº de Seleções: {multipla['tamanho']}")
-            
-            for jogo in multipla['jogos']:
-                # CORREÇÃO: Usar 'time' em vez de 'id' para mostrar o nome real
-                time_nome = jogo.get('time', 'TIME_DESCONHECIDO')
-                mercado = jogo.get('mercado', 'MERCADO_DESCONHECIDO')
-                odd_str = f"@{jogo['odds']:.2f}" if pd.notna(jogo['odds']) and jogo['odds'] > 0 else "@nan"
-                conf_individual = f"({jogo['confianca']:.1%})"
-                self._log_detalhado(f"   ✅ {time_nome} - {mercado} {odd_str} {conf_individual}")
-            self._log_detalhado("-" * 40)
-    def criar_backup_manual(self):
-        """Criar backup manual do modelo atual"""
-        if not os.path.exists(self.modelo_path):
-            self._log_detalhado("Nenhum modelo encontrado para backup", "ALERTA")
             return False
-        
-        self._fazer_backup_modelo()
-        self._log_detalhado("Backup manual criado com sucesso", "SUCESSO")
-        return True
-    def _aplicar_ordenacao_final(self, df):
-        """Aplicar ordenação final ao DataFrame"""
-        # Criar colunas temporárias para ordenação
-        df_ordenacao = df.copy()
-        
-        # 1. Converter datas para datetime
-        df_ordenacao['Data_Ordenacao'] = df_ordenacao['Date'].apply(self._converter_para_datetime_ordenacao)
-        
-        # 2. Criar ordem customizada para Recomendacao
-        ordem_recomendacao = {'EXCELENTE': 1, 'BOA': 2, 'REGULAR': 3}
-        df_ordenacao['Ordem_Recomendacao'] = df_ordenacao['Recomendacao'].map(ordem_recomendacao).fillna(4)
-        
-        # 3. Criar ordem customizada para Liga_Categoria
-        ordem_liga = {'ALTA_CONFIABILIDADE': 1, 'MEDIA_CONFIABILIDADE': 2, 'BAIXA_CONFIABILIDADE': 3}
-        df_ordenacao['Ordem_Liga'] = df_ordenacao['Liga_Categoria'].map(ordem_liga).fillna(4)
-        
-        # 4. Ordenação FINAL conforme solicitado
-        df_ordenado = df_ordenacao.sort_values([
-            'Data_Ordenacao',           # 1º: Data mais recente primeiro
-            'Ordem_Recomendacao',       # 2º: Melhor recomendação
-            'Ordem_Liga',               # 3º: Alta confiabilidade primeiro
-            'Probabilidade_Sucesso'     # 4º: Maior probabilidade
-        ], ascending=[
-            False,  # Data: mais recente primeiro
-            True,   # Recomendacao: Excelente(1) antes de Boa(2)
-            True,   # Liga: Alta(1) antes de Media(2)
-            False   # Probabilidade: maior primeiro
-        ])
-        
-        # Remover colunas temporárias de ordenação
-        colunas_finais = [col for col in df_ordenado.columns if not col.startswith('Ordem_') and col != 'Data_Ordenacao']
-        return df_ordenado[colunas_finais]
-# EXECUÇÃO PRINCIPAL INTELIGENTE
-    def verificar_arquivos_config(self,config):
-        """Verificar se arquivos de configuração existem"""
-        arquivos_ok = True
-        
-        for nome, caminho in config.items():
-            if 'base' in nome and not os.path.exists(caminho):
-                print(f"❌ Arquivo não encontrado: {caminho}")
-                arquivos_ok = False
-            else:
-                print(f"✅ {nome}: {caminho}")
-        
-        return arquivos_ok
-    def gerar_previsoes_futuras(self, output_path='previsoes_evolutivas.csv'):
-        """Gerar previsões para jogos futuros com recomendações"""
-        if self.model is None:
-            self._log_detalhado("Modelo não carregado. Execute treinamento primeiro.", "ERRO")
-            return
-        
-        if self.base_futuros_path is None:
-            self._log_detalhado("Caminho da base de futuros não especificado", "ERRO")
-            return
-            
-        self._log_detalhado("GERANDO PREVISÕES INTELIGENTES...")
-        
-        # Carregar dados futuros
-        df_futuros = self.carregar_dados(self.base_futuros_path)
-        if df_futuros is None or len(df_futuros) == 0:
-            self._log_detalhado("Falha ao carregar dados futuros", "ERRO")
-            return
-        
-        df_futuros = self._preparar_dados_futuros(df_futuros)
-        
-        # Gerar previsões
-        previsoes_detalhadas = []
-        
-        for idx, row in df_futuros.iterrows():
-            try:
-                previsao = self._analisar_jogo_avancado(row)
-                previsoes_detalhadas.append(previsao)
-            except Exception as e:
-                self._log_detalhado(f"Erro ao analisar jogo {idx}: {e}", "ALERTA")
-                previsoes_detalhadas.append(self._analise_basica_futuro(row))
-        
-        # Adicionar previsões ao DataFrame - APENAS AS COLUNAS EXISTENTES
-        colunas_previsao = ['Probabilidade_Sucesso', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 'Bonus_Total']
-        for col in colunas_previsao:
-            df_futuros[col] = [p[col] for p in previsoes_detalhadas]
-        
-        # ✅ CORREÇÃO: ORDENAÇÃO FINAL ANTES DE SALVAR
-        self._log_detalhado("Aplicando ordenação personalizada...")
-        df_futuros = self._adicionar_coluna_efetividade(df_futuros)
-        # 1. Converter datas para datetime para ordenação correta
-        df_futuros = self._aplicar_ordenacao_final(df_futuros)
-        
-        # REMOVER COLUNAS TEMPORÁRIAS QUE NÃO DEVEM APARECER NO CSV FINAL
-        colunas_para_manter = [
-            'League', 'Stat', 'Next Match', 'Odds', 'Date', 'Situação',
-            'Tipo_Estatistica', 'Liga_Categoria',
-            'Probabilidade_Sucesso','Efetividade', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 
-        ]
 
-        # Manter apenas as colunas que existem no DataFrame
-        colunas_existentes = [col for col in colunas_para_manter if col in df_futuros.columns]
-        df_futuros_ordenado = df_futuros[colunas_existentes].copy()
+    def _extrair_id_partida(self, row):
+            """Extrair ID único da partida - VERSÃO DEFINITIVA CORRIGIDA"""
+            import re
+            stat = str(row.get('Stat', ''))
+            next_match = str(row.get('Next Match', ''))
+            local = re.search(r'\b(home|away)\b', next_match, re.IGNORECASE)
+            
+            # EXTRAIR TIME PRINCIPAL DA COLUNA STAT
+            time_principal = 'TIME_DESCONHECIDO'
+            
+            # Padrão: "Nome do Time have/has/had ..."
+            if ' have ' in stat:
+                time_principal = stat.split(' have ')[0].strip()
+            elif ' has ' in stat:
+                time_principal = stat.split(' has ')[0].strip()
+            elif ' had ' in stat:
+                time_principal = stat.split(' had ')[0].strip()
+            
+            # DEBUG: Mostrar o que foi extraído
+            self._log_detalhado(f"Extraindo: Stat='{stat[:50]}...' → Time='{time_principal}'")
+            
+            # EXTRAIR INFORMAÇÕES DO NEXT MATCH
+            if ' vs ' in next_match.lower():
+                partes = next_match.lower().split(' vs ')
+                
+                if len(partes) == 2:
+                    local = next_match.lower().split(' vs ')[0].strip() # "home" ou "away"
+                    adversario = partes[1].strip()
+                    
+                    # Formatar adversário (primeira letra maiúscula em cada palavra)
+                    adversario = ' '.join(word.capitalize() for word in adversario.split())
+                    
+                    self._log_detalhado(f"Next Match: '{next_match}' → Local='{local}', Adversário='{adversario}'")
+                    
+                    # Determinar times baseado no local
+                    if time_principal != 'TIME_DESCONHECIDO':
+                        if local == 'home':
+                            time_casa = time_principal
+                            time_visitante = adversario
+                        elif local == 'away':
+                            time_casa = adversario
+                            time_visitante = time_principal
+                        else:
+                            # Se não é home/away claro, assumir que time_principal é o primeiro
+                            time_casa = time_principal
+                            time_visitante = adversario
+                        
+                        # Criar ID único ordenando os times alfabeticamente
+                        times_ordenados = sorted([time_casa, time_visitante])
+                        id_partida = f"{times_ordenados[0]}_vs_{times_ordenados[1]}"
+                        
+                        self._log_detalhado(f"ID Partida criado: {id_partida}")
+                        return id_partida
+            
+            self._log_detalhado("Não foi possível extrair ID da partida", "ALERTA")
+            return 'DESCONHECIDO'
+
         
-        # ✅ CORREÇÃO: GARANTIR que a ordenação está aplicada no DataFrame final
-        df_futuros_ordenado = self._aplicar_ordenacao_final(df_futuros_ordenado)
-        
-        # Gerar múltiplas recomendadas (usando o DataFrame original para evitar perda de colunas)
-        self._gerar_multiplas_recomendadas(df_futuros)
-        
-        # ✅ CORREÇÃO: SALVAR O DATAFRAME ORDENADO
-        df_futuros_ordenado.to_csv(output_path, index=False, sep=';', encoding='utf-8-sig')
-        self._log_detalhado(f"Previsões salvas em: {output_path}", "SUCESSO")
-        self._log_detalhado(f"Total de jogos analisados: {len(df_futuros_ordenado)}")
-        self._log_detalhado(f"Jogos EXCELENTES: {len(df_futuros_ordenado[df_futuros_ordenado['Recomendacao'] == 'EXCELENTE'])}")
-        self._log_detalhado(f"Jogos BONS: {len(df_futuros_ordenado[df_futuros_ordenado['Recomendacao'] == 'BOA'])}")
-        
-        # Mostrar ordenação aplicada
-        self._mostrar_ordenacao_aplicada(df_futuros_ordenado)
-        
-        return df_futuros_ordenado
+    def _exibir_multiplas_por_categoria(self, multiplas, categoria, icone, max_exibir):
+            """Exibir múltiplas por categoria de confiança - VERSÃO CORRIGIDA"""
+            
+            if not multiplas:
+                return
+            
+            self._log_detalhado(f"{icone} {categoria} {icone}")
+            self._log_detalhado("=" * 50)
+            
+            for i, multipla in enumerate(multiplas[:max_exibir], 1):
+                tamanho_str = {
+                    2: "DUPLA",
+                    3: "TRIPLA", 
+                    4: "QUÁDRUPLA"
+                }.get(multipla['tamanho'], f"{multipla['tamanho']} JOGOS")
+                
+                self._log_detalhado(f"🔮 {tamanho_str} {i}:")
+                self._log_detalhado(f"   Odd Total: {multipla['odd_total']:.2f}")
+                self._log_detalhado(f"   Confiança Média: {multipla['confianca_media']:.1%} ⭐")
+                self._log_detalhado(f"   Nº de Seleções: {multipla['tamanho']}")
+                
+                for jogo in multipla['jogos']:
+                    # CORREÇÃO: Usar 'time' em vez de 'id' para mostrar o nome real
+                    time_nome = jogo.get('time', 'TIME_DESCONHECIDO')
+                    mercado = jogo.get('mercado', 'MERCADO_DESCONHECIDO')
+                    odd_str = f"@{jogo['odds']:.2f}" if pd.notna(jogo['odds']) and jogo['odds'] > 0 else "@nan"
+                    conf_individual = f"({jogo['confianca']:.1%})"
+                    self._log_detalhado(f"   ✅ {time_nome} - {mercado} {odd_str} {conf_individual}")
+                self._log_detalhado("-" * 40)
+    def criar_backup_manual(self):
+            """Criar backup manual do modelo atual"""
+            if not os.path.exists(self.modelo_path):
+                self._log_detalhado("Nenhum modelo encontrado para backup", "ALERTA")
+                return False
+            
+            self._fazer_backup_modelo()
+            self._log_detalhado("Backup manual criado com sucesso", "SUCESSO")
+            return True
+    def _aplicar_ordenacao_final(self, df):
+            """Aplicar ordenação final ao DataFrame"""
+            # Criar colunas temporárias para ordenação
+            df_ordenacao = df.copy()
+            
+            # 1. Converter datas para datetime
+            df_ordenacao['Data_Ordenacao'] = df_ordenacao['Date'].apply(self._converter_para_datetime_ordenacao)
+            
+            # 2. Criar ordem customizada para Recomendacao
+            ordem_recomendacao = {'EXCELENTE': 1, 'BOA': 2, 'REGULAR': 3}
+            df_ordenacao['Ordem_Recomendacao'] = df_ordenacao['Recomendacao'].map(ordem_recomendacao).fillna(4)
+            
+            # 3. Criar ordem customizada para Liga_Categoria
+            ordem_liga = {'ALTA_CONFIABILIDADE': 1, 'MEDIA_CONFIABILIDADE': 2, 'BAIXA_CONFIABILIDADE': 3}
+            df_ordenacao['Ordem_Liga'] = df_ordenacao['Liga_Categoria'].map(ordem_liga).fillna(4)
+            
+            # 4. Ordenação FINAL conforme solicitado
+            df_ordenado = df_ordenacao.sort_values([
+                'Data_Ordenacao',           # 1º: Data mais recente primeiro
+                'Ordem_Recomendacao',       # 2º: Melhor recomendação
+                'Ordem_Liga',               # 3º: Alta confiabilidade primeiro
+                'Probabilidade_Sucesso'     # 4º: Maior probabilidade
+            ], ascending=[
+                False,  # Data: mais recente primeiro
+                True,   # Recomendacao: Excelente(1) antes de Boa(2)
+                True,   # Liga: Alta(1) antes de Media(2)
+                False   # Probabilidade: maior primeiro
+            ])
+            
+            # Remover colunas temporárias de ordenação
+            colunas_finais = [col for col in df_ordenado.columns if not col.startswith('Ordem_') and col != 'Data_Ordenacao']
+            return df_ordenado[colunas_finais]
+    # EXECUÇÃO PRINCIPAL INTELIGENTE
+    def verificar_arquivos_config(self,config):
+            """Verificar se arquivos de configuração existem"""
+            arquivos_ok = True
+            
+            for nome, caminho in config.items():
+                if 'base' in nome and not os.path.exists(caminho):
+                    print(f"❌ Arquivo não encontrado: {caminho}")
+                    arquivos_ok = False
+                else:
+                    print(f"✅ {nome}: {caminho}")
+            
+            return arquivos_ok
+    def gerar_previsoes_futuras(self, output_path='previsoes_evolutivas.csv'):
+            """Gerar previsões para jogos futuros com recomendações"""
+            if self.model is None:
+                self._log_detalhado("Modelo não carregado. Execute treinamento primeiro.", "ERRO")
+                return
+            
+            if self.base_futuros_path is None:
+                self._log_detalhado("Caminho da base de futuros não especificado", "ERRO")
+                return
+                
+            self._log_detalhado("GERANDO PREVISÕES INTELIGENTES...")
+            
+            # Carregar dados futuros
+            df_futuros = self.carregar_dados(self.base_futuros_path)
+            if df_futuros is None or len(df_futuros) == 0:
+                self._log_detalhado("Falha ao carregar dados futuros", "ERRO")
+                return
+            
+            df_futuros = self._preparar_dados_futuros(df_futuros)
+            
+            # Gerar previsões
+            previsoes_detalhadas = []
+            
+            for idx, row in df_futuros.iterrows():
+                try:
+                    previsao = self._analisar_jogo_avancado(row)
+                    previsoes_detalhadas.append(previsao)
+                except Exception as e:
+                    self._log_detalhado(f"Erro ao analisar jogo {idx}: {e}", "ALERTA")
+                    previsoes_detalhadas.append(self._analise_basica_futuro(row))
+            
+            # Adicionar previsões ao DataFrame - APENAS AS COLUNAS EXISTENTES
+            colunas_previsao = ['Probabilidade_Sucesso', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 'Bonus_Total']
+            for col in colunas_previsao:
+                df_futuros[col] = [p[col] for p in previsoes_detalhadas]
+            
+            # ✅ CORREÇÃO: ORDENAÇÃO FINAL ANTES DE SALVAR
+            self._log_detalhado("Aplicando ordenação personalizada...")
+            df_futuros = self._adicionar_coluna_efetividade(df_futuros)
+            # 1. Converter datas para datetime para ordenação correta
+            df_futuros = self._aplicar_ordenacao_final(df_futuros)
+            
+            # REMOVER COLUNAS TEMPORÁRIAS QUE NÃO DEVEM APARECER NO CSV FINAL
+            colunas_para_manter = [
+                'League', 'Stat', 'Next Match', 'Odds', 'Date', 'Situação',
+                'Tipo_Estatistica', 'Liga_Categoria',
+                'Probabilidade_Sucesso','Efetividade', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 
+            ]
+
+            # Manter apenas as colunas que existem no DataFrame
+            colunas_existentes = [col for col in colunas_para_manter if col in df_futuros.columns]
+            df_futuros_ordenado = df_futuros[colunas_existentes].copy()
+            
+            # ✅ CORREÇÃO: GARANTIR que a ordenação está aplicada no DataFrame final
+            df_futuros_ordenado = self._aplicar_ordenacao_final(df_futuros_ordenado)
+            
+            # Gerar múltiplas recomendadas (usando o DataFrame original para evitar perda de colunas)
+            self._gerar_multiplas_recomendadas(df_futuros)
+            
+            # ✅ CORREÇÃO: SALVAR O DATAFRAME ORDENADO
+            df_futuros_ordenado.to_csv(output_path, index=False, sep=';', encoding='utf-8-sig')
+            self._log_detalhado(f"Previsões salvas em: {output_path}", "SUCESSO")
+            self._log_detalhado(f"Total de jogos analisados: {len(df_futuros_ordenado)}")
+            self._log_detalhado(f"Jogos EXCELENTES: {len(df_futuros_ordenado[df_futuros_ordenado['Recomendacao'] == 'EXCELENTE'])}")
+            self._log_detalhado(f"Jogos BONS: {len(df_futuros_ordenado[df_futuros_ordenado['Recomendacao'] == 'BOA'])}")
+            
+            # Mostrar ordenação aplicada
+            self._mostrar_ordenacao_aplicada(df_futuros_ordenado)
+            
+            return df_futuros_ordenado
 if __name__ == "__main__":
     print("🤖 SISTEMA DE ANÁLISE EVOLUTIVA DE APOSTAS - VERSÃO CORRIGIDA")
     print("="*50)
@@ -1864,7 +1791,7 @@ if __name__ == "__main__":
     # CONFIGURAÇÃO
     config = {
         'base_treino': r'D:\Downloads\scraping_futebol\base_dados_total.csv',
-        'base_futuros': r'd:\Downloads\scraping_futebol\scraping\adam choi_dados_20251102_231143.csv',
+        'base_futuros': r'D:\Downloads\scraping_futebol\scraping\adam choi_dados_20251119_160446.csv',
         'modelo_salvo': 'modelo_apostas_evolutivo.joblib.backup_20251103_000344.backup_20251103_000907'
     }
     
