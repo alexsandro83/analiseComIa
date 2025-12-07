@@ -192,6 +192,10 @@ class AnalisadorApostasEvolutivo:
         nulos = self.df_treino[colunas_essenciais].isnull().sum()
         if nulos.any():
             self._log_detalhado(f"Valores nulos encontrados: {nulos}", "ALERTA")
+        
+        # ✅ NOVA VERIFICAÇÃO: Garantir que há dados suficientes
+        if len(self.df_treino) < 10:
+            raise ValueError(f"Dados insuficientes: apenas {len(self.df_treino)} registros")
     
     def _extrair_time_avancado(self, stat):
             """Extrair nome do time com múltiplos padrões - VERSÃO MELHORADA"""
@@ -274,53 +278,30 @@ class AnalisadorApostasEvolutivo:
         
         return 'TIME_DESCONHECIDO'
     def _preparar_dados_treino(self):
-        """Preparar dados para treino"""
+        """Preparar dados para treino - VERSÃO CORRIGIDA"""
         self._log_detalhado("Preparando dados para treino...")
 
         # DEBUG: Mostrar informações dos dados
         self._log_detalhado(f"Colunas disponíveis: {list(self.df_treino.columns)}")
         self._log_detalhado(f"Primeiras linhas:")
         print(self.df_treino.head(2))
-        # 1. Interação entre Odds e Streak
-        self.df_treino_limpo['Odds_Streak_Interaction'] = (
-            self.df_treino_limpo['Odds'] * self.df_treino_limpo['Tamanho_Streak']
-        )
         
-        # 2. Probabilidade implícita das Odds
-        self.df_treino_limpo['Prob_Implicita'] = 1 / self.df_treino_limpo['Odds']
+        # ✅ CORREÇÃO: REMOVER coluna Resultado para evitar confusão
+        if 'Resultado' in self.df_treino.columns:
+            self.df_treino = self.df_treino.drop('Resultado', axis=1)
+            self._log_detalhado("✅ Coluna 'Resultado' removida - não usada no modelo")
         
-        # 3. Categorizar streaks
-        self.df_treino_limpo['Streak_Categoria'] = pd.cut(
-            self.df_treino_limpo['Tamanho_Streak'],
-            bins=[0, 3, 6, 10, 100],
-            labels=['Curto', 'Medio', 'Longo', 'Muito_Longo']
-        )
-        
-        # 4. Dia da semana (padrões temporais)
-        if 'Date' in self.df_treino_limpo.columns:
-            self.df_treino_limpo['Dia_Semana'] = self.df_treino_limpo['Date'].dt.dayofweek
-        
-        # Atualizar lista de features
-        self.features_para_treino.extend([
-            'Odds_Streak_Interaction', 
-            'Prob_Implicita',
-            'Streak_Categoria',
-            'Dia_Semana'
-        ])
         def corrigir_data(date_str):
             try:
-                # Sua base já tem data no formato correto: "2025-09-22 21:15:00"
-                return pd.to_datetime(date_str, format='%Y-%m-%d %H:%M:%S', errors='coerce')
+                # Sua base já tem data no formato correto: "27/11/2025 20:30"
+                return pd.to_datetime(date_str, format='%d/%m/%Y %H:%M', errors='coerce')
             except:
                 try:
                     # Tentativa alternativa
                     return pd.to_datetime(date_str, errors='coerce')
                 except:
                     return pd.NaT
-        # ✅ REMOVER coluna Resultado para evitar confusão
-        if 'Resultado' in self.df_treino.columns:
-            self.df_treino = self.df_treino.drop('Resultado', axis=1)
-            self._log_detalhado("✅ Coluna 'Resultado' removida - não usada no modelo")
+        
         # Processar Date
         if 'Date' in self.df_treino.columns:
             self.df_treino['Date'] = self.df_treino['Date'].apply(corrigir_data)
@@ -369,19 +350,58 @@ class AnalisadorApostasEvolutivo:
             self._log_detalhado("Coluna 'League' não encontrada", "ALERTA")
             self.df_treino['Liga_Categoria'] = 'MEDIA_CONFIABILIDADE'
 
-        # Filtrar apenas dados com target válido
+        # ✅ CORREÇÃO: Filtrar apenas dados com target válido ANTES de criar df_treino_limpo
         self.df_treino_limpo = self.df_treino[self.df_treino['Target'] != -1].copy()
         self._log_detalhado(f"Dados finais para treino: {len(self.df_treino_limpo)} registros válidos")
         
-        # Mostrar distribuição
+        # ✅ CORREÇÃO: AGORA criar as features de engenharia APÓS ter df_treino_limpo
         if len(self.df_treino_limpo) > 0:
+            # 1. Interação entre Odds e Streak
+            self.df_treino_limpo['Odds_Streak_Interaction'] = (
+                self.df_treino_limpo['Odds'] * self.df_treino_limpo['Tamanho_Streak']
+            )
+            
+            # 2. Probabilidade implícita das Odds
+            def categorizar_streak(streak):
+                if streak <= 3:
+                    return 'Curto'
+                elif streak <= 6:
+                    return 'Medio'
+                elif streak <= 10:
+                    return 'Longo'
+                else:
+                    return 'Muito_Longo'
+            
+            self.df_treino_limpo['Streak_Categoria'] = self.df_treino_limpo['Tamanho_Streak'].apply(
+                lambda x: categorizar_streak(x) if pd.notnull(x) else None
+            )
+            
+            # 4. Dia da semana (padrões temporais)
+            if 'Date' in self.df_treino_limpo.columns:
+                self.df_treino_limpo['Dia_Semana'] = self.df_treino_limpo['Date'].dt.dayofweek
+            
+            # Atualizar lista de features
+            self.features_para_treino.extend([
+                'Odds_Streak_Interaction', 
+                'Prob_Implicita',
+                'Streak_Categoria',
+                'Dia_Semana'
+            ])
+            
+            # Mostrar distribuição
             verd_count = (self.df_treino_limpo['Target'] == 1).sum()
             fals_count = (self.df_treino_limpo['Target'] == 0).sum()
             self._log_detalhado(f"Distribuição: VERDADEIRO={verd_count}, FALSO={fals_count}")
         
-            # ✅ ADICIONAR APÓS CRIAR A COLUNA TARGET:
-            # Adicionar coluna de efetividade para dados de treino
+        # ✅ ADICIONAR APÓS CRIAR A COLUNA TARGET:
+        # Adicionar coluna de efetividade para dados de treino
         self.df_treino = self._adicionar_coluna_efetividade(self.df_treino)
+        
+        # ✅ NOVA VERIFICAÇÃO: Garantir que temos dados suficientes após todo o processamento
+        if len(self.df_treino_limpo) < 10:
+            self._log_detalhado(f"⚠️  AVISO: Apenas {len(self.df_treino_limpo)} registros válidos após processamento", "ALERTA")
+        else:
+            self._log_detalhado(f"✅ Dados preparados com sucesso: {len(self.df_treino_limpo)} registros válidos", "SUCESSO")
     def corrigir_caracteres_especiais_csv(self, caminho_arquivo, df):
         """Corrigir caracteres especiais - VERSÃO CORRIGIDA"""
         # Mapeamento completo de correção de caracteres especiais
@@ -451,7 +471,8 @@ class AnalisadorApostasEvolutivo:
         for col in text_columns:
             df[col] = df[col].apply(lambda x: x.strip() if isinstance(x, str) else x)
 
-        df.to_csv(caminho_arquivo, index=False, encoding='utf-8')
+        
+        df.to_csv(caminho_arquivo, index=False, sep=';', encoding='utf-8-sig')
         
         self._log_detalhado(f"✅ Arquivo corrigido e salvo: {caminho_arquivo}", "SUCESSO")
         self._log_detalhado(f"   - Registros processados: {len(df)}")
@@ -600,16 +621,104 @@ class AnalisadorApostasEvolutivo:
         # Treinar novo modelo
         self._log_detalhado("Treinando novo modelo com dados atualizados...")
         try:
-            X = self.df_treino_limpo[self.features_para_treino].copy()
-            X['Tipo_Estatistica'] = self.encoder.fit_transform(X['Tipo_Estatistica'])
-            X['Local_Jogo'] = LabelEncoder().fit_transform(X['Local_Jogo'])
-            X['Liga_Categoria'] = LabelEncoder().fit_transform(X['Liga_Categoria'])
+            # ✅ CORREÇÃO: Processar colunas categóricas ANTES de criar X
+            df_processado = self.df_treino_limpo.copy()
             
-            y = self.df_treino_limpo['Target']
+            # 1. Codificar colunas categóricas
+            # Para 'Tipo_Estatistica'
+            if 'Tipo_Estatistica' in df_processado.columns:
+                unique_stats = df_processado['Tipo_Estatistica'].unique()
+                self._log_detalhado(f"Tipos de estatística encontrados: {list(unique_stats)}")
+                # Criar mapeamento manual
+                stat_mapping = {stat: idx for idx, stat in enumerate(unique_stats)}
+                df_processado['Tipo_Estatistica_encoded'] = df_processado['Tipo_Estatistica'].map(stat_mapping)
             
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+            # Para 'Local_Jogo'
+            if 'Local_Jogo' in df_processado.columns:
+                local_encoder = LabelEncoder()
+                df_processado['Local_Jogo_encoded'] = local_encoder.fit_transform(df_processado['Local_Jogo'])
             
-            # ✅ CORREÇÃO: Balanceamento de classes AGORA com y_train definido
+            # Para 'Liga_Categoria'
+            if 'Liga_Categoria' in df_processado.columns:
+                liga_encoder = LabelEncoder()
+                df_processado['Liga_Categoria_encoded'] = liga_encoder.fit_transform(df_processado['Liga_Categoria'])
+            
+            # ✅ CORREÇÃO IMPORTANTE: Para 'Streak_Categoria' 
+            if 'Streak_Categoria' in df_processado.columns:
+                # Primeiro, converter de Categorical para string se necessário
+                if pd.api.types.is_categorical_dtype(df_processado['Streak_Categoria']):
+                    df_processado['Streak_Categoria'] = df_processado['Streak_Categoria'].astype(str)
+                
+                # Verificar valores únicos
+                unique_streaks = df_processado['Streak_Categoria'].dropna().unique()
+                self._log_detalhado(f"Valores de Streak_Categoria: {list(unique_streaks)}")
+                
+                # Opção mais simples: usar mapeamento manual (evita problemas com Categorical)
+                streak_order = {'Curto': 0, 'Medio': 1, 'Longo': 2, 'Muito_Longo': 3, 'nan': -1}
+                
+                # Converter NaN para string 'nan' temporariamente para mapeamento
+                streak_series = df_processado['Streak_Categoria'].fillna('nan').astype(str)
+                df_processado['Streak_Categoria_encoded'] = streak_series.map(
+                    lambda x: streak_order.get(x, -1)
+                )
+            
+            # ✅ CORREÇÃO: Para 'Dia_Semana' - garantir que é numérico
+            if 'Dia_Semana' in df_processado.columns:
+                # Se for float com NaN, converter para int (preenchendo NaN com -1)
+                if df_processado['Dia_Semana'].dtype == 'float64':
+                    df_processado['Dia_Semana'] = df_processado['Dia_Semana'].fillna(-1).astype(int)
+            
+            # ✅ CORREÇÃO: Definir features numéricas que vamos usar
+            features_numericas = [
+                'Odds', 'Tamanho_Streak', 'Odds_Streak_Interaction', 'Prob_Implicita'
+            ]
+            
+            # Adicionar features encoded se existirem
+            encoded_features = []
+            if 'Tipo_Estatistica_encoded' in df_processado.columns:
+                encoded_features.append('Tipo_Estatistica_encoded')
+            if 'Local_Jogo_encoded' in df_processado.columns:
+                encoded_features.append('Local_Jogo_encoded')
+            if 'Liga_Categoria_encoded' in df_processado.columns:
+                encoded_features.append('Liga_Categoria_encoded')
+            if 'Streak_Categoria_encoded' in df_processado.columns:
+                encoded_features.append('Streak_Categoria_encoded')
+            if 'Dia_Semana' in df_processado.columns:
+                encoded_features.append('Dia_Semana')
+            
+            # Combinar todas as features
+            todas_features = features_numericas + encoded_features
+            
+            # Verificar se todas as features existem
+            features_existentes = [f for f in todas_features if f in df_processado.columns]
+            self._log_detalhado(f"Features a usar: {features_existentes}")
+            
+            # ✅ CORREÇÃO: Garantir que todas as features são numéricas e sem NaN
+            for feature in features_existentes:
+                if feature in df_processado.columns:
+                    # Converter para numérico, forçando erros para NaN
+                    df_processado[feature] = pd.to_numeric(df_processado[feature], errors='coerce')
+            
+            # Criar X apenas com features existentes
+            X = df_processado[features_existentes].copy()
+            y = df_processado['Target']
+            
+            # Remover possíveis valores NaN
+            mask = X.notna().all(axis=1)
+            X = X[mask].copy()
+            y = y[mask].copy()
+            
+            if len(X) == 0:
+                self._log_detalhado("❌ Nenhuma feature válida após limpeza", "ERRO")
+                return False
+            
+            self._log_detalhado(f"Shape final: X={X.shape}, y={y.shape}")
+            
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.2, random_state=42, stratify=y
+            )
+            
+            # ✅ CORREÇÃO: Balanceamento de classes
             from sklearn.utils import class_weight
             classes = np.unique(y_train)
             pesos = class_weight.compute_class_weight(
@@ -619,7 +728,7 @@ class AnalisadorApostasEvolutivo:
             )
             class_weights = dict(zip(classes, pesos))
             
-            # ✅ CORREÇÃO: Criar modelo APÓS definir class_weights
+            # Criar modelo
             self.model = RandomForestClassifier(
                 n_estimators=300,
                 max_depth=15,
@@ -631,10 +740,6 @@ class AnalisadorApostasEvolutivo:
                 n_jobs=-1
             )
             
-            # ✅ CORREÇÃO: Remover chamadas a funções não definidas
-            # X_train = self._aplicar_feature_engineering(X_train)  # REMOVIDO
-            # X_test = self._aplicar_feature_engineering(X_test)    # REMOVIDO
-            
             # Treinar modelo
             self.model.fit(X_train, y_train)
             
@@ -644,11 +749,20 @@ class AnalisadorApostasEvolutivo:
             
             self._avaliar_modelo_detalhado(X_test, y_test)
             
+            # Salvar informações adicionais sobre o encoding
+            self.features_para_treino = features_existentes
+            self.encoders = {
+                'local_encoder': local_encoder if 'Local_Jogo' in df_processado.columns else None,
+                'liga_encoder': liga_encoder if 'Liga_Categoria' in df_processado.columns else None,
+                'stat_mapping': stat_mapping if 'Tipo_Estatistica' in df_processado.columns else None,
+                'streak_order': streak_order if 'Streak_Categoria' in df_processado.columns else None
+            }
+            
             # ✅ MODIFICAÇÃO: Fazer backup apenas se acurácia melhorar
             backup_feito = self._fazer_backup_modelo(self.acuracia_modelo)
             
-            # Salvar modelo
-            self._salvar_modelo()
+            # Salvar modelo com todas as informações
+            self._salvar_modelo_evolutivo()
             
             self._log_detalhado(f"Modelo treinado com sucesso! Acurácia: {accuracy:.2%}", "SUCESSO")
             if backup_feito:
@@ -663,8 +777,43 @@ class AnalisadorApostasEvolutivo:
             import traceback
             self._log_detalhado(f"Detalhes do erro: {traceback.format_exc()}", "ERRO")
             return False
-        
-        
+    def _salvar_modelo_evolutivo(self):
+        """Salvar modelo evolutivo com todas as informações necessárias"""
+        try:
+            # Coletar todas as informações dos encoders
+            encoders_info = {}
+            
+            # Salvar mapeamentos para cada encoder usado
+            if hasattr(self, 'encoders'):
+                for encoder_name, encoder in self.encoders.items():
+                    if encoder is not None:
+                        if hasattr(encoder, 'classes_'):
+                            encoders_info[encoder_name] = {
+                                'type': 'LabelEncoder',
+                                'classes': list(encoder.classes_)
+                            }
+                        elif isinstance(encoder, dict):
+                            encoders_info[encoder_name] = {
+                                'type': 'dict_mapping',
+                                'mapping': encoder
+                            }
+            
+            modelo_salvo = {
+                'model': self.model,
+                'features': self.features_para_treino,
+                'acuracia': self.acuracia_modelo,
+                'encoders_info': encoders_info,
+                'stat_mapping': self.stat_mapping if hasattr(self, 'stat_mapping') else {},
+                'n_amostras': len(self.df_treino_limpo) if hasattr(self, 'df_treino_limpo') else 0,
+                'timestamp': pd.Timestamp.now()
+            }
+            
+            joblib.dump(modelo_salvo, self.modelo_path)
+            self._log_detalhado(f"Modelo salvo em: {self.modelo_path}", "SUCESSO")
+            return True
+        except Exception as e:
+            self._log_detalhado(f"Erro ao salvar modelo: {e}", "ERRO")
+            return False   
     def _criar_modelo_ensemble(self):
         """Criar ensemble para melhor performance"""
         from sklearn.ensemble import VotingClassifier
@@ -849,13 +998,44 @@ class AnalisadorApostasEvolutivo:
         else:
             # Fallback para primeira execução
             return self._classificar_liga_fallback(league_str)
-    
+    def _calcular_confiabilidade_por_desempenho(self, league_str):
+            """
+            Classificar liga baseada em desempenho histórico dos times - VERSÃO SIMPLIFICADA
+            """
+            try:
+                # Fallback para classificação básica se não temos dados suficientes
+                if not hasattr(self, 'df_treino_limpo') or self.df_treino_limpo is None:
+                    return self._classificar_liga_fallback(league_str)
+                
+                # Verificar quantos jogos temos para esta liga
+                jogos_liga = self.df_treino_limpo[self.df_treino_limpo['League'] == league_str]
+                
+                if len(jogos_liga) < 10:  # Poucos dados
+                    return 'MEDIA_CONFIABILIDADE'
+                
+                # Calcular taxa de acerto para esta liga
+                taxa_acerto = jogos_liga['Target'].mean()
+                
+                # Classificar baseado na taxa de acerto
+                if taxa_acerto >= 0.60:
+                    return 'ALTA_CONFIABILIDADE'
+                elif taxa_acerto >= 0.50:
+                    return 'MEDIA_CONFIABILIDADE'
+                elif taxa_acerto >= 0.40:
+                    return 'BAIXA_CONFIABILIDADE'
+                else:
+                    return 'MUITO_BAIXA_CONFIABILIDADE'
+                    
+            except Exception as e:
+                self._log_detalhado(f"Erro em calcular_confiabilidade: {e}", "ALERTA")
+                return 'MEDIA_CONFIABILIDADE'
     def _calcular_bonus_complementar(self, league, next_match, date):
         """Calcular bônus para jogos complementares"""
         # Implementação básica - retorna 0 por enquanto
         return 0.0
     
     def _calcular_bonus_confiabilidade_liga(self, league):
+        
         """Calcular bônus baseado na confiabilidade da liga"""
         liga_cat = self._classificar_liga(league)
         if liga_cat == 'ALTA_CONFIABILIDADE':
@@ -1134,18 +1314,142 @@ class AnalisadorApostasEvolutivo:
         }
     
     def carregar_modelo(self):
-        """Carregar modelo treinado"""
+        """Carregar modelo com todas as informações e recriar encoders"""
         try:
-            dados_modelo = joblib.load(self.modelo_path)
-            self.model = dados_modelo['modelo']
-            self.encoder = dados_modelo['encoder']
-            self.acuracia_modelo = dados_modelo['acuracia']
+            if not os.path.exists(self.modelo_path):
+                self._log_detalhado(f"Modelo não encontrado: {self.modelo_path}", "ERRO")
+                return False
+            
+            modelo_salvo = joblib.load(self.modelo_path)
+            
+            # Carregar componentes principais
+            self.model = modelo_salvo['model']
+            self.features_para_treino = modelo_salvo['features']
+            self.acuracia_modelo = modelo_salvo['acuracia']
+            
+            # Recriar encoders a partir das informações salvas
+            if 'encoders_info' in modelo_salvo:
+                self.encoders = {}
+                for encoder_name, encoder_info in modelo_salvo['encoders_info'].items():
+                    if encoder_info['type'] == 'LabelEncoder':
+                        encoder = LabelEncoder()
+                        encoder.classes_ = np.array(encoder_info['classes'])
+                        self.encoders[encoder_name] = encoder
+                    elif encoder_info['type'] == 'dict_mapping':
+                        self.encoders[encoder_name] = encoder_info['mapping']
+            
+            # Carregar mapeamento de estatísticas
+            if 'stat_mapping' in modelo_salvo:
+                self.stat_mapping = modelo_salvo['stat_mapping']
+            
             self._log_detalhado(f"Modelo carregado - Acurácia: {self.acuracia_modelo:.2%}", "SUCESSO")
+            self._log_detalhado(f"Features: {self.features_para_treino}")
             return True
+            
         except Exception as e:
             self._log_detalhado(f"Erro ao carregar modelo: {e}", "ERRO")
             return False
-    
+    def _analisar_jogo_individual(self, jogo_features):
+        """Analisar um jogo individual com o modelo - VERSÃO CORRIGIDA"""
+        try:
+            # Verificar se temos o modelo carregado
+            if not hasattr(self, 'model') or self.model is None:
+                self._log_detalhado("Modelo não carregado", "ERRO")
+                return None
+            
+            # Criar dataframe com features do jogo
+            jogo_df = pd.DataFrame([jogo_features])
+            
+            # ✅ CORREÇÃO: Processar features categóricas usando os encoders salvos
+            # Processar Tipo_Estatistica
+            if 'Tipo_Estatistica' in jogo_df.columns and 'stat_mapping' in self.encoders:
+                estatistica = jogo_df['Tipo_Estatistica'].iloc[0]
+                # Usar valor padrão se não estiver no mapeamento
+                jogo_df['Tipo_Estatistica_encoded'] = self.encoders['stat_mapping'].get(estatistica, -1)
+            
+            # Processar Local_Jogo
+            if 'Local_Jogo' in jogo_df.columns and 'local_encoder' in self.encoders:
+                local = str(jogo_df['Local_Jogo'].iloc[0])
+                encoder = self.encoders['local_encoder']
+                # Verificar se o valor está nas classes do encoder
+                if local in encoder.classes_:
+                    jogo_df['Local_Jogo_encoded'] = encoder.transform([local])[0]
+                else:
+                    jogo_df['Local_Jogo_encoded'] = -1  # Valor padrão
+            
+            # Processar Liga_Categoria
+            if 'Liga_Categoria' in jogo_df.columns and 'liga_encoder' in self.encoders:
+                liga = str(jogo_df['Liga_Categoria'].iloc[0])
+                encoder = self.encoders['liga_encoder']
+                if liga in encoder.classes_:
+                    jogo_df['Liga_Categoria_encoded'] = encoder.transform([liga])[0]
+                else:
+                    jogo_df['Liga_Categoria_encoded'] = -1
+            
+            # Processar Streak_Categoria
+            if 'Streak_Categoria' in jogo_df.columns and 'streak_order' in self.encoders:
+                streak = str(jogo_df['Streak_Categoria'].iloc[0])
+                jogo_df['Streak_Categoria_encoded'] = self.encoders['streak_order'].get(streak, -1)
+            
+            # ✅ CORREÇÃO: Garantir que temos todas as features necessárias
+            features_necessarias = self.features_para_treino
+            
+            # Criar dataframe com todas as features necessárias
+            features_finais = {}
+            for feature in features_necessarias:
+                if feature in jogo_df.columns:
+                    features_finais[feature] = jogo_df[feature].iloc[0]
+                else:
+                    # Valor padrão para features faltantes
+                    if feature.endswith('_encoded'):
+                        features_finais[feature] = -1
+                    elif feature == 'Odds':
+                        features_finais[feature] = 2.0  # Valor padrão para odds
+                    elif feature == 'Tamanho_Streak':
+                        features_finais[feature] = 5.0  # Valor padrão
+                    elif feature == 'Odds_Streak_Interaction':
+                        features_finais[feature] = 10.0  # Valor padrão
+                    elif feature == 'Prob_Implicita':
+                        features_finais[feature] = 0.5  # Valor padrão
+                    elif feature == 'Dia_Semana':
+                        features_finais[feature] = -1
+                    else:
+                        features_finais[feature] = 0.0
+            
+            # Criar dataframe final para predição
+            X_pred = pd.DataFrame([features_finais])[features_necessarias]
+            
+            # Fazer predição
+            proba = self.model.predict_proba(X_pred)[0]
+            predicao = self.model.predict(X_pred)[0]
+            
+            # Calcular confiança
+            confianca = max(proba)
+            
+            # Determinar categoria baseada na confiança
+            if confianca >= 0.75:
+                categoria = 'EXCELENTE'
+            elif confianca >= 0.65:
+                categoria = 'BOM'
+            elif confianca >= 0.55:
+                categoria = 'RAZOÁVEL'
+            else:
+                categoria = 'ARISCADO'
+            
+            resultado = {
+                'prob_verdadeiro': proba[1],
+                'prob_falso': proba[0],
+                'predicao': 'VERDADEIRO' if predicao == 1 else 'FALSO',
+                'confianca': confianca,
+                'categoria': categoria,
+                'features_usadas': list(X_pred.columns)
+            }
+            
+            return resultado
+            
+        except Exception as e:
+            self._log_detalhado(f"Erro ao analisar jogo: {e}", "ERRO")
+            return None
     def _salvar_modelo(self):
         """Salvar modelo treinado"""
         dados_modelo = {
@@ -1175,37 +1479,102 @@ class AnalisadorApostasEvolutivo:
                 row = df_ordenado.iloc[i]
                 self._log_detalhado(f"   {i+1}. {row['Date']} | {row['Recomendacao']} | {row['Liga_Categoria']} | {row['Probabilidade_Sucesso']:.1%} | {row['League']}")
     def _calcular_confiabilidade_por_desempenho(self, league_str):
-        """Calcular confiabilidade baseada em streaks e consistência real"""
+        """
+        Classificar liga baseada em desempenho histórico dos times
+        """
+        try:
+            if not hasattr(self, 'df_treino') or self.df_treino is None:
+                return 'MEDIA_CONFIABILIDADE'
+            
+            # Filtrar jogos da liga específica
+            jogos_liga = self.df_treino[self.df_treino['League'] == league_str].copy()
+            
+            if len(jogos_liga) < 5:  # Poucos dados
+                return 'MEDIA_CONFIABILIDADE'
+            
+            # ✅ CORREÇÃO: Extrair times do Stat se não existir coluna Time
+            if 'Time' not in jogos_liga.columns:
+                # Extrair times do Stat para análise de desempenho
+                jogos_liga['Time_Extraido'] = jogos_liga['Stat'].apply(
+                    lambda x: self._extrair_time_do_stat(x) if isinstance(x, str) else None
+                )
+                time_col = 'Time_Extraido'
+            else:
+                time_col = 'Time'
+            
+            # Verificar se temos times extraídos
+            if time_col not in jogos_liga.columns or jogos_liga[time_col].isna().all():
+                return 'MEDIA_CONFIABILIDADE'
+            
+            # Remover linhas sem time
+            jogos_liga = jogos_liga.dropna(subset=[time_col])
+            
+            if len(jogos_liga) < 5:
+                return 'MEDIA_CONFIABILIDADE'
+            
+            # ✅ CORREÇÃO: Verificar se temos coluna Target
+            if 'Target' not in jogos_liga.columns:
+                # Tentar criar target se não existir
+                if 'Situação' in jogos_liga.columns:
+                    situacao_map = {'VERDADEIRO': 1, 'Verdadeiro': 1, 'FALSO': 0, 'Falso': 0}
+                    jogos_liga['Target'] = jogos_liga['Situação'].map(situacao_map)
+                else:
+                    return 'MEDIA_CONFIABILIDADE'
+            
+            # Calcular métricas por time
+            try:
+                streaks_liga = jogos_liga.groupby(time_col).agg({
+                    'Target': ['mean', 'count'],
+                    'Odds': 'mean'
+                }).round(3)
+                
+                # Aplanar colunas multi-index
+                streaks_liga.columns = ['Acuracia', 'Num_Jogos', 'Odds_Media']
+                
+                # Calcular confiabilidade geral da liga
+                acuracia_media = streaks_liga['Acuracia'].mean()
+                num_jogos_total = streaks_liga['Num_Jogos'].sum()
+                
+                # Classificar baseado na acurácia média
+                if num_jogos_total >= 20:  # Dados suficientes
+                    if acuracia_media >= 0.65:
+                        return 'ALTA_CONFIABILIDADE'
+                    elif acuracia_media >= 0.55:
+                        return 'MEDIA_CONFIABILIDADE'
+                    elif acuracia_media >= 0.45:
+                        return 'BAIXA_CONFIABILIDADE'
+                    else:
+                        return 'MUITO_BAIXA_CONFIABILIDADE'
+                else:
+                    return 'MEDIA_CONFIABILIDADE'  # Dados insuficientes
+                    
+            except Exception as e:
+                self._log_detalhado(f"Erro ao calcular confiabilidade: {e}", "ALERTA")
+                return 'MEDIA_CONFIABILIDADE'
+                
+        except Exception as e:
+            self._log_detalhado(f"Erro em calcular_confiabilidade: {e}", "ALERTA")
+            return 'MEDIA_CONFIABILIDADE'
+    def _extrair_time_do_stat(self, stat_text):
+        """
+        Extrair nome do time de um texto de estatística
+        """
+        if not isinstance(stat_text, str):
+            return None
         
-        # Filtrar jogos desta liga
-        jogos_liga = self.df_treino_limpo[
-            self.df_treino_limpo['League'].str.lower() == league_str.lower()
+        # Padrões comuns para extrair times
+        patterns = [
+            r'^([A-Za-z\s\-\'\.]+) (?:have|has|had) ',  # "Team have..."
+            r'^([A-Za-z\s\-\'\.]+) (?:won|lost|drew) ', # "Team won..."
+            r'^([A-Za-z\s\-\'\.]+) in ',                # "Team in..."
         ]
         
-        if len(jogos_liga) < 5:  # Mínimo de amostras
-            return 'MEDIA_CONFIABILIDADE'
+        for pattern in patterns:
+            match = re.search(pattern, stat_text, re.IGNORECASE)
+            if match:
+                return match.group(1).strip()
         
-        # 🔥 MÉTRICA 1: Taxa de acerto da liga
-        taxa_acerto = (jogos_liga['Target'] == 1).mean()
-        
-        # 🔥 MÉTRICA 2: Consistência de streaks
-        streaks_liga = jogos_liga.groupby('Time').agg({
-            'Tamanho_Streak': ['mean', 'max'],
-            'Target': 'mean'
-        }).round(3)
-        
-        # 🔥 MÉTRICA 3: Variabilidade do desempenho
-        consistencia = jogos_liga.groupby('Time')['Target'].std().mean()
-        if pd.isna(consistencia):
-            consistencia = 0.5  # Valor padrão se não houver variabilidade
-        
-        # 🔥 CLASSIFICAÇÃO BASEADA EM DESEMPENHO REAL
-        if taxa_acerto > 0.65 and consistencia < 0.3:
-            return 'ALTA_CONFIABILIDADE'
-        elif taxa_acerto > 0.55 or (taxa_acerto > 0.5 and consistencia < 0.25):
-            return 'MEDIA_CONFIABILIDADE'
-        else:
-            return 'BAIXA_CONFIABILIDADE'
+        return None
     def _classificar_liga_fallback(self, league_str):
         """Fallback apenas para primeira execução sem dados"""
         # Lógica simples baseada em termos gerais
@@ -1273,53 +1642,153 @@ class AnalisadorApostasEvolutivo:
         except:
             return pd.NaT
     def _analisar_jogo_avancado(self, row):
-        """Análise avançada com modelo ML"""
-        tipo_estatistica = self._classificar_estatistica(row['Stat'])
-        tamanho_streak = self._extrair_streak(row['Stat'])
-        local_jogo = self._extrair_local(row['Next Match'])
-        liga_categoria = self._classificar_liga(row['League'])
         
-        # Bônus
-        bonus_complementar = self._calcular_bonus_complementar(row['League'], row['Next Match'], row['Date'])
-        bonus_confiabilidade = self._calcular_bonus_confiabilidade_liga(row['League'])
-        bonus_streak = min(tamanho_streak * 0.02, 0.10)  # Bônus por streak longo
-        bonus_total = bonus_complementar + bonus_confiabilidade + bonus_streak
-        
-        # Previsão do modelo
-        features = pd.DataFrame([{
-            'Odds': row['Odds'],
-            'Tamanho_Streak': tamanho_streak,
-            'Tipo_Estatistica': tipo_estatistica,
-            'Local_Jogo': local_jogo,
-            'Liga_Categoria': liga_categoria
-        }])
-        
-        features['Tipo_Estatistica'] = self.encoder.transform(features['Tipo_Estatistica'])
-        features['Local_Jogo'] = LabelEncoder().fit_transform(features['Local_Jogo'])
-        features['Liga_Categoria'] = LabelEncoder().fit_transform(features['Liga_Categoria'])
-        
-        probabilidade = self.model.predict_proba(features)[0][1]
-        previsao = self.model.predict(features)[0]
-        
-        # Ajustar com bônus
-        probabilidade_ajustada = min(probabilidade + bonus_total, 0.95)
-        
-        # Classificação
-        padrao = self._classificar_padrao(probabilidade_ajustada)
-        recomendacao = self._classificar_recomendacao(probabilidade_ajustada)
-        
-        # Análise detalhada
-        analise = self._gerar_analise_detalhada(probabilidade_ajustada, previsao, tipo_estatistica, 
-                                              tamanho_streak, row['Odds'], padrao, bonus_total, row['League'])
-        
-        return {
-            'Probabilidade_Sucesso': probabilidade_ajustada,
-            'Previsao': 'VERDADEIRO' if previsao == 1 else 'FALSO',
-            'Padrao': padrao,
-            'Recomendacao': recomendacao,
-            'Analise_Detalhada': analise,
-            'Bonus_Total': bonus_total
-        }
+        """Análise avançada com modelo ML - VERSÃO CORRIGIDA COM ENCODERS"""
+        try:
+            # Extrair features básicas
+            tipo_estatistica = self._classificar_estatistica(row['Stat'])
+            tamanho_streak = self._extrair_streak(row['Stat'])
+            local_jogo = self._extrair_local(row['Next Match'])
+            liga_categoria = self._classificar_liga(row['League'])
+            
+            # ✅ CORREÇÃO: Obter odds com valor padrão
+            try:
+                odds = float(row['Odds']) if pd.notna(row['Odds']) else 2.0
+            except:
+                odds = 2.0
+            
+            # ✅ CORREÇÃO: Verificar se temos os encoders carregados
+            if not hasattr(self, 'encoders'):
+                self._log_detalhado("⚠️  Encoders não carregados. Usando análise básica...", "ALERTA")
+                raise Exception("Encoders não disponíveis")
+            
+            # ✅ CORREÇÃO: Processar features categóricas usando os encoders salvos
+            # Processar Tipo_Estatistica
+            tipo_estatistica_encoded = -1
+            if 'stat_mapping' in self.encoders:
+                tipo_estatistica_encoded = self.encoders['stat_mapping'].get(tipo_estatistica, -1)
+            
+            # Processar Local_Jogo
+            local_jogo_encoded = -1
+            if 'local_encoder' in self.encoders and self.encoders['local_encoder'] is not None:
+                encoder = self.encoders['local_encoder']
+                if hasattr(encoder, 'classes_') and local_jogo in encoder.classes_:
+                    local_jogo_encoded = encoder.transform([local_jogo])[0]
+            
+            # Processar Liga_Categoria
+            liga_categoria_encoded = -1
+            if 'liga_encoder' in self.encoders and self.encoders['liga_encoder'] is not None:
+                encoder = self.encoders['liga_encoder']
+                if hasattr(encoder, 'classes_') and liga_categoria in encoder.classes_:
+                    liga_categoria_encoded = encoder.transform([liga_categoria])[0]
+            
+            # ✅ CORREÇÃO: Calcular categoria do streak
+            def categorizar_streak(streak):
+                if streak <= 3:
+                    return 'Curto'
+                elif streak <= 6:
+                    return 'Medio'
+                elif streak <= 10:
+                    return 'Longo'
+                else:
+                    return 'Muito_Longo'
+            
+            streak_categoria = categorizar_streak(tamanho_streak)
+            streak_categoria_encoded = -1
+            if 'streak_order' in self.encoders:
+                streak_categoria_encoded = self.encoders['streak_order'].get(streak_categoria, -1)
+            
+            # ✅ CORREÇÃO: Calcular outras features numéricas
+            odds_streak_interaction = odds * tamanho_streak
+            prob_implicita = 1 / odds if odds > 0 else 0.5
+            
+            # ✅ CORREÇÃO: Calcular dia da semana (se data disponível)
+            dia_semana = -1
+            if 'Date' in row and pd.notna(row['Date']):
+                try:
+                    # Converter data para datetime
+                    if isinstance(row['Date'], str):
+                        date_obj = datetime.strptime(row['Date'], '%d/%m/%Y %H:%M')
+                    else:
+                        date_obj = pd.to_datetime(row['Date'])
+                    dia_semana = date_obj.weekday()
+                except:
+                    dia_semana = -1
+            
+            # ✅ CORREÇÃO: Criar array de features na ordem correta
+            features_dict = {
+                'Odds': odds,
+                'Tamanho_Streak': float(tamanho_streak),
+                'Odds_Streak_Interaction': odds_streak_interaction,
+                'Tipo_Estatistica_encoded': float(tipo_estatistica_encoded),
+                'Local_Jogo_encoded': float(local_jogo_encoded),
+                'Liga_Categoria_encoded': float(liga_categoria_encoded),
+                'Streak_Categoria_encoded': float(streak_categoria_encoded),
+                'Dia_Semana': float(dia_semana)
+            }
+            
+            # ✅ CORREÇÃO: Verificar se todas as features necessárias existem
+            features_existentes = []
+            for feature in self.features_para_treino:
+                if feature in features_dict:
+                    features_existentes.append(feature)
+            
+            # Criar DataFrame para predição
+            features_array = []
+            for feature in self.features_para_treino:
+                if feature in features_dict:
+                    features_array.append(features_dict[feature])
+                else:
+                    # Valor padrão para feature faltante
+                    features_array.append(0.0)
+            
+            # Converter para array 2D para predição
+            X_pred = np.array([features_array])
+            
+            # ✅ CORREÇÃO: Verificar se o modelo está treinado
+            if not hasattr(self.model, 'predict_proba'):
+                self._log_detalhado("⚠️  Modelo não tem método predict_proba", "ALERTA")
+                raise Exception("Modelo não treinado corretamente")
+            
+            # Fazer predição
+            try:
+                probabilidade = self.model.predict_proba(X_pred)[0][1]
+                previsao = self.model.predict(X_pred)[0]
+            except Exception as e:
+                self._log_detalhado(f"⚠️  Erro na predição: {e}", "ALERTA")
+                raise
+            
+            # Bônus
+            bonus_complementar = self._calcular_bonus_complementar(row['League'], row['Next Match'], row['Date'])
+            bonus_confiabilidade = self._calcular_bonus_confiabilidade_liga(row['League'])
+            bonus_streak = min(tamanho_streak * 0.02, 0.10)  # Bônus por streak longo
+            bonus_total = bonus_complementar + bonus_confiabilidade + bonus_streak
+            
+            # Ajustar com bônus
+            probabilidade_ajustada = min(probabilidade + bonus_total, 0.95)
+            
+            # Classificação
+            padrao = self._classificar_padrao(probabilidade_ajustada)
+            recomendacao = self._classificar_recomendacao(probabilidade_ajustada)
+            
+            # Análise detalhada
+            analise = self._gerar_analise_detalhada(
+                probabilidade_ajustada, previsao, tipo_estatistica, 
+                tamanho_streak, odds, padrao, bonus_total, row['League']
+            )
+            
+            return {
+                'Probabilidade_Sucesso': probabilidade_ajustada,
+                'Previsao': 'VERDADEIRO' if previsao == 1 else 'FALSO',
+                'Padrao': padrao,
+                'Recomendacao': recomendacao,
+                'Analise_Detalhada': analise,
+                'Bonus_Total': bonus_total
+            }
+            
+        except Exception as e:
+            self._log_detalhado(f"❌ Erro em análise avançada: {str(e)[:100]}", "ERRO")
+            raise  # Propagar o erro para que o fallback seja usado
 
     def _gerar_multiplas_recomendadas(self, df_futuros, num_multiplas=7):
         """Gerar múltiplas de 2, 3 ou 4 times APENAS com confiança > 75% - VERSÃO OTIMIZADA"""
@@ -1624,77 +2093,235 @@ class AnalisadorApostasEvolutivo:
             
             return arquivos_ok
     def gerar_previsoes_futuras(self, output_path='previsoes_evolutivas.csv'):
-            """Gerar previsões para jogos futuros com recomendações"""
-            if self.model is None:
-                self._log_detalhado("Modelo não carregado. Execute treinamento primeiro.", "ERRO")
-                return
-            
-            if self.base_futuros_path is None:
-                self._log_detalhado("Caminho da base de futuros não especificado", "ERRO")
-                return
-                
-            self._log_detalhado("GERANDO PREVISÕES INTELIGENTES...")
-            
-            # Carregar dados futuros
-            df_futuros = self.carregar_dados(self.base_futuros_path)
-            if df_futuros is None or len(df_futuros) == 0:
-                self._log_detalhado("Falha ao carregar dados futuros", "ERRO")
-                return
-            
+        """Gerar previsões para jogos futuros com recomendações - VERSÃO COMPLETA E CORRIGIDA"""
+        # ✅ CORREÇÃO 1: Verificar e carregar modelo robustamente
+        if not hasattr(self, 'model') or self.model is None:
+            self._log_detalhado("Modelo não detectado. Tentando carregar...", "INFO")
+            if not self.carregar_modelo():
+                self._log_detalhado("⚠️  Modelo não carregado. Tentando treinar novo...", "ALERTA")
+                if not self.treinar_modelo_evolutivo():
+                    self._log_detalhado("❌ Falha crítica: não foi possível carregar nem treinar modelo", "ERRO")
+                    return None
+        
+        if self.model is None:
+            self._log_detalhado("❌ Modelo não carregado após todas as tentativas", "ERRO")
+            return None
+        
+        if self.base_futuros_path is None:
+            self._log_detalhado("❌ Caminho da base de futuros não especificado", "ERRO")
+            return None
+        
+        self._log_detalhado("GERANDO PREVISÕES INTELIGENTES...")
+        
+        # ✅ CORREÇÃO 2: Carregar dados futuros com validação robusta
+        df_futuros = self.carregar_dados(self.base_futuros_path)
+        if df_futuros is None or len(df_futuros) == 0:
+            self._log_detalhado("❌ Falha ao carregar dados futuros", "ERRO")
+            return None
+        
+        self._log_detalhado(f"✅ Dados futuros carregados: {len(df_futuros)} registros")
+        
+        # ✅ CORREÇÃO 3: Preparar dados futuros com tratamento de erro
+        try:
             df_futuros = self._preparar_dados_futuros(df_futuros)
-            
-            # Gerar previsões
-            previsoes_detalhadas = []
-            
-            for idx, row in df_futuros.iterrows():
+            if df_futuros is None or len(df_futuros) == 0:
+                self._log_detalhado("❌ Nenhum dado futuro válido após preparação", "ERRO")
+                return None
+            self._log_detalhado(f"✅ Dados futuros preparados: {len(df_futuros)} registros válidos")
+        except Exception as e:
+            self._log_detalhado(f"❌ Erro ao preparar dados futuros: {e}", "ERRO")
+            return None
+        
+        # ✅ CORREÇÃO 4: Gerar previsões com fallback robusto
+        previsoes_detalhadas = []
+        erros_analise = 0
+        
+        for idx, row in df_futuros.iterrows():
+            try:
+                # Primeiro tentar análise avançada
                 try:
                     previsao = self._analisar_jogo_avancado(row)
                     previsoes_detalhadas.append(previsao)
-                except Exception as e:
-                    self._log_detalhado(f"Erro ao analisar jogo {idx}: {e}", "ALERTA")
-                    previsoes_detalhadas.append(self._analise_basica_futuro(row))
-            
-            # Adicionar previsões ao DataFrame - APENAS AS COLUNAS EXISTENTES
-            colunas_previsao = ['Probabilidade_Sucesso', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 'Bonus_Total']
-            for col in colunas_previsao:
-                df_futuros[col] = [p[col] for p in previsoes_detalhadas]
-            
-            # ✅ CORREÇÃO: ORDENAÇÃO FINAL ANTES DE SALVAR
-            self._log_detalhado("Aplicando ordenação personalizada...")
+                except Exception as e_interno:
+                    self._log_detalhado(f"⚠️  Análise avançada falhou jogo {idx}. Tentando fallback...", "ALERTA")
+                    # Fallback para análise básica
+                    previsao = self._analise_basica_futuro(row)
+                    previsoes_detalhadas.append(previsao)
+                    erros_analise += 1
+                    
+            except Exception as e:
+                self._log_detalhado(f"❌ Erro crítico ao analisar jogo {idx}: {e}", "ERRO")
+                # Fallback mínimo
+                previsoes_detalhadas.append({
+                    'Probabilidade_Sucesso': 0.5,
+                    'Previsao': 'INDETERMINADO',
+                    'Padrao': 'PADRAO_REGULAR',
+                    'Recomendacao': 'REGULAR',
+                    'Analise_Detalhada': f'Erro na análise - {str(e)[:100]}',
+                    'Bonus_Total': 0.0
+                })
+                erros_analise += 1
+        
+        if erros_analise > 0:
+            self._log_detalhado(f"⚠️  {erros_analise} jogos tiveram erros na análise (usando fallback)", "ALERTA")
+        
+        # ✅ CORREÇÃO 5: Adicionar previsões ao DataFrame com validação
+        colunas_previsao = ['Probabilidade_Sucesso', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 'Bonus_Total']
+        
+        for col in colunas_previsao:
+            valores = []
+            for previsao in previsoes_detalhadas:
+                if col in previsao:
+                    valores.append(previsao[col])
+                else:
+                    # Valor padrão se a coluna não existir
+                    if col == 'Probabilidade_Sucesso':
+                        valores.append(0.5)
+                    elif col == 'Previsao':
+                        valores.append('INDETERMINADO')
+                    elif col == 'Padrao':
+                        valores.append('PADRAO_REGULAR')
+                    elif col == 'Recomendacao':
+                        valores.append('REGULAR')
+                    elif col == 'Analise_Detalhada':
+                        valores.append('Análise não disponível')
+                    else:
+                        valores.append(0.0)
+            df_futuros[col] = valores
+        
+        # ✅ CORREÇÃO 6: Adicionar coluna de efetividade
+        self._log_detalhado("Aplicando ordenação personalizada...")
+        try:
             df_futuros = self._adicionar_coluna_efetividade(df_futuros)
-           
-            # 1. Converter datas para datetime para ordenação correta
-            df_futuros = self._aplicar_ordenacao_final(df_futuros)
+        except Exception as e:
+            self._log_detalhado(f"⚠️  Erro ao adicionar efetividade: {e}", "ALERTA")
+            df_futuros['Efetividade'] = 'JOGO_FUTURO'
+        
+        # ✅ CORREÇÃO 7: Ordenação final com tratamento robusto
+        try:
+            df_futuros_ordenado = self._aplicar_ordenacao_final(df_futuros)
+        except Exception as e:
+            self._log_detalhado(f"⚠️  Erro na ordenação: {e}. Usando ordenação padrão...", "ALERTA")
+            # Ordenação de fallback
+            if 'Date' in df_futuros.columns:
+                df_futuros['Data_Ordenacao'] = df_futuros['Date'].apply(self._converter_para_datetime_ordenacao)
+                df_futuros = df_futuros.sort_values('Data_Ordenacao', ascending=True)
+                df_futuros = df_futuros.drop('Data_Ordenacao', axis=1)
+            df_futuros_ordenado = df_futuros
+        
+        # ✅ CORREÇÃO 8: Definir colunas finais de forma mais organizada
+        colunas_base = [
+            'League', 'Stat', 'Next Match', 'Odds', 'Date', 'Resultado', 'Situação',
+            'Tipo_Estatistica', 'Liga_Categoria'
+        ]
+        
+        colunas_analise = [
+            'Probabilidade_Sucesso', 'Efetividade', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada'
+        ]
+        
+        # Garantir que todas as colunas existam
+        colunas_finais = []
+        for col in colunas_base + colunas_analise:
+            if col in df_futuros_ordenado.columns:
+                colunas_finais.append(col)
+        
+        # Criar DataFrame final apenas com colunas existentes
+        df_final = df_futuros_ordenado[colunas_finais].copy()
+        
+        # ✅ CORREÇÃO 9: Garantir ordenação no DataFrame final
+        try:
+            df_final = self._aplicar_ordenacao_final(df_final)
+        except:
+            pass  # Se falhar, manter como está
+        
+        # ✅ CORREÇÃO 10: Gerar múltiplas recomendadas (usar cópia para não afetar DataFrame principal)
+        try:
+            self._log_detalhado("\n🔮 GERANDO MÚLTIPLAS RECOMENDADAS...")
+            df_para_multiplas = df_futuros.copy()
+            self._gerar_multiplas_recomendadas(df_para_multiplas)
+        except Exception as e:
+            self._log_detalhado(f"⚠️  Erro ao gerar múltiplas: {e}", "ALERTA")
+        
+        # ✅ CORREÇÃO 11: Salvar arquivo com encoding adequado
+        try:
+            df_final.to_csv(output_path, index=False, sep=';', encoding='utf-8-sig')
+            self._log_detalhado(f"✅ Previsões salvas em: {output_path}", "SUCESSO")
+            self._log_detalhado(f"📊 Total de jogos analisados: {len(df_final)}")
             
-            # REMOVER COLUNAS TEMPORÁRIAS QUE NÃO DEVEM APARECER NO CSV FINAL
-            colunas_para_manter = [
-                'League', 'Stat', 'Next Match', 'Odds', 'Date','Resultado' 'Situação',
-                'Tipo_Estatistica', 'Liga_Categoria',
-                'Probabilidade_Sucesso','Efetividade', 'Previsao', 'Padrao', 'Recomendacao', 'Analise_Detalhada', 
-            ]
+            # Estatísticas detalhadas
+            if 'Recomendacao' in df_final.columns:
+                excelentes = len(df_final[df_final['Recomendacao'] == 'EXCELENTE'])
+                bons = len(df_final[df_final['Recomendacao'] == 'BOA'])
+                regulares = len(df_final[df_final['Recomendacao'] == 'REGULAR'])
+                
+                self._log_detalhado(f"⭐ Jogos EXCELENTES: {excelentes} ({excelentes/len(df_final)*100:.1f}%)")
+                self._log_detalhado(f"👍 Jogos BONS: {bons} ({bons/len(df_final)*100:.1f}%)")
+                self._log_detalhado(f"📊 Jogos REGULARES: {regulares} ({regulares/len(df_final)*100:.1f}%)")
+                
+                # Distribuição de padrões
+                if 'Padrao' in df_final.columns:
+                    padroes = df_final['Padrao'].value_counts()
+                    self._log_detalhado("\n📈 DISTRIBUIÇÃO DE PADRÕES:")
+                    for padrao, count in padroes.items():
+                        self._log_detalhado(f"   {padrao}: {count} jogos")
+            
+            # ✅ CORREÇÃO 12: Mostrar ordenação aplicada
+            try:
+                self._mostrar_ordenacao_aplicada(df_final)
+            except Exception as e:
+                self._log_detalhado(f"⚠️  Não foi possível mostrar ordenação: {e}", "ALERTA")
+            
+            # ✅ CORREÇÃO 13: Criar arquivo resumo das melhores oportunidades
+            self._criar_arquivo_resumo(df_final, output_path.replace('.csv', '_resumo.csv'))
+            
+            return df_final
+            
+        except Exception as e:
+            self._log_detalhado(f"❌ Erro ao salvar arquivo: {e}", "ERRO")
+            # Tentar salvar em formato alternativo
+            try:
+                df_final.to_csv(output_path, index=False, sep=',', encoding='utf-8')
+                self._log_detalhado(f"✅ Arquivo salvo com separador alternativo", "SUCESSO")
+                return df_final
+            except:
+                self._log_detalhado("❌ Falha completa ao salvar arquivo", "ERRO")
+                return None
 
-            # Manter apenas as colunas que existem no DataFrame
-            colunas_existentes = [col for col in colunas_para_manter if col in df_futuros.columns]
-            df_futuros_ordenado = df_futuros[colunas_existentes].copy()
+    # ✅ CORREÇÃO 14: Adicionar método para criar arquivo resumo
+    def _criar_arquivo_resumo(self, df, output_path):
+        """Criar arquivo resumo com as melhores oportunidades"""
+        try:
+            if len(df) == 0:
+                return
             
-            # ✅ CORREÇÃO: GARANTIR que a ordenação está aplicada no DataFrame final
-            df_futuros_ordenado = self._aplicar_ordenacao_final(df_futuros_ordenado)
+            # Filtrar apenas jogos com recomendação EXCELENTE ou BOA
+            jogos_relevantes = df[df['Recomendacao'].isin(['EXCELENTE', 'BOA'])].copy()
             
-            # Gerar múltiplas recomendadas (usando o DataFrame original para evitar perda de colunas)
-            self._gerar_multiplas_recomendadas(df_futuros)
+            if len(jogos_relevantes) == 0:
+                self._log_detalhado("ℹ️  Nenhuma oportunidade EXCELENTE/BOA para resumo", "INFO")
+                return
             
-            # ✅ CORREÇÃO: SALVAR O DATAFRAME ORDENADO
-            df_futuros_ordenado.to_csv(output_path, index=False, sep=';', encoding='utf-8-sig')
-            self._log_detalhado(f"Previsões salvas em: {output_path}", "SUCESSO")
-            self._log_detalhado(f"Total de jogos analisados: {len(df_futuros_ordenado)}")
-            self._log_detalhado(f"Jogos EXCELENTES: {len(df_futuros_ordenado[df_futuros_ordenado['Recomendacao'] == 'EXCELENTE'])}")
-            self._log_detalhado(f"Jogos BONS: {len(df_futuros_ordenado[df_futuros_ordenado['Recomendacao'] == 'BOA'])}")
+            # Ordenar por recomendação e probabilidade
+            ordem_rec = {'EXCELENTE': 1, 'BOA': 2}
+            jogos_relevantes['Ordem_Rec'] = jogos_relevantes['Recomendacao'].map(ordem_rec)
+            jogos_relevantes = jogos_relevantes.sort_values(['Ordem_Rec', 'Probabilidade_Sucesso'], 
+                                                        ascending=[True, False])
+            jogos_relevantes = jogos_relevantes.drop('Ordem_Rec', axis=1)
             
-            #Mostrar ordenação aplicada
-            self._mostrar_ordenacao_aplicada
-            (df_futuros_ordenado)
+            # Selecionar colunas importantes para o resumo
+            colunas_resumo = ['Date', 'League', 'Next Match', 'Odds', 'Tipo_Estatistica',
+                            'Probabilidade_Sucesso', 'Recomendacao', 'Padrao', 'Analise_Detalhada']
             
-            return df_futuros_ordenado
+            colunas_disponiveis = [col for col in colunas_resumo if col in jogos_relevantes.columns]
+            resumo = jogos_relevantes[colunas_disponiveis].copy()
+            
+            # Salvar resumo
+            resumo.to_csv(output_path, index=False, sep=';', encoding='utf-8-sig')
+            self._log_detalhado(f"✅ Arquivo resumo criado: {output_path}", "SUCESSO")
+            self._log_detalhado(f"   📋 {len(resumo)} oportunidades relevantes identificadas")
+            
+        except Exception as e:
+            self._log_detalhado(f"⚠️  Erro ao criar arquivo resumo: {e}", "ALERTA")
     def _aplicar_ordenacao_final(self, df):
             """Aplicar ordenação final ao DataFrame"""
             # Criar colunas temporárias para ordenação
@@ -1742,8 +2369,8 @@ if __name__ == "__main__":
     # CONFIGURAÇÃO
     config = {
         'base_treino': r'D:\Downloads\scraping_futebol\base_dados_total.csv',
-        'base_futuros': r'D:\Downloads\scraping_futebol\scraping\adam choi_dados_20251124_213507.csv',
-        'modelo_salvo': 'modelo_apostas_evolutivo.joblib.backup_20251103_000344.backup_20251103_000907'
+        'base_futuros': r'D:\Downloads\scraping_futebol\scraping\adam choi_dados_20251206_174637.csv',
+        'modelo_salvo': r'D:\Downloads\analiseComIa\modelo_apostas_evolutivo copy.joblib'
     }
     
     try:
@@ -1757,17 +2384,19 @@ if __name__ == "__main__":
             print("\n💾 Criando backup manual...")
             analisador.criar_backup_manual()
             
-            print("\n1. 🎯 Treinando modelo...")
-            sucesso_treino = analisador.treinar_modelo_evolutivo()
+            print("\n1. 🔄 Carregando/treinando modelo...")
+            # ✅ CORREÇÃO: Primeiro tenta carregar o modelo existente
+            if not analisador.carregar_modelo():
+                print("   ⚠️  Modelo não encontrado ou inválido. Treinando novo...")
+                if not analisador.treinar_modelo_evolutivo():
+                    print("❌ Falha crítica: não foi possível carregar nem treinar modelo")
+                    exit(1)
             
-            if sucesso_treino:
-                print("\n2. 🔮 Gerando previsões...")
-                previsoes = analisador.gerar_previsoes_futuras('previsoes_evolutivas.csv')
-                
-                print("\n" + "="*50)
-                print("✅ PROCESSO CONCLUÍDO!")
-            else:
-                print("❌ Falha no treinamento do modelo")
+            print("\n2. 🔮 Gerando previsões...")
+            previsoes = analisador.gerar_previsoes_futuras('previsoes_evolutivas.csv')
+            
+            print("\n" + "="*50)
+            print("✅ PROCESSO CONCLUÍDO!")
         else:
             print("❌ Verifique os caminhos dos arquivos")
             
