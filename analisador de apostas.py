@@ -2766,9 +2766,9 @@ if __name__ == "__main__":
     
     # CONFIGURAÇÃO
     config = {
-        'base_treino': r'D:\Downloads\scraping_futebol\base_dados_total.csv',
-        'base_futuros': r'D:\Downloads\scraping_futebol\scraping\adam choi_dados_20260404_111440.csv',
-        'modelo_salvo': r'D:\Downloads\analiseComIa\modelo_apostas_evolutivo copy.joblib'
+        'base_treino': r'..\scraping_futebol\base_dados_total.csv',
+        'base_futuros': r'..\scraping_futebol\scraping\adam choi_dados_20260413_173947.csv',
+        'modelo_salvo': r'modelo_apostas_evolutivo copy.joblib'
     }
     
     try:
